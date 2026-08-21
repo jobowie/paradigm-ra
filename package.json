@@ -6,9 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "benchmark:validate": "tsx src/lib/discovery/benchmark/validate.ts"
   },
   "dependencies": {
+    "@netlify/blobs": "^11.0.1",
     "next": "^16.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -17,6 +19,7 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "tsx": "^4.23.12",
     "typescript": "^5.7.0"
   }
 }

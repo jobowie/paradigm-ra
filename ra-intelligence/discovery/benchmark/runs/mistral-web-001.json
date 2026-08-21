@@ -1,0 +1,53 @@
+{
+  "provider": "mistral",
+  "model": "mistral-medium-3-5",
+  "scenario_id": "web-001",
+  "scenario_title": "Outdated Safety Supply Website",
+  "latency_ms": 2079.1687080054544,
+  "input_tokens": 1146,
+  "output_tokens": 168,
+  "response": {
+    "reply": "That sounds like a clear issue with your website\u2019s clarity and user experience. How is this affecting your team\u2019s workload or customer experience today?",
+    "stage": "problem",
+    "complete": false,
+    "recommended_next_step": "continue_discovery",
+    "state": {
+      "company_name": "Apex Safety Supply",
+      "contact_name": "Marcus",
+      "website": null,
+      "business_description": null,
+      "primary_problem": "Outdated website with poor product clarity, leading customers to call instead of self-serving",
+      "current_process": null,
+      "current_systems": [],
+      "pain_points": [
+        "Customers have trouble figuring out what products are available",
+        "Most customers end up calling instead of using the website"
+      ],
+      "desired_outcomes": [],
+      "service_category": "web",
+      "users_or_teams_affected": [],
+      "integrations_needed": [],
+      "requirements": [],
+      "business_impact": null,
+      "urgency": null,
+      "timeline": null,
+      "budget_context": null,
+      "decision_process": null,
+      "qualification_score": 40,
+      "missing_information": [
+        "Business impact of customers calling instead of using the website",
+        "Current process for handling customer inquiries"
+      ]
+    }
+  },
+  "automatic_score": {
+    "business_understanding": 20.0,
+    "discovery_efficiency": 20.0,
+    "state_accuracy": 15.0,
+    "latency": 3.0,
+    "cost": 2.0,
+    "total": 60.0,
+    "max_score": 60,
+    "notes": []
+  }
+}

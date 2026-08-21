@@ -1,4 +1,5 @@
 import { HeroMotion } from "@/components/HeroMotion";
+import { RaDiscovery } from "@/components/RaDiscovery";
 import { services, site } from "@/content/site";
 
 export default function HomePage() {
@@ -93,8 +94,11 @@ export default function HomePage() {
           <p className="kicker">START A CONVERSATION</p>
           <h2>Better systems begin with a clearer problem.</h2>
           <p>Tell us what is slowing your business down. We’ll help identify where software, automation, or accounting systems can create leverage.</p>
-          <a className="button button-primary" href={`mailto:${site.email}`}>Contact Paradigm Ra →</a>
-          <p className="email-note">{site.email}</p>
+          <RaDiscovery email={site.email} />
+          <p className="email-note">
+            Prefer email?{" "}
+            <a href={`mailto:${site.email}`}>{site.email}</a>
+          </p>
         </div>
       </section>
 

@@ -1,0 +1,720 @@
+{
+  "provider": "openai",
+  "model": "gpt-5.6-terra",
+  "started_at": "2026-08-21T00:11:52.633261+00:00",
+  "completed_at": "2026-08-21T00:12:33.601709+00:00",
+  "cases": [
+    {
+      "scenario_id": "web-001",
+      "scenario_title": "Outdated Safety Supply Website",
+      "provider": "openai",
+      "model": "gpt-5.6-terra",
+      "response": {
+        "reply": "It sounds like the site isn\u2019t making your product range easy to understand, so customers are relying on calls. What would you most want customers to be able to find or do on the website without needing to call?",
+        "stage": "desired_outcome",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Apex Safety Supply",
+          "contact_name": "Marcus",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "The outdated website makes it difficult for customers to understand what products Apex Safety Supply carries.",
+          "current_process": "Customers often call to determine what products the company carries.",
+          "current_systems": [],
+          "pain_points": [
+            "Website is outdated",
+            "Customers have trouble figuring out what products the company carries",
+            "Customers often need to call for product information"
+          ],
+          "desired_outcomes": [],
+          "service_category": "web",
+          "users_or_teams_affected": [
+            "Customers"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 38,
+          "missing_information": [
+            "Desired customer experience and key website capabilities",
+            "Current website platform or product/catalog information source, if relevant",
+            "Business impact or priority",
+            "Timeline"
+          ]
+        }
+      },
+      "latency_ms": 4691.7142500169575,
+      "estimated_cost_usd": 0.00641,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 2.0,
+        "cost": 2.0,
+        "total": 59.0,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "automation-001",
+      "scenario_title": "Phone Orders Into QuickBooks",
+      "provider": "openai",
+      "model": "gpt-5.6-terra",
+      "response": {
+        "reply": "Thanks, Dana \u2014 that gives me a clear starting point. What information do your team members capture for each phone order, and where does it come from today (for example, customer records, product/pricing lists, or another system)?",
+        "stage": "current_process",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Westline Industrial",
+          "contact_name": "Dana",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Phone orders are written down and then re-entered into QuickBooks, creating manual work.",
+          "current_process": "Customers call in orders; staff write the orders down; someone later enters the same orders into QuickBooks.",
+          "current_systems": [
+            "QuickBooks"
+          ],
+          "pain_points": [
+            "Manual order-taking on paper or written notes",
+            "Duplicate order entry into QuickBooks"
+          ],
+          "desired_outcomes": [
+            "Reduce manual work involved in processing phone orders"
+          ],
+          "service_category": "automation",
+          "users_or_teams_affected": [
+            "Staff who take and enter customer orders"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 48,
+          "missing_information": [
+            "Order details and source systems used during phone order intake",
+            "Order volume or operational impact",
+            "Desired future workflow",
+            "Timeline or urgency",
+            "Decision process"
+          ]
+        }
+      },
+      "latency_ms": 4248.747083998751,
+      "estimated_cost_usd": 0.006718,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 2.0,
+        "cost": 2.0,
+        "total": 59.0,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "software-001",
+      "scenario_title": "Legacy SQL Application",
+      "provider": "openai",
+      "model": "gpt-5.6-terra",
+      "response": {
+        "reply": "Modernizing a business-critical application without disrupting daily operations is exactly the kind of transition that benefits from careful discovery. What are the main problems with the application today\u2014such as reliability, usability, reporting, maintenance, or difficulty making changes?",
+        "stage": "problem",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Northstar Logistics",
+          "contact_name": "Priya",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "A 12-year-old internal application needs modernization without disrupting daily operations.",
+          "current_process": null,
+          "current_systems": [
+            "Internal application",
+            "SQL Server"
+          ],
+          "pain_points": [
+            "The internal application is 12 years old.",
+            "Several departments depend on the application every day.",
+            "Modernization must avoid disrupting operations."
+          ],
+          "desired_outcomes": [
+            "Modernize the internal application without disrupting operations."
+          ],
+          "service_category": "custom_software",
+          "users_or_teams_affected": [
+            "Several departments"
+          ],
+          "integrations_needed": [],
+          "requirements": [
+            "Maintain operational continuity during modernization.",
+            "Application connects to SQL Server."
+          ],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 52,
+          "missing_information": [
+            "Specific limitations or problems with the current application",
+            "Core workflows and departments supported by the application",
+            "Modernization scope and desired end state",
+            "Timeline or urgency",
+            "Decision process"
+          ]
+        }
+      },
+      "latency_ms": 3714.9940420058556,
+      "estimated_cost_usd": 0.006762,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 2.0,
+        "cost": 2.0,
+        "total": 59.0,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "accounting-001",
+      "scenario_title": "Month-End Spreadsheet Consolidation",
+      "provider": "openai",
+      "model": "gpt-5.6-terra",
+      "response": {
+        "reply": "Thanks, Nicole \u2014 that\u2019s helpful. What accounting system does your team enter the consolidated totals into?",
+        "stage": "systems",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Beacon Services Group",
+          "contact_name": "Nicole",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Month-end accounting data from each location is consolidated and entered manually into the accounting system.",
+          "current_process": "Each location sends accounting a spreadsheet at month end; accounting manually combines the spreadsheets and enters totals into the accounting system.",
+          "current_systems": [],
+          "pain_points": [
+            "Manual consolidation of location spreadsheets",
+            "Manual entry of consolidated totals into the accounting system"
+          ],
+          "desired_outcomes": [],
+          "service_category": "accounting_solutions",
+          "users_or_teams_affected": [
+            "Accounting",
+            "Each location"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 45,
+          "missing_information": [
+            "Accounting system in use",
+            "Volume and consistency of location spreadsheets",
+            "Desired future-state process",
+            "Business impact of the manual month-end process",
+            "Timeline or urgency"
+          ]
+        }
+      },
+      "latency_ms": 4502.112708025379,
+      "estimated_cost_usd": 0.006252,
+      "automatic_score": {
+        "business_understanding": 10.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 2.0,
+        "cost": 2.0,
+        "total": 49.0,
+        "max_score": 60,
+        "notes": [
+          "Service mismatch: expected one of ['mixed', 'automation'], received accounting_solutions."
+        ]
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "efficiency-001",
+      "scenario_title": "Do Not Repeat the Timeline Question",
+      "provider": "openai",
+      "model": "gpt-5.6-terra",
+      "response": {
+        "reply": "Thanks\u2014that gives me a clear picture of the handoff. What would a better quoting process need to achieve for your team: faster turnaround, less manual work, fewer errors, or something else?",
+        "stage": "desired_outcome",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Summit Fabrication",
+          "contact_name": "Chris",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "The quoting process takes too long.",
+          "current_process": "Sales emails job details to estimating, and estimating builds each quote manually in Excel.",
+          "current_systems": [
+            "Email",
+            "Excel"
+          ],
+          "pain_points": [
+            "Quoting process takes too long.",
+            "Estimating builds every quote manually in Excel."
+          ],
+          "desired_outcomes": [],
+          "service_category": "automation",
+          "users_or_teams_affected": [
+            "Sales",
+            "Estimating"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": "Before January.",
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 55,
+          "missing_information": [
+            "Desired outcome and success criteria for the quoting process",
+            "Business impact of slow quote turnaround",
+            "Scope, such as quote volume and types of jobs",
+            "Decision process"
+          ]
+        }
+      },
+      "latency_ms": 5416.149790980853,
+      "estimated_cost_usd": 0.008378,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 1.0,
+        "cost": 2.0,
+        "total": 58.0,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "efficiency-002",
+      "scenario_title": "Rich First Answer",
+      "provider": "openai",
+      "model": "gpt-5.6-terra",
+      "response": {
+        "reply": "Thanks, Alex \u2014 that\u2019s helpful context. With 150 daily orders across four locations, the key next step is understanding what needs to happen once an online order is submitted. Which systems besides QuickBooks Enterprise need to receive or update order and inventory information?",
+        "stage": "systems",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Metro Distribution",
+          "contact_name": "Alex",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Customers currently place orders by phone or email, requiring employees to enter orders into QuickBooks Enterprise and update inventory manually.",
+          "current_process": "Customers place orders by phone or email; employees enter orders into QuickBooks Enterprise and manually update inventory.",
+          "current_systems": [
+            "QuickBooks Enterprise"
+          ],
+          "pain_points": [
+            "Manual order entry into QuickBooks Enterprise",
+            "Manual inventory updates"
+          ],
+          "desired_outcomes": [
+            "Enable customers to place orders online",
+            "Have online orders flow into existing systems"
+          ],
+          "service_category": "mixed",
+          "users_or_teams_affected": [
+            "Employees handling order entry and inventory updates",
+            "Customers"
+          ],
+          "integrations_needed": [
+            "Online ordering solution integrated with QuickBooks Enterprise",
+            "Inventory updates from online orders"
+          ],
+          "requirements": [
+            "Support online customer ordering",
+            "Integrate online orders with existing systems",
+            "Support operations across four locations",
+            "Handle approximately 150 orders per day"
+          ],
+          "business_impact": null,
+          "urgency": "Would like to start this quarter.",
+          "timeline": "This quarter",
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 72,
+          "missing_information": [
+            "Other systems involved in order processing or inventory management",
+            "Desired online ordering workflow and customer experience",
+            "Decision process and stakeholders"
+          ]
+        }
+      },
+      "latency_ms": 3945.5917500017677,
+      "estimated_cost_usd": 0.007416,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 10.0,
+        "state_accuracy": 15.0,
+        "latency": 2.0,
+        "cost": 2.0,
+        "total": 49.0,
+        "max_score": 60,
+        "notes": [
+          "Multiple unnecessary topics detected: number of locations, order volume."
+        ]
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "completion-001",
+      "scenario_title": "Know When to Stop",
+      "provider": "openai",
+      "model": "gpt-5.6-terra",
+      "response": {
+        "reply": "Thanks, Taylor\u2014this is helpful context. With 40 supervisors involved and a three-month target, it sounds like a good fit for a discovery call. One key question before we meet: what information do supervisors currently enter in the spreadsheets, and where does that production data originate?",
+        "stage": "scope",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Crestview Manufacturing",
+          "contact_name": "Taylor",
+          "website": null,
+          "business_description": "Manufacturing company",
+          "primary_problem": "Manual production reporting process delays visibility into production numbers.",
+          "current_process": "Approximately 40 supervisors fill out spreadsheets; operations consolidates them each morning; leadership receives the prior day's numbers around noon.",
+          "current_systems": [
+            "Microsoft 365",
+            "SQL Server",
+            "Spreadsheets"
+          ],
+          "pain_points": [
+            "Production reporting is manual",
+            "Operations must consolidate supervisor spreadsheets each morning",
+            "Leadership does not see yesterday's production numbers until noon"
+          ],
+          "desired_outcomes": [
+            "Near-real-time production reporting"
+          ],
+          "service_category": "automation",
+          "users_or_teams_affected": [
+            "Approximately 40 supervisors",
+            "Operations",
+            "Leadership"
+          ],
+          "integrations_needed": [
+            "Microsoft 365",
+            "SQL Server"
+          ],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": "Wants near-real-time reporting within the next three months.",
+          "timeline": "Within the next three months",
+          "budget_context": null,
+          "decision_process": "Taylor is leading the project; the COO will approve the final budget.",
+          "qualification_score": 80,
+          "missing_information": [
+            "Production data fields currently captured in spreadsheets",
+            "Source(s) of production data",
+            "Scope of reporting, dashboards, and users who need access"
+          ]
+        }
+      },
+      "latency_ms": 4455.706250009825,
+      "estimated_cost_usd": 0.007432,
+      "automatic_score": {
+        "business_understanding": 8.75,
+        "discovery_efficiency": 10.0,
+        "state_accuracy": 5.0,
+        "latency": 2.0,
+        "cost": 2.0,
+        "total": 27.75,
+        "max_score": 60,
+        "notes": [
+          "Service mismatch: expected one of ['mixed'], received automation.",
+          "Captured 7/8 expected discovery fields.",
+          "Expected discovery to stop, but response asked 1 question(s).",
+          "Completion mismatch: expected True, received False.",
+          "Next-step mismatch: expected book_discovery_call, received continue_discovery."
+        ]
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "fit-001",
+      "scenario_title": "Clearly Outside Core Services",
+      "provider": "openai",
+      "model": "gpt-5.6-terra",
+      "response": {
+        "reply": "Thanks for reaching out, Jordan. Logo design and children\u2019s-book illustration aren\u2019t services Paradigm Ra provides, so we\u2019re not the right fit for this project. I hope you find a great branding designer and illustrator.",
+        "stage": "complete",
+        "complete": true,
+        "recommended_next_step": "not_a_fit",
+        "state": {
+          "company_name": "Jordan Lane Photography",
+          "contact_name": "Jordan",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Seeking a new logo design and illustrations for a children's book, without a website or software need.",
+          "current_process": null,
+          "current_systems": [],
+          "pain_points": [],
+          "desired_outcomes": [
+            "New logo design",
+            "Illustrations for a children's book"
+          ],
+          "service_category": "unknown",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [
+            "Logo design",
+            "Children's-book illustrations",
+            "No website or software needed"
+          ],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 15,
+          "missing_information": []
+        }
+      },
+      "latency_ms": 2865.7044999999925,
+      "estimated_cost_usd": 0.005958,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 2.0,
+        "cost": 2.0,
+        "total": 59.0,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "integration-001",
+      "scenario_title": "System Integration Without Enough Context",
+      "provider": "openai",
+      "model": "gpt-5.6-terra",
+      "response": {
+        "reply": "Understood\u2014what CRM and accounting platform are you using today?",
+        "stage": "systems",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Evergreen Health Products",
+          "contact_name": "Morgan",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Customer information is being entered twice because the CRM and accounting platform do not communicate with each other.",
+          "current_process": "People enter the same customer information separately in the CRM and accounting platform.",
+          "current_systems": [],
+          "pain_points": [
+            "Duplicate customer-data entry across the CRM and accounting platform."
+          ],
+          "desired_outcomes": [
+            "Enable the CRM and accounting platform to communicate with each other."
+          ],
+          "service_category": "integrations",
+          "users_or_teams_affected": [],
+          "integrations_needed": [
+            "CRM and accounting platform integration"
+          ],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 45,
+          "missing_information": [
+            "CRM platform",
+            "Accounting platform",
+            "Teams or users affected",
+            "Business impact of duplicate entry",
+            "Timeline or urgency"
+          ]
+        }
+      },
+      "latency_ms": 2966.4830839901697,
+      "estimated_cost_usd": 0.006062,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 2.0,
+        "cost": 2.0,
+        "total": 59.0,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "advisory-001",
+      "scenario_title": "We Know Something Is Broken",
+      "provider": "openai",
+      "model": "gpt-5.6-terra",
+      "response": {
+        "reply": "It sounds like the immediate challenge is getting clarity on a fragmented toolset before deciding what to replace or integrate. Which business process is causing the most trouble for your teams right now?",
+        "stage": "problem",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Harbor Property Group",
+          "contact_name": "Renee",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Rapid growth has left teams using fragmented systems, with uncertainty about which tools should be replaced versus integrated.",
+          "current_process": null,
+          "current_systems": [],
+          "pain_points": [
+            "Different teams use different tools",
+            "Unclear which systems should be replaced versus connected"
+          ],
+          "desired_outcomes": [
+            "Clarify which systems should be replaced and which should be integrated"
+          ],
+          "service_category": "advisory",
+          "users_or_teams_affected": [
+            "Multiple teams"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 38,
+          "missing_information": [
+            "Business processes most affected by the fragmented systems",
+            "Current tools or systems in use",
+            "Operational impact of the current environment",
+            "Desired future-state outcomes and priorities",
+            "Timeline and decision process"
+          ]
+        }
+      },
+      "latency_ms": 3687.022790982155,
+      "estimated_cost_usd": 0.006448,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 2.0,
+        "cost": 2.0,
+        "total": 59.0,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    }
+  ],
+  "automatic_average": 53.775,
+  "reviewed_average": null,
+  "prompt_sha256": "a02e8846283da82a61f079490d5ceae682bb2de68d6aad4ded3240c328cbe8c4",
+  "estimated_total_cost_usd": 0.067836
+}

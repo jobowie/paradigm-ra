@@ -1,0 +1,707 @@
+{
+  "provider": "anthropic",
+  "model": "claude-sonnet-5",
+  "started_at": "2026-08-20T23:42:07.742001+00:00",
+  "completed_at": "2026-08-20T23:43:55.846433+00:00",
+  "cases": [
+    {
+      "scenario_id": "web-001",
+      "scenario_title": "Outdated Safety Supply Website",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "response": {
+        "reply": "Thanks for sharing that, Marcus. It sounds like the site isn't doing its job of helping customers self-serve, so they're calling in instead. Are you hoping the new site would let customers browse and search your full product catalog, or eventually place orders online too?",
+        "stage": "desired_outcome",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Apex Safety Supply",
+          "contact_name": "Marcus",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Outdated website makes it hard for customers to find products, leading them to call the company instead.",
+          "current_process": null,
+          "current_systems": [],
+          "pain_points": [
+            "Outdated website",
+            "Customers struggle to identify products offered",
+            "High volume of inbound calls for product information"
+          ],
+          "desired_outcomes": [],
+          "service_category": "web",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 35,
+          "missing_information": [
+            "Desired site capabilities (catalog browsing vs online ordering)",
+            "Scope of product catalog",
+            "Current systems for managing product data",
+            "Business impact of call volume",
+            "Timeline or urgency"
+          ]
+        }
+      },
+      "latency_ms": 9609.983583999565,
+      "estimated_cost_usd": 0.013454,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 0.0,
+        "cost": 1.5,
+        "total": 56.5,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "automation-001",
+      "scenario_title": "Phone Orders Into QuickBooks",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "response": {
+        "reply": "Thanks for the detail, Dana \u2014 that kind of double entry between phone orders and QuickBooks is exactly the sort of thing we help streamline. Roughly how many orders come through by phone in a typical day, and who's currently responsible for keying them into QuickBooks?",
+        "stage": "impact",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Westline Industrial",
+          "contact_name": "Dana",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Manual duplication of order entry: phone orders are written down by staff and then re-entered into QuickBooks.",
+          "current_process": "Customers call in orders, staff writes them down on paper, then someone manually enters the same order into QuickBooks afterward.",
+          "current_systems": [
+            "QuickBooks"
+          ],
+          "pain_points": [
+            "Manual re-entry of orders",
+            "Duplicate data handling between phone intake and QuickBooks"
+          ],
+          "desired_outcomes": [
+            "Reduce manual work in order processing"
+          ],
+          "service_category": "automation",
+          "users_or_teams_affected": [
+            "Order intake staff"
+          ],
+          "integrations_needed": [
+            "QuickBooks"
+          ],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 45,
+          "missing_information": [
+            "Order volume/frequency",
+            "Who performs QuickBooks entry",
+            "Business impact of manual process (errors, delays, cost)",
+            "Timeline or urgency",
+            "Desired scope of solution"
+          ]
+        }
+      },
+      "latency_ms": 14645.301624987042,
+      "estimated_cost_usd": 0.019322,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 0.0,
+        "cost": 1.5,
+        "total": 56.5,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "software-001",
+      "scenario_title": "Legacy SQL Application",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "response": {
+        "reply": "That's a common challenge with long-standing internal systems. What specific issues are you running into with the current application, whether that's performance, maintenance difficulty, lack of flexibility, or something else, that's making modernization a priority now?",
+        "stage": "problem",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Northstar Logistics",
+          "contact_name": "Priya",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "A 12-year-old internal application that multiple departments rely on daily needs to be modernized without disrupting operations.",
+          "current_process": "Several departments depend on a legacy internal application connected to SQL Server for daily operations.",
+          "current_systems": [
+            "SQL Server",
+            "Legacy internal application"
+          ],
+          "pain_points": [],
+          "desired_outcomes": [
+            "Modernize the legacy application",
+            "Maintain business continuity during modernization"
+          ],
+          "service_category": "custom_software",
+          "users_or_teams_affected": [
+            "Several departments (specifics not yet identified)"
+          ],
+          "integrations_needed": [],
+          "requirements": [
+            "Modernization must not disrupt daily operations"
+          ],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 35,
+          "missing_information": [
+            "Specific pain points or limitations of the current application",
+            "Which departments or teams are affected",
+            "Timeline or urgency for modernization",
+            "Scope of desired changes (full replacement vs. incremental upgrade)"
+          ]
+        }
+      },
+      "latency_ms": 11723.987582983682,
+      "estimated_cost_usd": 0.017044,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 0.0,
+        "cost": 1.5,
+        "total": 56.5,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "accounting-001",
+      "scenario_title": "Month-End Spreadsheet Consolidation",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "response": {
+        "reply": "Thanks, that's helpful. How many locations are involved, and roughly how much time does that monthly consolidation take your accounting team?",
+        "stage": "impact",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Beacon Services Group",
+          "contact_name": "Nicole",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Manual consolidation of monthly location spreadsheets before entering totals into the accounting system",
+          "current_process": "Each location sends accounting a spreadsheet at month end; accounting manually combines them before entering totals into the accounting system",
+          "current_systems": [
+            "spreadsheets",
+            "accounting system"
+          ],
+          "pain_points": [
+            "manual combination of spreadsheets from multiple locations",
+            "manual data entry into accounting system"
+          ],
+          "desired_outcomes": [],
+          "service_category": "automation",
+          "users_or_teams_affected": [
+            "accounting"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 35,
+          "missing_information": [
+            "number of locations",
+            "time spent on monthly consolidation",
+            "name of accounting system used",
+            "business impact of manual process",
+            "desired outcome or timeline"
+          ]
+        }
+      },
+      "latency_ms": 10281.147041008808,
+      "estimated_cost_usd": 0.015336,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 0.0,
+        "cost": 1.5,
+        "total": 56.5,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "efficiency-001",
+      "scenario_title": "Do Not Repeat the Timeline Question",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "response": {
+        "reply": "Thanks, Chris \u2014 that helps clarify the process. When quotes take a while to turn around, how does that affect things on your end, like winning jobs or keeping customers waiting?",
+        "stage": "impact",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Summit Fabrication",
+          "contact_name": "Chris",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "The quoting process takes too long.",
+          "current_process": "Sales emails job details to estimating, then estimating builds every quote manually in Excel.",
+          "current_systems": [
+            "Email",
+            "Excel"
+          ],
+          "pain_points": [
+            "Quoting process is slow",
+            "Quotes are built manually for every job"
+          ],
+          "desired_outcomes": [],
+          "service_category": "automation",
+          "users_or_teams_affected": [
+            "Sales",
+            "Estimating"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": "Before January.",
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 50,
+          "missing_information": [
+            "Business impact of slow quoting",
+            "Decision process",
+            "Budget context"
+          ]
+        }
+      },
+      "latency_ms": 8568.044374987949,
+      "estimated_cost_usd": 0.013788,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 0.0,
+        "cost": 1.5,
+        "total": 56.5,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "efficiency-002",
+      "scenario_title": "Rich First Answer",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "response": {
+        "reply": "That's a clear picture, Alex. Four locations, ~150 orders a day taken manually and entered into QuickBooks Enterprise with manual inventory updates \u2014 makes sense you'd want an online ordering flow tied directly into that system. What's driving the push to have this live this quarter \u2014 is there a specific event or pain point pushing the timeline?",
+        "stage": "impact",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Metro Distribution",
+          "contact_name": "Alex",
+          "website": null,
+          "business_description": "Distribution business operating four locations",
+          "primary_problem": "Orders are taken by phone or email and manually entered into QuickBooks Enterprise, with inventory updated manually",
+          "current_process": "Customers place orders via phone or email; employees manually enter them into QuickBooks Enterprise and manually update inventory",
+          "current_systems": [
+            "QuickBooks Enterprise"
+          ],
+          "pain_points": [
+            "Manual order entry from phone/email into QuickBooks",
+            "Manual inventory updates"
+          ],
+          "desired_outcomes": [
+            "Enable customers to place orders online",
+            "Have online orders flow automatically into existing systems (QuickBooks Enterprise and inventory)"
+          ],
+          "service_category": "mixed",
+          "users_or_teams_affected": [
+            "Order entry employees"
+          ],
+          "integrations_needed": [
+            "QuickBooks Enterprise",
+            "Inventory system"
+          ],
+          "requirements": [
+            "Online ordering capability",
+            "Integration with QuickBooks Enterprise",
+            "Integration with inventory tracking"
+          ],
+          "business_impact": null,
+          "urgency": "Wants to start this quarter",
+          "timeline": "This quarter",
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 65,
+          "missing_information": [
+            "Specific business impact or driver behind timeline",
+            "Decision-making process",
+            "Budget context",
+            "Details on current inventory system/tools"
+          ]
+        }
+      },
+      "latency_ms": 13717.32879098272,
+      "estimated_cost_usd": 0.018482,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 10.0,
+        "state_accuracy": 15.0,
+        "latency": 0.0,
+        "cost": 1.5,
+        "total": 46.5,
+        "max_score": 60,
+        "notes": [
+          "Multiple unnecessary topics detected: number of locations, order volume, timeline."
+        ]
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "completion-001",
+      "scenario_title": "Know When to Stop",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "response": {
+        "reply": "Thanks for the detail, Taylor \u2014 that's a clear picture. One more thing that helps for the call: what decisions or actions get delayed or affected because leadership doesn't have same-day production numbers?",
+        "stage": "impact",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Crestview Manufacturing",
+          "contact_name": "Taylor",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Manual production reporting process delays visibility into daily production numbers for leadership.",
+          "current_process": "Supervisors fill out spreadsheets, operations consolidates them each morning, leadership doesn't see yesterday's numbers until noon.",
+          "current_systems": [
+            "Microsoft 365",
+            "SQL Server"
+          ],
+          "pain_points": [
+            "Manual spreadsheet-based reporting",
+            "Delayed consolidation of data by operations",
+            "Leadership lacks same-day visibility into production numbers"
+          ],
+          "desired_outcomes": [
+            "Near-real-time production reporting"
+          ],
+          "service_category": "automation",
+          "users_or_teams_affected": [
+            "40 supervisors",
+            "Operations team",
+            "Leadership"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": "Desired within the next three months",
+          "timeline": "Next three months",
+          "budget_context": null,
+          "decision_process": "Taylor is leading the project; COO will approve final budget.",
+          "qualification_score": 72,
+          "missing_information": [
+            "Specific business consequences of delayed reporting (e.g., decisions affected)",
+            "Budget range",
+            "Detailed reporting requirements or KPIs needed"
+          ]
+        }
+      },
+      "latency_ms": 12590.548459003912,
+      "estimated_cost_usd": 0.017496,
+      "automatic_score": {
+        "business_understanding": 8.75,
+        "discovery_efficiency": 10.0,
+        "state_accuracy": 5.0,
+        "latency": 0.0,
+        "cost": 1.5,
+        "total": 25.25,
+        "max_score": 60,
+        "notes": [
+          "Service mismatch: expected one of ['mixed'], received automation.",
+          "Captured 7/8 expected discovery fields.",
+          "Expected discovery to stop, but response asked 1 question(s).",
+          "Completion mismatch: expected True, received False.",
+          "Next-step mismatch: expected book_discovery_call, received continue_discovery."
+        ]
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "fit-001",
+      "scenario_title": "Clearly Outside Core Services",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "response": {
+        "reply": "Thanks for reaching out, Jordan! Logo design and book illustration work is outside what Paradigm Ra offers\u2014we focus on business technology like websites, software, automation, and systems integration. I'd suggest connecting with a graphic designer or illustrator who specializes in that kind of creative work. Wishing you the best with the children's book!",
+        "stage": "complete",
+        "complete": true,
+        "recommended_next_step": "not_a_fit",
+        "state": {
+          "company_name": "Jordan Lane Photography",
+          "contact_name": "Jordan",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Requesting logo design and children's book illustrations",
+          "current_process": null,
+          "current_systems": [],
+          "pain_points": [],
+          "desired_outcomes": [
+            "New logo",
+            "Illustrations for a children's book"
+          ],
+          "service_category": "unknown",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [
+            "No website needed",
+            "No software needed"
+          ],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 10,
+          "missing_information": []
+        }
+      },
+      "latency_ms": 5688.975208002375,
+      "estimated_cost_usd": 0.01073,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 1.0,
+        "cost": 1.5,
+        "total": 57.5,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "integration-001",
+      "scenario_title": "System Integration Without Enough Context",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "response": {
+        "reply": "Thanks, Morgan \u2014 that kind of duplicate entry between CRM and accounting is a common friction point. Which teams are most affected by this, and do you know roughly how often the double entry happens (e.g., every new customer, every order)?",
+        "stage": "impact",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Evergreen Health Products",
+          "contact_name": "Morgan",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "CRM and accounting platform do not communicate, causing customer information to be entered twice.",
+          "current_process": "Customer information is manually entered separately into both the CRM and the accounting platform.",
+          "current_systems": [
+            "CRM",
+            "accounting platform"
+          ],
+          "pain_points": [
+            "Duplicate manual entry of customer information across CRM and accounting systems"
+          ],
+          "desired_outcomes": [
+            "CRM and accounting platform to communicate/integrate"
+          ],
+          "service_category": "integrations",
+          "users_or_teams_affected": [],
+          "integrations_needed": [
+            "CRM to accounting platform integration"
+          ],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 35,
+          "missing_information": [
+            "Which teams are affected by the duplicate entry",
+            "Frequency or volume of duplicate entry",
+            "Business impact of the duplicate entry (time lost, errors, etc.)",
+            "Names of specific CRM and accounting platforms in use",
+            "Timeline or urgency for resolving this"
+          ]
+        }
+      },
+      "latency_ms": 11069.022832991323,
+      "estimated_cost_usd": 0.016252,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 0.0,
+        "cost": 1.5,
+        "total": 56.5,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "advisory-001",
+      "scenario_title": "We Know Something Is Broken",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "response": {
+        "reply": "That's a common growing pain\u2014thanks for the context, Renee. Which teams or functions feel the disconnect most right now (e.g., operations, finance, sales), and what tools are they each relying on?",
+        "stage": "systems",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Harbor Property Group",
+          "contact_name": "Renee",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Fragmented technology environment across teams following rapid company growth, with uncertainty about which systems should be replaced versus integrated.",
+          "current_process": null,
+          "current_systems": [],
+          "pain_points": [
+            "Different teams use different tools",
+            "Unclear which systems should be replaced versus connected"
+          ],
+          "desired_outcomes": [],
+          "service_category": "advisory",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 35,
+          "missing_information": [
+            "Which specific teams/tools are involved",
+            "Business impact of the fragmentation",
+            "Desired outcome or scope of consolidation",
+            "Timeline or urgency"
+          ]
+        }
+      },
+      "latency_ms": 9656.917957996484,
+      "estimated_cost_usd": 0.013952,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 0.0,
+        "cost": 1.5,
+        "total": 56.5,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    }
+  ],
+  "automatic_average": 52.475,
+  "reviewed_average": null,
+  "prompt_sha256": "a02e8846283da82a61f079490d5ceae682bb2de68d6aad4ded3240c328cbe8c4",
+  "estimated_total_cost_usd": 0.15585599999999997
+}

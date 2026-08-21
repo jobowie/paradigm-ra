@@ -1,0 +1,681 @@
+{
+  "provider": "mistral",
+  "model": "mistral-medium-3-5",
+  "started_at": "2026-08-20T21:25:56.045627+00:00",
+  "completed_at": "2026-08-20T21:26:17.988422+00:00",
+  "cases": [
+    {
+      "scenario_id": "web-001",
+      "scenario_title": "Outdated Safety Supply Website",
+      "provider": "mistral",
+      "model": "mistral-medium-3-5",
+      "response": {
+        "reply": "That sounds like a clear issue with your website\u2019s clarity and user experience. How is this affecting your team\u2019s workload or customer experience today?",
+        "stage": "problem",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Apex Safety Supply",
+          "contact_name": "Marcus",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Outdated website with poor product clarity, leading customers to call instead of self-serving",
+          "current_process": null,
+          "current_systems": [],
+          "pain_points": [
+            "Customers have trouble figuring out what products are available",
+            "Most customers end up calling instead of using the website"
+          ],
+          "desired_outcomes": [],
+          "service_category": "web",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 40,
+          "missing_information": [
+            "Business impact of increased call volume",
+            "Current process for handling customer inquiries",
+            "Desired outcomes for website improvement"
+          ]
+        }
+      },
+      "latency_ms": 1882.8607079922222,
+      "estimated_cost_usd": 0.003009,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 3.0,
+        "cost": 2.0,
+        "total": 60.0,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "automation-001",
+      "scenario_title": "Phone Orders Into QuickBooks",
+      "provider": "mistral",
+      "model": "mistral-medium-3-5",
+      "response": {
+        "reply": "That sounds like a clear opportunity to reduce manual data entry. How many orders do you typically process in a day or week?",
+        "stage": "current_process",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Westline Industrial",
+          "contact_name": "Dana",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Manual order processing workflow with redundant data entry",
+          "current_process": "Customers call in orders, staff writes them down, then someone enters the same order into QuickBooks afterward",
+          "current_systems": [
+            "QuickBooks"
+          ],
+          "pain_points": [
+            "Redundant manual data entry",
+            "Staff time spent writing down and re-entering order information"
+          ],
+          "desired_outcomes": [
+            "Cut down on manual work"
+          ],
+          "service_category": "automation",
+          "users_or_teams_affected": [
+            "Staff handling order intake",
+            "Person entering orders into QuickBooks"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 60,
+          "missing_information": [
+            "Order volume",
+            "Business impact of current process",
+            "Timeline for change",
+            "Decision process"
+          ]
+        }
+      },
+      "latency_ms": 2367.4215829814784,
+      "estimated_cost_usd": 0.0034455,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 3.0,
+        "cost": 2.0,
+        "total": 60.0,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "software-001",
+      "scenario_title": "Legacy SQL Application",
+      "provider": "mistral",
+      "model": "mistral-medium-3-5",
+      "response": {
+        "reply": "That\u2019s a common challenge\u2014modernizing a critical legacy system without risking daily operations. What specific limitations or pain points are you experiencing with the current application?",
+        "stage": "problem",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Northstar Logistics",
+          "contact_name": "Priya",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Need to modernize a 12-year-old internal application without disrupting operations",
+          "current_process": null,
+          "current_systems": [
+            "SQL Server",
+            "internal application (12 years old)"
+          ],
+          "pain_points": [],
+          "desired_outcomes": [],
+          "service_category": "unknown",
+          "users_or_teams_affected": [
+            "several departments"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 40,
+          "missing_information": [
+            "specific limitations or pain points with the current application",
+            "desired outcomes of modernization",
+            "scope of modernization",
+            "business impact of current limitations",
+            "timeline or urgency",
+            "decision process",
+            "budget context",
+            "integrations needed",
+            "requirements for new system",
+            "current process details",
+            "service category confirmation (likely custom_software or advisory)"
+          ]
+        }
+      },
+      "latency_ms": 2843.217458022991,
+      "estimated_cost_usd": 0.003711,
+      "automatic_score": {
+        "business_understanding": 7.5,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 2.0,
+        "cost": 2.0,
+        "total": 46.5,
+        "max_score": 60,
+        "notes": [
+          "Service mismatch: expected one of ['custom_software'], received unknown.",
+          "Captured 3/4 expected discovery fields."
+        ]
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "accounting-001",
+      "scenario_title": "Month-End Spreadsheet Consolidation",
+      "provider": "mistral",
+      "model": "mistral-medium-3-5",
+      "response": {
+        "reply": "That manual process sounds time-consuming. How many locations are sending these spreadsheets each month?",
+        "stage": "current_process",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Beacon Services Group",
+          "contact_name": "Nicole",
+          "website": null,
+          "business_description": null,
+          "primary_problem": null,
+          "current_process": "Each location sends accounting a spreadsheet at month end. Accounting combines them manually before entering totals into the accounting system.",
+          "current_systems": [],
+          "pain_points": [
+            "Manual combination of spreadsheets",
+            "Manual data entry into accounting system"
+          ],
+          "desired_outcomes": [],
+          "service_category": "automation",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 40,
+          "missing_information": [
+            "Number of locations",
+            "Frequency of errors in manual process",
+            "Time spent on manual process",
+            "Accounting system in use"
+          ]
+        }
+      },
+      "latency_ms": 1923.3558750129305,
+      "estimated_cost_usd": 0.002943,
+      "automatic_score": {
+        "business_understanding": 16.666666666666664,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 3.0,
+        "cost": 2.0,
+        "total": 56.666666666666664,
+        "max_score": 60,
+        "notes": [
+          "Captured 2/3 expected discovery fields."
+        ]
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "efficiency-001",
+      "scenario_title": "Do Not Repeat the Timeline Question",
+      "provider": "mistral",
+      "model": "mistral-medium-3-5",
+      "response": {
+        "reply": "How many quotes does your team typically generate in a week?",
+        "stage": "current_process",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Summit Fabrication",
+          "contact_name": "Chris",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "The quoting process takes too long.",
+          "current_process": "Sales emails job details to estimating, then estimating builds every quote manually in Excel.",
+          "current_systems": [
+            "Email",
+            "Excel"
+          ],
+          "pain_points": [
+            "Manual quote building in Excel",
+            "Email-based handoff between sales and estimating"
+          ],
+          "desired_outcomes": [],
+          "service_category": "unknown",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": "Before January.",
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 60,
+          "missing_information": [
+            "Volume of quotes generated",
+            "Business impact of slow quoting",
+            "Desired outcomes beyond speed"
+          ]
+        }
+      },
+      "latency_ms": 2089.728916005697,
+      "estimated_cost_usd": 0.0031995,
+      "automatic_score": {
+        "business_understanding": 10.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 3.0,
+        "cost": 2.0,
+        "total": 50.0,
+        "max_score": 60,
+        "notes": [
+          "Service mismatch: expected one of ['automation'], received unknown."
+        ]
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "efficiency-002",
+      "scenario_title": "Rich First Answer",
+      "provider": "mistral",
+      "model": "mistral-medium-3-5",
+      "response": {
+        "reply": "That\u2019s a clear picture of the current process and what you\u2019d like to achieve. How do you currently handle inventory updates across your four locations when orders come in?",
+        "stage": "current_process",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Metro Distribution",
+          "contact_name": "Alex",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Manual order entry and inventory updates for customer orders placed by phone or email",
+          "current_process": "Customers place orders by phone or email, employees enter them into QuickBooks Enterprise, and inventory gets updated manually",
+          "current_systems": [
+            "QuickBooks Enterprise"
+          ],
+          "pain_points": [
+            "Manual order entry into QuickBooks",
+            "Manual inventory updates"
+          ],
+          "desired_outcomes": [
+            "Enable customers to order online",
+            "Automate order flow into existing systems"
+          ],
+          "service_category": "unknown",
+          "users_or_teams_affected": [
+            "Customers",
+            "Employees"
+          ],
+          "integrations_needed": [
+            "Online ordering system with QuickBooks Enterprise"
+          ],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": "Start this quarter",
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 70,
+          "missing_information": [
+            "How inventory updates are currently handled across four locations",
+            "Specific business impact of manual processes"
+          ]
+        }
+      },
+      "latency_ms": 2395.367291988805,
+      "estimated_cost_usd": 0.00366,
+      "automatic_score": {
+        "business_understanding": 10.0,
+        "discovery_efficiency": 10.0,
+        "state_accuracy": 15.0,
+        "latency": 3.0,
+        "cost": 2.0,
+        "total": 40.0,
+        "max_score": 60,
+        "notes": [
+          "Service mismatch: expected one of ['mixed'], received unknown.",
+          "Multiple unnecessary topics detected: number of locations, order volume."
+        ]
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "completion-001",
+      "scenario_title": "Know When to Stop",
+      "provider": "mistral",
+      "model": "mistral-medium-3-5",
+      "response": {
+        "reply": "That sounds like a clear automation opportunity. What specific outcomes would leadership like to achieve with near-real-time production reporting?",
+        "stage": "desired_outcome",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Crestview Manufacturing",
+          "contact_name": "Taylor",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Manual production reporting process causing delays in leadership visibility",
+          "current_process": "Supervisors fill out spreadsheets, operations consolidates them every morning, leadership sees yesterday's numbers at noon",
+          "current_systems": [
+            "Microsoft 365",
+            "SQL Server"
+          ],
+          "pain_points": [
+            "Manual spreadsheet entry by supervisors",
+            "Daily consolidation by operations team",
+            "Delayed visibility for leadership (noon for previous day's data)"
+          ],
+          "desired_outcomes": [],
+          "service_category": "unknown",
+          "users_or_teams_affected": [
+            "40 supervisors",
+            "operations team",
+            "leadership"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": "within the next three months",
+          "budget_context": null,
+          "decision_process": "Taylor leading the project, COO approves final budget",
+          "qualification_score": 75,
+          "missing_information": [
+            "Specific desired outcomes for leadership",
+            "Current volume/frequency of data being reported",
+            "Any existing reporting tools or dashboards in use"
+          ]
+        }
+      },
+      "latency_ms": 2420.204415975604,
+      "estimated_cost_usd": 0.0037665,
+      "automatic_score": {
+        "business_understanding": 7.5,
+        "discovery_efficiency": 10.0,
+        "state_accuracy": 5.0,
+        "latency": 3.0,
+        "cost": 2.0,
+        "total": 27.5,
+        "max_score": 60,
+        "notes": [
+          "Service mismatch: expected one of ['mixed'], received unknown.",
+          "Captured 6/8 expected discovery fields.",
+          "Expected discovery to stop, but response asked 1 question(s).",
+          "Completion mismatch: expected True, received False.",
+          "Next-step mismatch: expected book_discovery_call, received continue_discovery."
+        ]
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "fit-001",
+      "scenario_title": "Clearly Outside Core Services",
+      "provider": "mistral",
+      "model": "mistral-medium-3-5",
+      "response": {
+        "reply": "Thanks for reaching out, Jordan. It sounds like you're looking for branding and illustration design services, which isn't something we specialize in at Paradigm Ra. We focus on technology solutions like websites, automation, integrations, and custom software.",
+        "stage": "complete",
+        "complete": true,
+        "recommended_next_step": "not_a_fit",
+        "state": {
+          "company_name": "Jordan Lane Photography",
+          "contact_name": "Jordan",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Needs logo design and children's book illustrations",
+          "current_process": null,
+          "current_systems": [],
+          "pain_points": [],
+          "desired_outcomes": [],
+          "service_category": "unknown",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 0,
+          "missing_information": []
+        }
+      },
+      "latency_ms": 1822.0143340004142,
+      "estimated_cost_usd": 0.002739,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 3.0,
+        "cost": 2.0,
+        "total": 60.0,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "integration-001",
+      "scenario_title": "System Integration Without Enough Context",
+      "provider": "mistral",
+      "model": "mistral-medium-3-5",
+      "response": {
+        "reply": "That sounds like a classic integration challenge. What systems are you currently using for CRM and accounting?",
+        "stage": "systems",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Evergreen Health Products",
+          "contact_name": "Morgan",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "CRM and accounting platform do not communicate, leading to duplicate data entry",
+          "current_process": null,
+          "current_systems": [],
+          "pain_points": [
+            "duplicate customer information entry"
+          ],
+          "desired_outcomes": [],
+          "service_category": "integrations",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 40,
+          "missing_information": [
+            "CRM system name",
+            "accounting platform name",
+            "users or teams affected",
+            "business impact",
+            "desired outcomes"
+          ]
+        }
+      },
+      "latency_ms": 1800.2123750047758,
+      "estimated_cost_usd": 0.002829,
+      "automatic_score": {
+        "business_understanding": 16.666666666666664,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 3.0,
+        "cost": 2.0,
+        "total": 56.666666666666664,
+        "max_score": 60,
+        "notes": [
+          "Captured 2/3 expected discovery fields."
+        ]
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "advisory-001",
+      "scenario_title": "We Know Something Is Broken",
+      "provider": "mistral",
+      "model": "mistral-medium-3-5",
+      "response": {
+        "reply": "That sounds like a classic case of fragmented systems creating inefficiency. What\u2019s the biggest operational headache this is causing for Harbor Property Group right now?",
+        "stage": "problem",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Harbor Property Group",
+          "contact_name": "Renee",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Fragmented systems with different teams using different tools, unclear what to replace vs. connect",
+          "current_process": null,
+          "current_systems": [],
+          "pain_points": [
+            "Different teams use different tools",
+            "Unclear what systems should be replaced versus connected"
+          ],
+          "desired_outcomes": [],
+          "service_category": "advisory",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 40,
+          "missing_information": [
+            "Biggest operational headache caused by fragmented systems"
+          ]
+        }
+      },
+      "latency_ms": 1934.296749997884,
+      "estimated_cost_usd": 0.002919,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 3.0,
+        "cost": 2.0,
+        "total": 60.0,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    }
+  ],
+  "automatic_average": 51.733333333333334,
+  "reviewed_average": null,
+  "prompt_sha256": "a02e8846283da82a61f079490d5ceae682bb2de68d6aad4ded3240c328cbe8c4",
+  "estimated_total_cost_usd": 0.03222149999999999
+}

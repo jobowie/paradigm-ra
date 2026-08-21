@@ -1,0 +1,57 @@
+{
+  "provider": "openai",
+  "model": "gpt-5.6-terra",
+  "scenario_id": "web-001",
+  "scenario_title": "Outdated Safety Supply Website",
+  "latency_ms": 4157.253249984933,
+  "input_tokens": 1681,
+  "output_tokens": 249,
+  "response": {
+    "reply": "It sounds like the site isn\u2019t making your product range easy for customers to understand, so they\u2019re calling instead. What would you most want customers to be able to find or do on the website without needing to call?",
+    "stage": "desired_outcome",
+    "complete": false,
+    "recommended_next_step": "continue_discovery",
+    "state": {
+      "company_name": "Apex Safety Supply",
+      "contact_name": "Marcus",
+      "website": null,
+      "business_description": null,
+      "primary_problem": "The website is outdated and makes it difficult for customers to understand what products Apex Safety Supply carries.",
+      "current_process": "Customers often call to determine what products the company carries.",
+      "current_systems": [],
+      "pain_points": [
+        "Outdated website",
+        "Customers have trouble figuring out which products the company carries",
+        "Customers often need to call for product information"
+      ],
+      "desired_outcomes": [],
+      "service_category": "web",
+      "users_or_teams_affected": [
+        "Customers"
+      ],
+      "integrations_needed": [],
+      "requirements": [],
+      "business_impact": null,
+      "urgency": null,
+      "timeline": null,
+      "budget_context": null,
+      "decision_process": null,
+      "qualification_score": 38,
+      "missing_information": [
+        "Desired customer experience and website outcome",
+        "Scope of products or content to organize",
+        "Timeline or urgency"
+      ]
+    }
+  },
+  "automatic_score": {
+    "business_understanding": 20.0,
+    "discovery_efficiency": 20.0,
+    "state_accuracy": 15.0,
+    "latency": 2.0,
+    "cost": 2.0,
+    "total": 59.0,
+    "max_score": 60,
+    "notes": []
+  }
+}

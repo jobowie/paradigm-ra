@@ -8,3 +8,9 @@ netlify
 
 # Local Netlify folder
 .netlify
+
+# TypeScript build cache
+*.tsbuildinfo
+__pycache__/
+*.py[cod]
+deno.lock

@@ -1,0 +1,941 @@
+[
+  {
+    "scenario_id": "web-001",
+    "responses": [
+      {
+        "label": "A",
+        "reply": "It sounds like the site isn\u2019t making your product range easy to understand, so customers are relying on calls. What would you most want customers to be able to find or do on the website without needing to call?",
+        "state": {
+          "company_name": "Apex Safety Supply",
+          "contact_name": "Marcus",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "The outdated website makes it difficult for customers to understand what products Apex Safety Supply carries.",
+          "current_process": "Customers often call to determine what products the company carries.",
+          "current_systems": [],
+          "pain_points": [
+            "Website is outdated",
+            "Customers have trouble figuring out what products the company carries",
+            "Customers often need to call for product information"
+          ],
+          "desired_outcomes": [],
+          "service_category": "web",
+          "users_or_teams_affected": [
+            "Customers"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 38,
+          "missing_information": [
+            "Desired customer experience and key website capabilities",
+            "Current website platform or product/catalog information source, if relevant",
+            "Business impact or priority",
+            "Timeline"
+          ]
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      },
+      {
+        "label": "B",
+        "reply": "That sounds like a clear issue with your website\u2019s clarity and user experience. How is this affecting your team\u2019s workload or customer experience today?",
+        "state": {
+          "company_name": "Apex Safety Supply",
+          "contact_name": "Marcus",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Outdated website with poor product clarity, leading customers to call instead of self-serving",
+          "current_process": null,
+          "current_systems": [],
+          "pain_points": [
+            "Customers have trouble figuring out what products are available",
+            "Most customers end up calling instead of using the website"
+          ],
+          "desired_outcomes": [],
+          "service_category": "web",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 40,
+          "missing_information": [
+            "Business impact of increased call volume",
+            "Current process for handling customer inquiries",
+            "Desired outcomes for website improvement"
+          ]
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      }
+    ]
+  },
+  {
+    "scenario_id": "automation-001",
+    "responses": [
+      {
+        "label": "A",
+        "reply": "Thanks, Dana \u2014 that gives me a clear starting point. What information do your team members capture for each phone order, and where does it come from today (for example, customer records, product/pricing lists, or another system)?",
+        "state": {
+          "company_name": "Westline Industrial",
+          "contact_name": "Dana",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Phone orders are written down and then re-entered into QuickBooks, creating manual work.",
+          "current_process": "Customers call in orders; staff write the orders down; someone later enters the same orders into QuickBooks.",
+          "current_systems": [
+            "QuickBooks"
+          ],
+          "pain_points": [
+            "Manual order-taking on paper or written notes",
+            "Duplicate order entry into QuickBooks"
+          ],
+          "desired_outcomes": [
+            "Reduce manual work involved in processing phone orders"
+          ],
+          "service_category": "automation",
+          "users_or_teams_affected": [
+            "Staff who take and enter customer orders"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 48,
+          "missing_information": [
+            "Order details and source systems used during phone order intake",
+            "Order volume or operational impact",
+            "Desired future workflow",
+            "Timeline or urgency",
+            "Decision process"
+          ]
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      },
+      {
+        "label": "B",
+        "reply": "That sounds like a clear opportunity to reduce manual data entry. How many orders do you typically process in a day or week?",
+        "state": {
+          "company_name": "Westline Industrial",
+          "contact_name": "Dana",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Manual order processing workflow with redundant data entry",
+          "current_process": "Customers call in orders, staff writes them down, then someone enters the same order into QuickBooks afterward",
+          "current_systems": [
+            "QuickBooks"
+          ],
+          "pain_points": [
+            "Redundant manual data entry",
+            "Staff time spent writing down and re-entering order information"
+          ],
+          "desired_outcomes": [
+            "Cut down on manual work"
+          ],
+          "service_category": "automation",
+          "users_or_teams_affected": [
+            "Staff handling order intake",
+            "Person entering orders into QuickBooks"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 60,
+          "missing_information": [
+            "Order volume",
+            "Business impact of current process",
+            "Timeline for change",
+            "Decision process"
+          ]
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      }
+    ]
+  },
+  {
+    "scenario_id": "software-001",
+    "responses": [
+      {
+        "label": "A",
+        "reply": "That\u2019s a common challenge\u2014modernizing a critical legacy system without risking daily operations. What specific limitations or pain points are you experiencing with the current application?",
+        "state": {
+          "company_name": "Northstar Logistics",
+          "contact_name": "Priya",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Need to modernize a 12-year-old internal application without disrupting operations",
+          "current_process": null,
+          "current_systems": [
+            "SQL Server",
+            "internal application (12 years old)"
+          ],
+          "pain_points": [],
+          "desired_outcomes": [],
+          "service_category": "unknown",
+          "users_or_teams_affected": [
+            "several departments"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 40,
+          "missing_information": [
+            "specific limitations or pain points with the current application",
+            "desired outcomes of modernization",
+            "scope of modernization",
+            "business impact of current limitations",
+            "timeline or urgency",
+            "decision process",
+            "budget context",
+            "integrations needed",
+            "requirements for new system",
+            "current process details",
+            "service category confirmation (likely custom_software or advisory)"
+          ]
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      },
+      {
+        "label": "B",
+        "reply": "Modernizing a business-critical application without disrupting daily operations is exactly the kind of transition that benefits from careful discovery. What are the main problems with the application today\u2014such as reliability, usability, reporting, maintenance, or difficulty making changes?",
+        "state": {
+          "company_name": "Northstar Logistics",
+          "contact_name": "Priya",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "A 12-year-old internal application needs modernization without disrupting daily operations.",
+          "current_process": null,
+          "current_systems": [
+            "Internal application",
+            "SQL Server"
+          ],
+          "pain_points": [
+            "The internal application is 12 years old.",
+            "Several departments depend on the application every day.",
+            "Modernization must avoid disrupting operations."
+          ],
+          "desired_outcomes": [
+            "Modernize the internal application without disrupting operations."
+          ],
+          "service_category": "custom_software",
+          "users_or_teams_affected": [
+            "Several departments"
+          ],
+          "integrations_needed": [],
+          "requirements": [
+            "Maintain operational continuity during modernization.",
+            "Application connects to SQL Server."
+          ],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 52,
+          "missing_information": [
+            "Specific limitations or problems with the current application",
+            "Core workflows and departments supported by the application",
+            "Modernization scope and desired end state",
+            "Timeline or urgency",
+            "Decision process"
+          ]
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      }
+    ]
+  },
+  {
+    "scenario_id": "accounting-001",
+    "responses": [
+      {
+        "label": "A",
+        "reply": "Thanks, Nicole \u2014 that\u2019s helpful. What accounting system does your team enter the consolidated totals into?",
+        "state": {
+          "company_name": "Beacon Services Group",
+          "contact_name": "Nicole",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Month-end accounting data from each location is consolidated and entered manually into the accounting system.",
+          "current_process": "Each location sends accounting a spreadsheet at month end; accounting manually combines the spreadsheets and enters totals into the accounting system.",
+          "current_systems": [],
+          "pain_points": [
+            "Manual consolidation of location spreadsheets",
+            "Manual entry of consolidated totals into the accounting system"
+          ],
+          "desired_outcomes": [],
+          "service_category": "accounting_solutions",
+          "users_or_teams_affected": [
+            "Accounting",
+            "Each location"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 45,
+          "missing_information": [
+            "Accounting system in use",
+            "Volume and consistency of location spreadsheets",
+            "Desired future-state process",
+            "Business impact of the manual month-end process",
+            "Timeline or urgency"
+          ]
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      },
+      {
+        "label": "B",
+        "reply": "That manual process sounds time-consuming. How many locations are sending these spreadsheets each month?",
+        "state": {
+          "company_name": "Beacon Services Group",
+          "contact_name": "Nicole",
+          "website": null,
+          "business_description": null,
+          "primary_problem": null,
+          "current_process": "Each location sends accounting a spreadsheet at month end. Accounting combines them manually before entering totals into the accounting system.",
+          "current_systems": [],
+          "pain_points": [
+            "Manual combination of spreadsheets",
+            "Manual data entry into accounting system"
+          ],
+          "desired_outcomes": [],
+          "service_category": "automation",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 40,
+          "missing_information": [
+            "Number of locations",
+            "Frequency of errors in manual process",
+            "Time spent on manual process",
+            "Accounting system in use"
+          ]
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      }
+    ]
+  },
+  {
+    "scenario_id": "efficiency-001",
+    "responses": [
+      {
+        "label": "A",
+        "reply": "Thanks\u2014that gives me a clear picture of the handoff. What would a better quoting process need to achieve for your team: faster turnaround, less manual work, fewer errors, or something else?",
+        "state": {
+          "company_name": "Summit Fabrication",
+          "contact_name": "Chris",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "The quoting process takes too long.",
+          "current_process": "Sales emails job details to estimating, and estimating builds each quote manually in Excel.",
+          "current_systems": [
+            "Email",
+            "Excel"
+          ],
+          "pain_points": [
+            "Quoting process takes too long.",
+            "Estimating builds every quote manually in Excel."
+          ],
+          "desired_outcomes": [],
+          "service_category": "automation",
+          "users_or_teams_affected": [
+            "Sales",
+            "Estimating"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": "Before January.",
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 55,
+          "missing_information": [
+            "Desired outcome and success criteria for the quoting process",
+            "Business impact of slow quote turnaround",
+            "Scope, such as quote volume and types of jobs",
+            "Decision process"
+          ]
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      },
+      {
+        "label": "B",
+        "reply": "How many quotes does your team typically generate in a week?",
+        "state": {
+          "company_name": "Summit Fabrication",
+          "contact_name": "Chris",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "The quoting process takes too long.",
+          "current_process": "Sales emails job details to estimating, then estimating builds every quote manually in Excel.",
+          "current_systems": [
+            "Email",
+            "Excel"
+          ],
+          "pain_points": [
+            "Manual quote building in Excel",
+            "Email-based handoff between sales and estimating"
+          ],
+          "desired_outcomes": [],
+          "service_category": "unknown",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": "Before January.",
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 60,
+          "missing_information": [
+            "Volume of quotes generated",
+            "Business impact of slow quoting",
+            "Desired outcomes beyond speed"
+          ]
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      }
+    ]
+  },
+  {
+    "scenario_id": "efficiency-002",
+    "responses": [
+      {
+        "label": "A",
+        "reply": "Thanks, Alex \u2014 that\u2019s helpful context. With 150 daily orders across four locations, the key next step is understanding what needs to happen once an online order is submitted. Which systems besides QuickBooks Enterprise need to receive or update order and inventory information?",
+        "state": {
+          "company_name": "Metro Distribution",
+          "contact_name": "Alex",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Customers currently place orders by phone or email, requiring employees to enter orders into QuickBooks Enterprise and update inventory manually.",
+          "current_process": "Customers place orders by phone or email; employees enter orders into QuickBooks Enterprise and manually update inventory.",
+          "current_systems": [
+            "QuickBooks Enterprise"
+          ],
+          "pain_points": [
+            "Manual order entry into QuickBooks Enterprise",
+            "Manual inventory updates"
+          ],
+          "desired_outcomes": [
+            "Enable customers to place orders online",
+            "Have online orders flow into existing systems"
+          ],
+          "service_category": "mixed",
+          "users_or_teams_affected": [
+            "Employees handling order entry and inventory updates",
+            "Customers"
+          ],
+          "integrations_needed": [
+            "Online ordering solution integrated with QuickBooks Enterprise",
+            "Inventory updates from online orders"
+          ],
+          "requirements": [
+            "Support online customer ordering",
+            "Integrate online orders with existing systems",
+            "Support operations across four locations",
+            "Handle approximately 150 orders per day"
+          ],
+          "business_impact": null,
+          "urgency": "Would like to start this quarter.",
+          "timeline": "This quarter",
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 72,
+          "missing_information": [
+            "Other systems involved in order processing or inventory management",
+            "Desired online ordering workflow and customer experience",
+            "Decision process and stakeholders"
+          ]
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      },
+      {
+        "label": "B",
+        "reply": "That\u2019s a clear picture of the current process and what you\u2019d like to achieve. How do you currently handle inventory updates across your four locations when orders come in?",
+        "state": {
+          "company_name": "Metro Distribution",
+          "contact_name": "Alex",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Manual order entry and inventory updates for customer orders placed by phone or email",
+          "current_process": "Customers place orders by phone or email, employees enter them into QuickBooks Enterprise, and inventory gets updated manually",
+          "current_systems": [
+            "QuickBooks Enterprise"
+          ],
+          "pain_points": [
+            "Manual order entry into QuickBooks",
+            "Manual inventory updates"
+          ],
+          "desired_outcomes": [
+            "Enable customers to order online",
+            "Automate order flow into existing systems"
+          ],
+          "service_category": "unknown",
+          "users_or_teams_affected": [
+            "Customers",
+            "Employees"
+          ],
+          "integrations_needed": [
+            "Online ordering system with QuickBooks Enterprise"
+          ],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": "Start this quarter",
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 70,
+          "missing_information": [
+            "How inventory updates are currently handled across four locations",
+            "Specific business impact of manual processes"
+          ]
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      }
+    ]
+  },
+  {
+    "scenario_id": "completion-001",
+    "responses": [
+      {
+        "label": "A",
+        "reply": "Thanks, Taylor\u2014this is helpful context. With 40 supervisors involved and a three-month target, it sounds like a good fit for a discovery call. One key question before we meet: what information do supervisors currently enter in the spreadsheets, and where does that production data originate?",
+        "state": {
+          "company_name": "Crestview Manufacturing",
+          "contact_name": "Taylor",
+          "website": null,
+          "business_description": "Manufacturing company",
+          "primary_problem": "Manual production reporting process delays visibility into production numbers.",
+          "current_process": "Approximately 40 supervisors fill out spreadsheets; operations consolidates them each morning; leadership receives the prior day's numbers around noon.",
+          "current_systems": [
+            "Microsoft 365",
+            "SQL Server",
+            "Spreadsheets"
+          ],
+          "pain_points": [
+            "Production reporting is manual",
+            "Operations must consolidate supervisor spreadsheets each morning",
+            "Leadership does not see yesterday's production numbers until noon"
+          ],
+          "desired_outcomes": [
+            "Near-real-time production reporting"
+          ],
+          "service_category": "automation",
+          "users_or_teams_affected": [
+            "Approximately 40 supervisors",
+            "Operations",
+            "Leadership"
+          ],
+          "integrations_needed": [
+            "Microsoft 365",
+            "SQL Server"
+          ],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": "Wants near-real-time reporting within the next three months.",
+          "timeline": "Within the next three months",
+          "budget_context": null,
+          "decision_process": "Taylor is leading the project; the COO will approve the final budget.",
+          "qualification_score": 80,
+          "missing_information": [
+            "Production data fields currently captured in spreadsheets",
+            "Source(s) of production data",
+            "Scope of reporting, dashboards, and users who need access"
+          ]
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      },
+      {
+        "label": "B",
+        "reply": "That sounds like a clear automation opportunity. What specific outcomes would leadership like to achieve with near-real-time production reporting?",
+        "state": {
+          "company_name": "Crestview Manufacturing",
+          "contact_name": "Taylor",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Manual production reporting process causing delays in leadership visibility",
+          "current_process": "Supervisors fill out spreadsheets, operations consolidates them every morning, leadership sees yesterday's numbers at noon",
+          "current_systems": [
+            "Microsoft 365",
+            "SQL Server"
+          ],
+          "pain_points": [
+            "Manual spreadsheet entry by supervisors",
+            "Daily consolidation by operations team",
+            "Delayed visibility for leadership (noon for previous day's data)"
+          ],
+          "desired_outcomes": [],
+          "service_category": "unknown",
+          "users_or_teams_affected": [
+            "40 supervisors",
+            "operations team",
+            "leadership"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": "within the next three months",
+          "budget_context": null,
+          "decision_process": "Taylor leading the project, COO approves final budget",
+          "qualification_score": 75,
+          "missing_information": [
+            "Specific desired outcomes for leadership",
+            "Current volume/frequency of data being reported",
+            "Any existing reporting tools or dashboards in use"
+          ]
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      }
+    ]
+  },
+  {
+    "scenario_id": "fit-001",
+    "responses": [
+      {
+        "label": "A",
+        "reply": "Thanks for reaching out, Jordan. Logo design and children\u2019s-book illustration aren\u2019t services Paradigm Ra provides, so we\u2019re not the right fit for this project. I hope you find a great branding designer and illustrator.",
+        "state": {
+          "company_name": "Jordan Lane Photography",
+          "contact_name": "Jordan",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Seeking a new logo design and illustrations for a children's book, without a website or software need.",
+          "current_process": null,
+          "current_systems": [],
+          "pain_points": [],
+          "desired_outcomes": [
+            "New logo design",
+            "Illustrations for a children's book"
+          ],
+          "service_category": "unknown",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [
+            "Logo design",
+            "Children's-book illustrations",
+            "No website or software needed"
+          ],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 15,
+          "missing_information": []
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      },
+      {
+        "label": "B",
+        "reply": "Thanks for reaching out, Jordan. It sounds like you're looking for branding and illustration design services, which isn't something we specialize in at Paradigm Ra. We focus on technology solutions like websites, automation, integrations, and custom software.",
+        "state": {
+          "company_name": "Jordan Lane Photography",
+          "contact_name": "Jordan",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Needs logo design and children's book illustrations",
+          "current_process": null,
+          "current_systems": [],
+          "pain_points": [],
+          "desired_outcomes": [],
+          "service_category": "unknown",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 0,
+          "missing_information": []
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      }
+    ]
+  },
+  {
+    "scenario_id": "integration-001",
+    "responses": [
+      {
+        "label": "A",
+        "reply": "That sounds like a classic integration challenge. What systems are you currently using for CRM and accounting?",
+        "state": {
+          "company_name": "Evergreen Health Products",
+          "contact_name": "Morgan",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "CRM and accounting platform do not communicate, leading to duplicate data entry",
+          "current_process": null,
+          "current_systems": [],
+          "pain_points": [
+            "duplicate customer information entry"
+          ],
+          "desired_outcomes": [],
+          "service_category": "integrations",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 40,
+          "missing_information": [
+            "CRM system name",
+            "accounting platform name",
+            "users or teams affected",
+            "business impact",
+            "desired outcomes"
+          ]
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      },
+      {
+        "label": "B",
+        "reply": "Understood\u2014what CRM and accounting platform are you using today?",
+        "state": {
+          "company_name": "Evergreen Health Products",
+          "contact_name": "Morgan",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Customer information is being entered twice because the CRM and accounting platform do not communicate with each other.",
+          "current_process": "People enter the same customer information separately in the CRM and accounting platform.",
+          "current_systems": [],
+          "pain_points": [
+            "Duplicate customer-data entry across the CRM and accounting platform."
+          ],
+          "desired_outcomes": [
+            "Enable the CRM and accounting platform to communicate with each other."
+          ],
+          "service_category": "integrations",
+          "users_or_teams_affected": [],
+          "integrations_needed": [
+            "CRM and accounting platform integration"
+          ],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 45,
+          "missing_information": [
+            "CRM platform",
+            "Accounting platform",
+            "Teams or users affected",
+            "Business impact of duplicate entry",
+            "Timeline or urgency"
+          ]
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      }
+    ]
+  },
+  {
+    "scenario_id": "advisory-001",
+    "responses": [
+      {
+        "label": "A",
+        "reply": "It sounds like the immediate challenge is getting clarity on a fragmented toolset before deciding what to replace or integrate. Which business process is causing the most trouble for your teams right now?",
+        "state": {
+          "company_name": "Harbor Property Group",
+          "contact_name": "Renee",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Rapid growth has left teams using fragmented systems, with uncertainty about which tools should be replaced versus integrated.",
+          "current_process": null,
+          "current_systems": [],
+          "pain_points": [
+            "Different teams use different tools",
+            "Unclear which systems should be replaced versus connected"
+          ],
+          "desired_outcomes": [
+            "Clarify which systems should be replaced and which should be integrated"
+          ],
+          "service_category": "advisory",
+          "users_or_teams_affected": [
+            "Multiple teams"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 38,
+          "missing_information": [
+            "Business processes most affected by the fragmented systems",
+            "Current tools or systems in use",
+            "Operational impact of the current environment",
+            "Desired future-state outcomes and priorities",
+            "Timeline and decision process"
+          ]
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      },
+      {
+        "label": "B",
+        "reply": "That sounds like a classic case of fragmented systems creating inefficiency. What\u2019s the biggest operational headache this is causing for Harbor Property Group right now?",
+        "state": {
+          "company_name": "Harbor Property Group",
+          "contact_name": "Renee",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Fragmented systems with different teams using different tools, unclear what to replace vs. connect",
+          "current_process": null,
+          "current_systems": [],
+          "pain_points": [
+            "Different teams use different tools",
+            "Unclear what systems should be replaced versus connected"
+          ],
+          "desired_outcomes": [],
+          "service_category": "advisory",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 40,
+          "missing_information": [
+            "Biggest operational headache caused by fragmented systems"
+          ]
+        },
+        "human_score": {
+          "next_question_quality": null,
+          "consultative_tone": null,
+          "experience_continuity": null
+        },
+        "review_notes": ""
+      }
+    ]
+  }
+]

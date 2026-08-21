@@ -1,0 +1,152 @@
+[
+  {
+    "scenario_id": "web-001",
+    "responses": [
+      {
+        "label": "A",
+        "provider": "openai",
+        "automatic_score": 59.0
+      },
+      {
+        "label": "B",
+        "provider": "mistral",
+        "automatic_score": 60.0
+      }
+    ]
+  },
+  {
+    "scenario_id": "automation-001",
+    "responses": [
+      {
+        "label": "A",
+        "provider": "openai",
+        "automatic_score": 59.0
+      },
+      {
+        "label": "B",
+        "provider": "mistral",
+        "automatic_score": 60.0
+      }
+    ]
+  },
+  {
+    "scenario_id": "software-001",
+    "responses": [
+      {
+        "label": "A",
+        "provider": "mistral",
+        "automatic_score": 46.5
+      },
+      {
+        "label": "B",
+        "provider": "openai",
+        "automatic_score": 59.0
+      }
+    ]
+  },
+  {
+    "scenario_id": "accounting-001",
+    "responses": [
+      {
+        "label": "A",
+        "provider": "openai",
+        "automatic_score": 49.0
+      },
+      {
+        "label": "B",
+        "provider": "mistral",
+        "automatic_score": 56.666666666666664
+      }
+    ]
+  },
+  {
+    "scenario_id": "efficiency-001",
+    "responses": [
+      {
+        "label": "A",
+        "provider": "openai",
+        "automatic_score": 58.0
+      },
+      {
+        "label": "B",
+        "provider": "mistral",
+        "automatic_score": 50.0
+      }
+    ]
+  },
+  {
+    "scenario_id": "efficiency-002",
+    "responses": [
+      {
+        "label": "A",
+        "provider": "openai",
+        "automatic_score": 49.0
+      },
+      {
+        "label": "B",
+        "provider": "mistral",
+        "automatic_score": 40.0
+      }
+    ]
+  },
+  {
+    "scenario_id": "completion-001",
+    "responses": [
+      {
+        "label": "A",
+        "provider": "openai",
+        "automatic_score": 27.75
+      },
+      {
+        "label": "B",
+        "provider": "mistral",
+        "automatic_score": 27.5
+      }
+    ]
+  },
+  {
+    "scenario_id": "fit-001",
+    "responses": [
+      {
+        "label": "A",
+        "provider": "openai",
+        "automatic_score": 59.0
+      },
+      {
+        "label": "B",
+        "provider": "mistral",
+        "automatic_score": 60.0
+      }
+    ]
+  },
+  {
+    "scenario_id": "integration-001",
+    "responses": [
+      {
+        "label": "A",
+        "provider": "mistral",
+        "automatic_score": 56.666666666666664
+      },
+      {
+        "label": "B",
+        "provider": "openai",
+        "automatic_score": 59.0
+      }
+    ]
+  },
+  {
+    "scenario_id": "advisory-001",
+    "responses": [
+      {
+        "label": "A",
+        "provider": "openai",
+        "automatic_score": 59.0
+      },
+      {
+        "label": "B",
+        "provider": "mistral",
+        "automatic_score": 60.0
+      }
+    ]
+  }
+]

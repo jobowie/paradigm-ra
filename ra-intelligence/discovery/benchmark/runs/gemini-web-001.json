@@ -1,0 +1,55 @@
+{
+  "provider": "gemini",
+  "model": "gemini-3.7-flash",
+  "scenario_id": "web-001",
+  "scenario_title": "Outdated Safety Supply Website",
+  "latency_ms": 54428.84183299611,
+  "input_tokens": 1162,
+  "output_tokens": 364,
+  "response": {
+    "reply": "Thanks for sharing that, Marcus. When customers visit the new website, are you aiming for a clear online catalog where they can browse and submit inquiries, or are you looking to support full e-commerce ordering?",
+    "stage": "scope",
+    "complete": false,
+    "recommended_next_step": "continue_discovery",
+    "state": {
+      "company_name": "Apex Safety Supply",
+      "contact_name": "Marcus",
+      "website": null,
+      "business_description": null,
+      "primary_problem": "The current website is outdated and does not clearly display product offerings, causing customers to call in.",
+      "current_process": "Customers frequently call to ask about product availability because the website is unclear.",
+      "current_systems": [],
+      "pain_points": [
+        "Website is outdated",
+        "Customers have trouble figuring out what products are carried",
+        "Customers rely on phone calls to get product information"
+      ],
+      "desired_outcomes": [],
+      "service_category": "web",
+      "users_or_teams_affected": [],
+      "integrations_needed": [],
+      "requirements": [],
+      "business_impact": null,
+      "urgency": null,
+      "timeline": null,
+      "budget_context": null,
+      "decision_process": null,
+      "qualification_score": 30,
+      "missing_information": [
+        "Catalog vs full e-commerce requirements",
+        "Product catalog size or complexity",
+        "Current website platform"
+      ]
+    }
+  },
+  "automatic_score": {
+    "business_understanding": 20.0,
+    "discovery_efficiency": 20.0,
+    "state_accuracy": 15.0,
+    "latency": 0.0,
+    "cost": 2.0,
+    "total": 57.0,
+    "max_score": 60,
+    "notes": []
+  }
+}

@@ -1,0 +1,417 @@
+{
+  "provider": "gemini",
+  "model": "gemini-3.7-flash",
+  "started_at": "2026-08-20T21:50:08.191952+00:00",
+  "completed_at": "2026-08-20T21:53:28.824936+00:00",
+  "cases": [
+    {
+      "scenario_id": "web-001",
+      "scenario_title": "Outdated Safety Supply Website",
+      "provider": "gemini",
+      "model": "gemini-3.7-flash",
+      "response": {
+        "reply": "Thanks for sharing that, Marcus. To understand the best approach, are you looking for the site to serve as an easy-to-browse product catalog for inquiries and quotes, or are you hoping to enable full online ordering?",
+        "stage": "desired_outcome",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Apex Safety Supply",
+          "contact_name": "Marcus",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "The website is outdated and does not clearly display the products carried, leading customers to call in.",
+          "current_process": "Customers call by phone to figure out what products are available",
+          "current_systems": [],
+          "pain_points": [
+            "Website is outdated",
+            "Customers have trouble figuring out what products are carried",
+            "Most customers end up calling instead of finding product details online"
+          ],
+          "desired_outcomes": [],
+          "service_category": "web",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 30,
+          "missing_information": [
+            "Whether online ordering (e-commerce) or a product catalog/quote request model is needed",
+            "Current catalog size or how product information is managed"
+          ]
+        }
+      },
+      "latency_ms": 27971.02337499382,
+      "estimated_cost_usd": 0.00491775,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 0.0,
+        "cost": 2.0,
+        "total": 57.0,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "automation-001",
+      "scenario_title": "Phone Orders Into QuickBooks",
+      "provider": "gemini",
+      "model": "gemini-3.7-flash",
+      "response": {
+        "reply": "That makes complete sense\u2014re-entering orders by hand creates unnecessary friction and ties up valuable staff time.\n\nAre you looking to give customers a way to place orders directly online (like a portal or order form), or are you primarily focused on streamlining how your team captures and logs inbound phone orders?",
+        "stage": "desired_outcome",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Westline Industrial",
+          "contact_name": "Dana",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Staff manually writes down phoned-in orders and re-keys them into QuickBooks",
+          "current_process": "Customers call in orders, staff writes them down, and someone manually re-enters the orders into QuickBooks",
+          "current_systems": [
+            "QuickBooks"
+          ],
+          "pain_points": [
+            "Manual and duplicate order entry between taking phone notes and entering into QuickBooks"
+          ],
+          "desired_outcomes": [
+            "Cut down on manual order entry work"
+          ],
+          "service_category": "automation",
+          "users_or_teams_affected": [
+            "Order intake / administrative staff"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 45,
+          "missing_information": [
+            "Target ordering channel/interface (online portal vs. internal order capture)",
+            "Order volume or team size"
+          ]
+        }
+      },
+      "latency_ms": 16164.204375003465,
+      "estimated_cost_usd": 0.004764,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 0.0,
+        "cost": 2.0,
+        "total": 57.0,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "software-001",
+      "scenario_title": "Legacy SQL Application",
+      "provider": "gemini",
+      "model": "gemini-3.7-flash",
+      "response": {
+        "reply": "Modernizing a core internal system without causing downtime is a critical undertaking. What key workflows does this application handle today, and what are the main limitations driving the need to modernize it now?",
+        "stage": "problem",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": null,
+          "contact_name": "Priya",
+          "website": null,
+          "business_description": null,
+          "primary_problem": null,
+          "current_process": null,
+          "current_systems": [],
+          "pain_points": [],
+          "desired_outcomes": [],
+          "service_category": "unknown",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 0,
+          "missing_information": []
+        }
+      },
+      "latency_ms": 101863.54241601657,
+      "estimated_cost_usd": 0.002598,
+      "automatic_score": {
+        "business_understanding": 0.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 0.0,
+        "cost": 2.0,
+        "total": 37.0,
+        "max_score": 60,
+        "notes": [
+          "Service mismatch: expected one of ['custom_software'], received unknown.",
+          "Captured 0/4 expected discovery fields."
+        ]
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "accounting-001",
+      "scenario_title": "Month-End Spreadsheet Consolidation",
+      "provider": "gemini",
+      "model": "gemini-3.7-flash",
+      "response": {
+        "reply": "Consolidating multiple spreadsheets by hand at month-end takes considerable time and effort. \n\nWhich accounting system are you currently using?",
+        "stage": "systems",
+        "complete": false,
+        "recommended_next_step": "continue_discovery",
+        "state": {
+          "company_name": "Beacon Services Group",
+          "contact_name": "Nicole",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Accounting manually combines spreadsheets from multiple locations at month-end to enter totals into the accounting system",
+          "current_process": "Each location sends accounting a spreadsheet at month end; accounting manually combines them and enters totals into the accounting system",
+          "current_systems": [
+            "Spreadsheets"
+          ],
+          "pain_points": [
+            "Manual month-end spreadsheet consolidation from each location",
+            "Manual entry of totals into accounting system"
+          ],
+          "desired_outcomes": [],
+          "service_category": "accounting_solutions",
+          "users_or_teams_affected": [
+            "Accounting team",
+            "Location teams"
+          ],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 35,
+          "missing_information": [
+            "Accounting software name",
+            "Number of reporting locations",
+            "Time spent or operational impact on close cycle"
+          ]
+        }
+      },
+      "latency_ms": 18205.147708998993,
+      "estimated_cost_usd": 0.0051015,
+      "automatic_score": {
+        "business_understanding": 10.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 0.0,
+        "cost": 2.0,
+        "total": 47.0,
+        "max_score": 60,
+        "notes": [
+          "Service mismatch: expected one of ['mixed', 'automation'], received accounting_solutions."
+        ]
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "efficiency-001",
+      "scenario_title": "Do Not Repeat the Timeline Question",
+      "provider": "gemini",
+      "model": "gemini-3.7-flash",
+      "response": null,
+      "latency_ms": null,
+      "estimated_cost_usd": null,
+      "automatic_score": null,
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": "Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.7-flash\\nPlease retry in 57.455768436s.', 'code': 'too_many_requests'}}"
+    },
+    {
+      "scenario_id": "efficiency-002",
+      "scenario_title": "Rich First Answer",
+      "provider": "gemini",
+      "model": "gemini-3.7-flash",
+      "response": null,
+      "latency_ms": null,
+      "estimated_cost_usd": null,
+      "automatic_score": null,
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": "Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.7-flash\\nPlease retry in 53.310951008s.', 'code': 'too_many_requests'}}"
+    },
+    {
+      "scenario_id": "completion-001",
+      "scenario_title": "Know When to Stop",
+      "provider": "gemini",
+      "model": "gemini-3.7-flash",
+      "response": null,
+      "latency_ms": null,
+      "estimated_cost_usd": null,
+      "automatic_score": null,
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": "Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.7-flash\\nPlease retry in 42.345859984s.', 'code': 'too_many_requests'}}"
+    },
+    {
+      "scenario_id": "fit-001",
+      "scenario_title": "Clearly Outside Core Services",
+      "provider": "gemini",
+      "model": "gemini-3.7-flash",
+      "response": {
+        "reply": "Thanks for reaching out, Jordan. Paradigm Ra specializes in business technology, custom software, integrations, and web development, so graphic design and book illustration fall outside our focus. We wouldn't be the right partner for this project, but we appreciate your reaching out and wish you all the best with the book!",
+        "stage": "complete",
+        "complete": true,
+        "recommended_next_step": "not_a_fit",
+        "state": {
+          "company_name": null,
+          "contact_name": "Jordan",
+          "website": null,
+          "business_description": null,
+          "primary_problem": "Needs logo design and children's book illustrations; no website or software needed",
+          "current_process": null,
+          "current_systems": [],
+          "pain_points": [],
+          "desired_outcomes": [],
+          "service_category": "unknown",
+          "users_or_teams_affected": [],
+          "integrations_needed": [],
+          "requirements": [],
+          "business_impact": null,
+          "urgency": null,
+          "timeline": null,
+          "budget_context": null,
+          "decision_process": null,
+          "qualification_score": 0,
+          "missing_information": []
+        }
+      },
+      "latency_ms": 2585.1509580097627,
+      "estimated_cost_usd": 0.00236325,
+      "automatic_score": {
+        "business_understanding": 20.0,
+        "discovery_efficiency": 20.0,
+        "state_accuracy": 15.0,
+        "latency": 2.0,
+        "cost": 2.0,
+        "total": 59.0,
+        "max_score": 60,
+        "notes": []
+      },
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": null
+    },
+    {
+      "scenario_id": "integration-001",
+      "scenario_title": "System Integration Without Enough Context",
+      "provider": "gemini",
+      "model": "gemini-3.7-flash",
+      "response": null,
+      "latency_ms": null,
+      "estimated_cost_usd": null,
+      "automatic_score": null,
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": "Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.7-flash\\nPlease retry in 35.080210467s.', 'code': 'too_many_requests'}}"
+    },
+    {
+      "scenario_id": "advisory-001",
+      "scenario_title": "We Know Something Is Broken",
+      "provider": "gemini",
+      "model": "gemini-3.7-flash",
+      "response": null,
+      "latency_ms": null,
+      "estimated_cost_usd": null,
+      "automatic_score": null,
+      "human_score": {
+        "next_question_quality": null,
+        "consultative_tone": null,
+        "experience_continuity": null,
+        "total": null,
+        "max_score": 40
+      },
+      "final_score": null,
+      "error": "Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.7-flash\\nPlease retry in 31.081120236s.', 'code': 'too_many_requests'}}"
+    }
+  ],
+  "automatic_average": 51.4,
+  "reviewed_average": null,
+  "prompt_sha256": "a02e8846283da82a61f079490d5ceae682bb2de68d6aad4ded3240c328cbe8c4",
+  "estimated_total_cost_usd": 0.0197445
+}

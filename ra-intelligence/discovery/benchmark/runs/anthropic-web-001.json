@@ -1,0 +1,58 @@
+{
+  "provider": "anthropic",
+  "model": "claude-sonnet-5",
+  "scenario_id": "web-001",
+  "scenario_title": "Outdated Safety Supply Website",
+  "latency_ms": 11257.391624996671,
+  "input_tokens": 2632,
+  "output_tokens": 736,
+  "response": {
+    "reply": "Thanks for sharing that, Marcus. It sounds like the current site isn't doing a great job showcasing your product catalog, which is pushing people to call instead. What would you most like the new site to help customers do on their own\u2014browse and search products, get pricing, place orders, something else?",
+    "stage": "desired_outcome",
+    "complete": false,
+    "recommended_next_step": "continue_discovery",
+    "state": {
+      "company_name": "Apex Safety Supply",
+      "contact_name": "Marcus",
+      "website": null,
+      "business_description": null,
+      "primary_problem": "Outdated website makes it hard for customers to find products, leading many to call instead of using the site.",
+      "current_process": null,
+      "current_systems": [],
+      "pain_points": [
+        "Outdated website",
+        "Customers have difficulty finding products online",
+        "High volume of phone inquiries"
+      ],
+      "desired_outcomes": [],
+      "service_category": "web",
+      "users_or_teams_affected": [
+        "Customers"
+      ],
+      "integrations_needed": [],
+      "requirements": [],
+      "business_impact": null,
+      "urgency": null,
+      "timeline": null,
+      "budget_context": null,
+      "decision_process": null,
+      "qualification_score": 30,
+      "missing_information": [
+        "Desired outcome for new website",
+        "Current product catalog size/complexity",
+        "Any systems the website needs to integrate with",
+        "Timeline for the project"
+      ]
+    }
+  },
+  "automatic_score": {
+    "business_understanding": 20.0,
+    "discovery_efficiency": 20.0,
+    "state_accuracy": 15.0,
+    "latency": 0.0,
+    "cost": 1.5,
+    "total": 56.5,
+    "max_score": 60,
+    "notes": []
+  }
+}
