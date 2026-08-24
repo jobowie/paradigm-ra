@@ -174,6 +174,15 @@ def discovery_turn(
         else None
     )
 
+    failed_attempt = next(
+        (
+            item
+            for item in result.attempts
+            if not item.success
+        ),
+        None,
+    )
+
     print()
     print("RA FLOW — UAT")
     print("-------------")
@@ -189,6 +198,21 @@ def discovery_turn(
         f"fallback_used:   "
         f"{result.fallback_used}"
     )
+
+    if failed_attempt is not None:
+        print(
+            f"failed_role:     "
+            f"{failed_attempt.role}"
+        )
+        print(
+            f"failed_provider: "
+            f"{failed_attempt.provider}"
+        )
+        print(
+            f"failure:         "
+            f"{failed_attempt.error}"
+        )
+
     print(
         f"readiness:       "
         f"{result.readiness_before.score}"

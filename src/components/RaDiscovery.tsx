@@ -33,6 +33,27 @@ interface TurnResponse {
 }
 
 
+async function readJsonResponse<T>(
+  response: Response,
+  fallbackMessage: string,
+): Promise<T> {
+  const raw = await response.text();
+
+  if (!raw.trim()) {
+    throw new Error(fallbackMessage);
+  }
+
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    throw new Error(fallbackMessage);
+  }
+}
+
+
+const QUESTION_TRANSITION_MS = 200;
+
+
 const INITIAL_QUESTION =
   "What's creating the most friction in the business right now?";
 
@@ -65,6 +86,9 @@ export function RaDiscovery({
   const [loading, setLoading] =
     useState(false);
 
+  const [transitioning, setTransitioning] =
+    useState(false);
+
   const [error, setError] =
     useState<string | null>(null);
 
@@ -91,9 +115,14 @@ export function RaDiscovery({
       );
 
       const body =
-        await response.json();
+      await readJsonResponse<{
+        error?: string;
+      }>(
+        response,
+        "We couldn’t begin the discovery just now. Please try again.",
+      );
 
-      if (!response.ok) {
+    if (!response.ok) {
         throw new Error(
           body.error ??
             "Unable to begin discovery.",
@@ -145,41 +174,69 @@ export function RaDiscovery({
         },
       );
 
-      const body =
-        (await response.json()) as
-          | TurnResponse
-          | { error?: string };
-
-      if (!response.ok) {
-        throw new Error(
-          "error" in body &&
-          body.error
-            ? body.error
-            : "Discovery is temporarily unavailable.",
-        );
-      }
-
-      const result =
-        body as TurnResponse;
-
-      setLastAnswer(answer);
-      setMessage("");
-      setQuestion(result.reply);
-
-      if (result.complete) {
-        setMode("complete");
-        return;
-      }
-
-      setQuestionNumber(
-        (current) => current + 1,
+    const body =
+      await readJsonResponse<
+        TurnResponse | { error?: string }
+      >(
+        response,
+        "We couldn’t continue the discovery just now. Please try again.",
       );
-    } catch (caught) {
-      setError(
-        caught instanceof Error
-          ? caught.message
-          : "Discovery is temporarily unavailable.",
+
+    if (!response.ok) {
+      throw new Error(
+        "We couldn’t continue the discovery just now. Please try again.",
       );
+    }
+
+    const result =
+      body as TurnResponse;
+
+    setTransitioning(true);
+
+    const transitionDelay =
+      window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches
+        ? 0
+        : QUESTION_TRANSITION_MS;
+
+    if (transitionDelay > 0) {
+      await new Promise<void>(
+        (resolve) => {
+          window.setTimeout(
+            resolve,
+            transitionDelay,
+          );
+        },
+      );
+    }
+
+    setLastAnswer(answer);
+    setMessage("");
+
+    if (result.complete) {
+      setTransitioning(false);
+      setMode("complete");
+      return;
+    }
+
+    setQuestion(result.reply);
+
+    setQuestionNumber(
+      (current) => current + 1,
+    );
+
+    window.requestAnimationFrame(
+      () => {
+        setTransitioning(false);
+      },
+    );
+  } catch {
+    setTransitioning(false);
+
+    setError(
+      "We couldn’t continue the discovery just now. Please try again.",
+    );
     } finally {
       setLoading(false);
     }
@@ -202,6 +259,7 @@ export function RaDiscovery({
     setMessage("");
     setLastAnswer(null);
     setQuestionNumber(1);
+  setTransitioning(false);
     setError(null);
   }
 
@@ -405,7 +463,14 @@ export function RaDiscovery({
             </div>
           )}
 
-          <div className="ra-current-question">
+          <div
+          className={`ra-current-question${
+            transitioning
+              ? " is-transitioning"
+              : ""
+          }`}
+          aria-live="polite"
+        >
             <p className="ra-overline">
               CURRENT FOCUS
             </p>
@@ -486,38 +551,27 @@ export function RaDiscovery({
           </p>
 
           <h3>
-            We have enough to
-            work with.
-          </h3>
+          Thanks, {contact.firstName}. We’ll be in touch.
+        </h3>
 
-          <p className="ra-complete-reply">
-            {question}
-          </p>
+        <p className="ra-complete-reply">
+          Someone from the Paradigm Ra team will follow up to discuss
+          what you shared, your priorities, and the best next step.
+        </p>
 
-          <div className="ra-complete-actions">
-            <a
-              className="button button-primary"
-              href={`mailto:${email}?subject=Paradigm%20Ra%20Discovery%20Follow-Up`}
-            >
-              Continue with Paradigm Ra
-              <span>→</span>
-            </a>
+        <div className="ra-complete-actions">
+          <button
+            className="ra-text-button"
+            type="button"
+            onClick={restart}
+          >
+            Start over
+          </button>
+        </div>
 
-            <button
-              className="ra-text-button"
-              type="button"
-              onClick={restart}
-            >
-              Start over
-            </button>
-          </div>
-
-          <p className="ra-private-note">
-            Your discovery stays with
-            Paradigm Ra. Model and routing
-            details are never exposed in
-            this experience.
-          </p>
+        <p className="ra-private-note">
+          Your discovery stays with Paradigm Ra.
+        </p>
         </div>
       )}
     </div>

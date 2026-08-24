@@ -10,8 +10,7 @@ export default function HomePage() {
         <div className="hero-shade" />
         <header className="site-header shell">
           <a className="brand" href="#top" aria-label="Paradigm Ra home">
-            <span className="brand-mark">RA</span>
-            <span>PARADIGM RA</span>
+             <span className="brand-mark">PARADIGM RA</span>
           </a>
           <nav className="nav" aria-label="Primary navigation">
             <a href="#solutions">Solutions</a>

@@ -6,6 +6,15 @@ import {
   saveRaSession,
 } from "@/lib/discovery/server/sessionStore";
 
+import {
+  createCompletedLead,
+} from "@/lib/discovery/server/postDiscovery";
+
+import {
+  notifyCompletedLead,
+} from "@/lib/discovery/server/followUp";
+
+
 
 const COOKIE_NAME = "ra_sid";
 
@@ -229,6 +238,30 @@ export async function POST(
   await saveRaSession(
     session,
   );
+
+  if (
+    ra.complete &&
+    ra.recommended_next_step ===
+      "book_discovery_call"
+  ) {
+    const lead =
+      await createCompletedLead(
+        session,
+      );
+
+    try {
+      await notifyCompletedLead(
+        lead,
+      );
+    } catch (error) {
+      console.error(
+        "Ra post-discovery notification failed.",
+        error instanceof Error
+          ? error.name
+          : "UnknownError",
+      );
+    }
+  }
 
   return NextResponse.json({
     reply: ra.reply,
