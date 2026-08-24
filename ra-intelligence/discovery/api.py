@@ -8,15 +8,16 @@ from fastapi import (
     Header,
     HTTPException,
 )
+
 from pydantic import BaseModel, Field
 
 from discovery.core.orchestrator import (
     RaDiscoveryOrchestrator,
 )
+
 from discovery.models import (
     DiscoveryContact,
     DiscoveryMessage,
-    DiscoveryState,
     DiscoveryTurnInput,
 )
 
@@ -51,6 +52,7 @@ class RaContactInput(BaseModel):
 
 class RaMessageInput(BaseModel):
     role: str
+
     content: str = Field(
         min_length=1,
         max_length=4000,
@@ -84,6 +86,23 @@ def require_internal_token(
         "RA_DISCOVERY_INTERNAL_TOKEN"
     )
 
+    print(
+        "AUTH HEADER LENGTH:",
+        len(authorization) if authorization else 0,
+    )
+
+    print(
+        "AUTH HEADER PREFIX OK:",
+        authorization.startswith("Bearer ")
+        if authorization
+        else False,
+    )
+
+    print(
+        "EXPECTED LENGTH:",
+        len(expected) if expected else 0,
+    )
+
     if not expected:
         raise HTTPException(
             status_code=503,
@@ -111,12 +130,7 @@ def require_internal_token(
             status_code=401,
             detail="Unauthorized.",
         )
-    print(
-    "RA TOKEN CONFIGURED:",
-    bool(expected),
-    "LENGTH:",
-    len(expected) if expected else 0
-    )  
+
 
 @app.get("/health")
 def health() -> dict[str, str]:
@@ -136,6 +150,7 @@ def health() -> dict[str, str]:
 def discovery_turn(
     payload: RaTurnRequest,
 ) -> dict:
+
     history = [
         DiscoveryMessage(
             role=message.role,
@@ -171,8 +186,10 @@ def discovery_turn(
         turn
     )
 
+
     # SERVER-ONLY UAT TELEMETRY.
     # Never returned through the public API contract.
+
     attempt = (
         result.attempts[-1]
         if result.attempts
@@ -188,35 +205,43 @@ def discovery_turn(
         None,
     )
 
+
     print()
     print("RA FLOW — UAT")
     print("-------------")
+
     print(
         f"planned_role:    "
         f"{result.planned_role}"
     )
+
     print(
         f"provider_used:   "
         f"{result.provider_used or 'none'}"
     )
+
     print(
         f"fallback_used:   "
         f"{result.fallback_used}"
     )
+
 
     if failed_attempt is not None:
         print(
             f"failed_role:     "
             f"{failed_attempt.role}"
         )
+
         print(
             f"failed_provider: "
             f"{failed_attempt.provider}"
         )
+
         print(
             f"failure:         "
             f"{failed_attempt.error}"
         )
+
 
     print(
         f"readiness:       "
@@ -224,26 +249,32 @@ def discovery_turn(
         f" -> "
         f"{result.readiness_after.score}"
     )
+
     print(
         f"complete:        "
         f"{result.response.complete}"
     )
+
 
     if attempt is not None:
         print(
             f"latency_ms:      "
             f"{attempt.latency_ms}"
         )
+
         print(
             f"estimated_cost:  "
             f"{attempt.estimated_cost_usd}"
         )
 
+
     print(
         f"next_step:       "
         f"{result.response.recommended_next_step}"
     )
+
     print()
+
 
     # PUBLIC CONTRACT:
     # Deliberately expose only Ra's authorized
@@ -254,4 +285,5 @@ def discovery_turn(
     # No fallback metadata.
     # No token usage.
     # No provider cost.
+
     return result.response.model_dump()
