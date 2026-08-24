@@ -111,7 +111,12 @@ def require_internal_token(
             status_code=401,
             detail="Unauthorized.",
         )
-
+    print(
+    "RA TOKEN CONFIGURED:",
+    bool(expected),
+    "LENGTH:",
+    len(expected) if expected else 0
+    )  
 
 @app.get("/health")
 def health() -> dict[str, str]:
