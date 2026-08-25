@@ -85,24 +85,7 @@ def require_internal_token(
     expected = os.getenv(
         "RA_DISCOVERY_INTERNAL_TOKEN"
     )
-
-    print(
-        "AUTH HEADER LENGTH:",
-        len(authorization) if authorization else 0,
-    )
-
-    print(
-        "AUTH HEADER PREFIX OK:",
-        authorization.startswith("Bearer ")
-        if authorization
-        else False,
-    )
-
-    print(
-        "EXPECTED LENGTH:",
-        len(expected) if expected else 0,
-    )
-
+    
     if not expected:
         raise HTTPException(
             status_code=503,
