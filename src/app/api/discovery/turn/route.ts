@@ -239,16 +239,15 @@ export async function POST(
     session,
   );
 
-  if (
-    ra.complete &&
-    ra.recommended_next_step ===
-      "book_discovery_call"
-  ) {
-    const lead =
-      await createCompletedLead(
-        session,
-      );
+  if (ra.complete) {
+  const {
+    lead,
+    created,
+  } = await createCompletedLead(
+    session,
+  );
 
+  if (created) {
     try {
       await notifyCompletedLead(
         lead,
@@ -262,13 +261,14 @@ export async function POST(
       );
     }
   }
+}
 
-  return NextResponse.json({
-    reply: ra.reply,
-    stage: ra.stage,
-    complete: ra.complete,
+return NextResponse.json({
+  reply: ra.reply,
+  stage: ra.stage,
+  complete: ra.complete,
 
-    recommendedNextStep:
-      ra.recommended_next_step,
-  });
+  recommendedNextStep:
+    ra.recommended_next_step,
+});
 }

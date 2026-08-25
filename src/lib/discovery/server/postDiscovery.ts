@@ -16,6 +16,12 @@ export type LeadStatus =
   | "lost";
 
 
+export type RecommendedNextStep =
+  NonNullable<
+    RaSession["recommendedNextStep"]
+  >;
+
+
 export interface DiscoveryBrief {
   primaryProblem: unknown;
   currentProcess: unknown;
@@ -23,6 +29,11 @@ export interface DiscoveryBrief {
   painPoints: unknown;
   desiredOutcomes: unknown;
   businessImpact: unknown;
+
+  businessDescription: unknown;
+  usersOrTeamsAffected: unknown;
+  budgetContext: unknown;
+
   urgency: unknown;
   timeline: unknown;
   serviceCategory: unknown;
@@ -46,11 +57,20 @@ export interface CompletedLead {
 
   status: LeadStatus;
 
+  recommendedNextStep:
+    RecommendedNextStep | null;
+
   brief: DiscoveryBrief;
 
   completedAt: string;
   createdAt: string;
   updatedAt: string;
+}
+
+
+export interface CompletedLeadResult {
+  lead: CompletedLead;
+  created: boolean;
 }
 
 
@@ -79,31 +99,76 @@ function buildBrief(
 ): DiscoveryBrief {
   return {
     primaryProblem:
-      readState(state, "primary_problem"),
+      readState(
+        state,
+        "primary_problem",
+      ),
 
     currentProcess:
-      readState(state, "current_process"),
+      readState(
+        state,
+        "current_process",
+      ),
 
     currentSystems:
-      readState(state, "current_systems"),
+      readState(
+        state,
+        "current_systems",
+      ),
 
     painPoints:
-      readState(state, "pain_points"),
+      readState(
+        state,
+        "pain_points",
+      ),
 
     desiredOutcomes:
-      readState(state, "desired_outcomes"),
+      readState(
+        state,
+        "desired_outcomes",
+      ),
 
     businessImpact:
-      readState(state, "business_impact"),
+      readState(
+        state,
+        "business_impact",
+      ),
+
+    businessDescription:
+      readState(
+        state,
+        "business_description",
+      ),
+
+    usersOrTeamsAffected:
+      readState(
+        state,
+        "users_or_teams_affected",
+      ),
+
+    budgetContext:
+      readState(
+        state,
+        "budget_context",
+      ),
 
     urgency:
-      readState(state, "urgency"),
+      readState(
+        state,
+        "urgency",
+      ),
 
     timeline:
-      readState(state, "timeline"),
+      readState(
+        state,
+        "timeline",
+      ),
 
     serviceCategory:
-      readState(state, "service_category"),
+      readState(
+        state,
+        "service_category",
+      ),
 
     integrationsNeeded:
       readState(
@@ -112,10 +177,16 @@ function buildBrief(
       ),
 
     requirements:
-      readState(state, "requirements"),
+      readState(
+        state,
+        "requirements",
+      ),
 
     decisionProcess:
-      readState(state, "decision_process"),
+      readState(
+        state,
+        "decision_process",
+      ),
 
     missingInformation:
       readState(
@@ -134,21 +205,8 @@ function buildBrief(
 
 export async function createCompletedLead(
   session: RaSession,
-): Promise<CompletedLead> {
+): Promise<CompletedLeadResult> {
   const leadStore = store();
-
-  const existing =
-    await leadStore.get(
-      session.id,
-      {
-        type: "json",
-        consistency: "strong",
-      },
-    ) as CompletedLead | null;
-
-  if (existing) {
-    return existing;
-  }
 
   const now =
     new Date().toISOString();
@@ -163,6 +221,9 @@ export async function createCompletedLead(
 
     status: "awaiting_review",
 
+    recommendedNextStep:
+      session.recommendedNextStep,
+
     brief: buildBrief(
       session.currentState,
     ),
@@ -172,13 +233,39 @@ export async function createCompletedLead(
     updatedAt: now,
   };
 
-  await leadStore.setJSON(
-    session.id,
-    lead,
-    {
-      onlyIfNew: true,
-    },
-  );
+  const writeResult =
+    await leadStore.setJSON(
+      session.id,
+      lead,
+      {
+        onlyIfNew: true,
+      },
+    );
 
-  return lead;
+  if (writeResult.modified) {
+    return {
+      lead,
+      created: true,
+    };
+  }
+
+  const existing =
+    await leadStore.get(
+      session.id,
+      {
+        type: "json",
+        consistency: "strong",
+      },
+    ) as CompletedLead | null;
+
+  if (!existing) {
+    throw new Error(
+      "Completed lead exists but could not be read.",
+    );
+  }
+
+  return {
+    lead: existing,
+    created: false,
+  };
 }
