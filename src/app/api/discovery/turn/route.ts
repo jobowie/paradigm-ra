@@ -158,7 +158,7 @@ export async function POST(
     },
 
     history:
-      session.history,
+      session.history.slice(-20),
 
     latest_prospect_message:
       message,
