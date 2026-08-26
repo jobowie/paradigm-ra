@@ -14,6 +14,10 @@ import {
   notifyCompletedLead,
 } from "@/lib/discovery/server/followUp";
 
+import {
+  sendProspectFollowUp,
+} from "@/lib/discovery/server/prospectFollowUp";
+
 
 
 const COOKIE_NAME = "ra_sid";
@@ -254,7 +258,20 @@ export async function POST(
       );
     } catch (error) {
       console.error(
-        "Ra post-discovery notification failed.",
+        "Ra internal lead notification failed.",
+        error instanceof Error
+          ? error.name
+          : "UnknownError",
+      );
+    }
+
+    try {
+      await sendProspectFollowUp(
+        lead,
+      );
+    } catch (error) {
+      console.error(
+        "Ra prospect follow-up failed.",
         error instanceof Error
           ? error.name
           : "UnknownError",
