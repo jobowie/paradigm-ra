@@ -19,7 +19,6 @@ import {
 } from "@/lib/discovery/server/prospectFollowUp";
 
 
-
 const COOKIE_NAME = "ra_sid";
 
 
@@ -47,17 +46,20 @@ function cleanMessage(
     return "";
   }
 
-  return value.trim().slice(
-    0,
-    6000,
-  );
+  return value
+    .trim()
+    .slice(
+      0,
+      6000,
+    );
 }
 
 
 export async function POST(
   request: Request,
 ) {
-  const cookieStore = await cookies();
+  const cookieStore =
+    await cookies();
 
   const sessionId =
     cookieStore.get(
@@ -110,9 +112,10 @@ export async function POST(
       message?: unknown;
     };
 
-  const message = cleanMessage(
-    body.message,
-  );
+  const message =
+    cleanMessage(
+      body.message,
+    );
 
   if (!message) {
     return NextResponse.json(
@@ -127,7 +130,8 @@ export async function POST(
   }
 
   const raUrl =
-    process.env.RA_DISCOVERY_URL;
+    process.env
+      .RA_DISCOVERY_URL;
 
   const raToken =
     process.env
@@ -171,26 +175,27 @@ export async function POST(
       session.currentState,
   };
 
-  const result = await fetch(
-    `${raUrl}/v1/discovery/turn`,
-    {
-      method: "POST",
+  const result =
+    await fetch(
+      `${raUrl}/v1/discovery/turn`,
+      {
+        method: "POST",
 
-      headers: {
-        "Content-Type":
-          "application/json",
+        headers: {
+          "Content-Type":
+            "application/json",
 
-        Authorization:
-          `Bearer ${raToken}`,
+          Authorization:
+            `Bearer ${raToken}`,
+        },
+
+        body: JSON.stringify(
+          raRequest,
+        ),
+
+        cache: "no-store",
       },
-
-      body: JSON.stringify(
-        raRequest,
-      ),
-
-      cache: "no-store",
-    },
-  );
+    );
 
   if (!result.ok) {
     console.error(
@@ -244,48 +249,53 @@ export async function POST(
   );
 
   if (ra.complete) {
-  const {
-    lead,
-    created,
-  } = await createCompletedLead(
-    session,
-  );
+    const {
+      lead,
+      created,
+    } = await createCompletedLead(
+      session,
+    );
 
-  if (created) {
-    try {
-      await notifyCompletedLead(
-        lead,
-      );
-    } catch (error) {
-      console.error(
-        "Ra internal lead notification failed.",
-        error instanceof Error
-          ? error.name
-          : "UnknownError",
-      );
-    }
+    if (created) {
+      try {
+        await notifyCompletedLead(
+          lead,
+        );
+      } catch (error) {
+        console.error(
+          "Ra internal lead notification failed.",
+          error instanceof Error
+            ? error.name
+            : "UnknownError",
+        );
+      }
 
-    try {
-      await sendProspectFollowUp(
-        lead,
-      );
-    } catch (error) {
-      console.error(
-        "Ra prospect follow-up failed.",
-        error instanceof Error
-          ? error.name
-          : "UnknownError",
-      );
+      try {
+        await sendProspectFollowUp(
+          lead,
+        );
+      } catch (error) {
+        console.error(
+          "Ra prospect follow-up failed.",
+          error instanceof Error
+            ? error.name
+            : "UnknownError",
+        );
+      }
     }
   }
-}
 
-return NextResponse.json({
-  reply: ra.reply,
-  stage: ra.stage,
-  complete: ra.complete,
+  return NextResponse.json({
+    reply:
+      ra.reply,
 
-  recommendedNextStep:
-    ra.recommended_next_step,
-});
+    stage:
+      ra.stage,
+
+    complete:
+      ra.complete,
+
+    recommendedNextStep:
+      ra.recommended_next_step,
+  });
 }
