@@ -13,7 +13,8 @@
     "@netlify/blobs": "^11.0.1",
     "next": "^16.0.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "resend": "^6.22.1"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

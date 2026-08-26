@@ -1,3 +1,5 @@
+import { Resend } from "resend";
+
 import type {
   CompletedLead,
 } from "@/lib/discovery/server/postDiscovery";
@@ -14,10 +16,10 @@ function formatValue(
   }
 
   if (Array.isArray(value)) {
-  return value.length > 0
-    ? value.join(", ")
-    : "None";
- }
+    return value.length > 0
+      ? value.join(", ")
+      : "None";
+  }
 
   if (typeof value === "string") {
     return value.trim() || "Unknown";
@@ -31,6 +33,20 @@ function formatValue(
   }
 
   return JSON.stringify(value);
+}
+
+
+function formatStatus(
+  value: CompletedLead["status"],
+): string {
+  return value
+    .split("_")
+    .map(
+      (part) =>
+        part.charAt(0).toUpperCase() +
+        part.slice(1),
+    )
+    .join(" ");
 }
 
 
@@ -65,26 +81,41 @@ export function buildInternalLeadBrief(
     brief,
   } = lead;
 
+  const qualificationScore =
+    typeof brief.qualificationScore === "number"
+      ? `${brief.qualificationScore}/100`
+      : formatValue(
+          brief.qualificationScore,
+        );
+
   return [
     "RA POST-DISCOVERY — LEAD READY",
     "--------------------------------",
-    `Lead ID: ${lead.id}`,
-    `Session ID: ${lead.sessionId}`,
     "",
-    `Contact: ${contact.firstName}`,
-    `Company: ${contact.company}`,
-    `Email: ${contact.email}`,
+    contact.company,
+    `${contact.firstName} — ${contact.email}`,
     "",
-    `Status: ${lead.status}`,
     `Recommended next step: ${formatRecommendedNextStep(
       lead.recommendedNextStep,
     )}`,
+    `Qualification score: ${qualificationScore}`,
+    `Status: ${formatStatus(
+      lead.status,
+    )}`,
     "",
+    "PRIMARY NEED",
+    formatValue(
+      brief.primaryProblem,
+    ),
+    "",
+    "BUSINESS IMPACT",
+    formatValue(
+      brief.businessImpact,
+    ),
+    "",
+    "DISCOVERY DETAILS",
     `Business: ${formatValue(
       brief.businessDescription,
-    )}`,
-    `Primary problem: ${formatValue(
-      brief.primaryProblem,
     )}`,
     `Current process: ${formatValue(
       brief.currentProcess,
@@ -98,9 +129,6 @@ export function buildInternalLeadBrief(
     `Desired outcomes: ${formatValue(
       brief.desiredOutcomes,
     )}`,
-    `Business impact: ${formatValue(
-      brief.businessImpact,
-    )}`,
     `Teams affected: ${formatValue(
       brief.usersOrTeamsAffected,
     )}`,
@@ -110,28 +138,29 @@ export function buildInternalLeadBrief(
     `Integrations needed: ${formatValue(
       brief.integrationsNeeded,
     )}`,
-    `Requirements: ${formatValue(
-      brief.requirements,
-    )}`,
     `Urgency: ${formatValue(
       brief.urgency,
     )}`,
     `Timeline: ${formatValue(
       brief.timeline,
     )}`,
-    `Budget context: ${formatValue(
-      brief.budgetContext,
-    )}`,
     `Decision process: ${formatValue(
       brief.decisionProcess,
     )}`,
-    `Qualification score: ${formatValue(
-      brief.qualificationScore,
+    "",
+    "OPEN ITEMS",
+    `Budget context: ${formatValue(
+      brief.budgetContext,
+    )}`,
+    `Requirements: ${formatValue(
+      brief.requirements,
     )}`,
     `Missing information: ${formatValue(
       brief.missingInformation,
     )}`,
     "",
+    `Lead ID: ${lead.id}`,
+    `Session ID: ${lead.sessionId}`,
     `Completed at: ${lead.completedAt}`,
   ].join("\n");
 }
@@ -140,10 +169,69 @@ export function buildInternalLeadBrief(
 export async function notifyCompletedLead(
   lead: CompletedLead,
 ): Promise<void> {
+  const apiKey =
+    process.env.RESEND_API_KEY;
+
+  const from =
+    process.env
+      .RA_LEAD_NOTIFICATION_FROM;
+
+  const to =
+    process.env
+      .RA_LEAD_NOTIFICATION_TO;
+
+  if (!apiKey || !from || !to) {
+    throw new Error(
+      "Ra lead notification email configuration is missing.",
+    );
+  }
+
+  const resend =
+    new Resend(
+      apiKey,
+    );
+
   const brief =
     buildInternalLeadBrief(
       lead,
     );
 
-  console.info(brief);
+  const {
+    data,
+    error,
+  } = await resend.emails.send(
+    {
+      from,
+      to: [to],
+
+      subject:
+        `Ra Lead — ${lead.contact.company}`,
+
+      text: brief,
+    },
+    {
+      idempotencyKey:
+        `ra-completed-lead/${lead.id}`,
+    },
+  );
+
+  if (error) {
+    throw new Error(
+      `Ra lead notification failed: ${error.message}`,
+    );
+  }
+
+  console.info(
+    "RA POST-DISCOVERY — LEAD NOTIFIED",
+    {
+      leadId:
+        lead.id,
+
+      sessionId:
+        lead.sessionId,
+
+      emailId:
+        data?.id ?? null,
+    },
+  );
 }
