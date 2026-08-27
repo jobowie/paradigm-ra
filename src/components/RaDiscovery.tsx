@@ -37,32 +37,42 @@ async function readJsonResponse<T>(
   response: Response,
   fallbackMessage: string,
 ): Promise<T> {
-  const raw = await response.text();
+  const raw =
+    await response.text();
 
   if (!raw.trim()) {
-    throw new Error(fallbackMessage);
+    throw new Error(
+      fallbackMessage,
+    );
   }
 
   try {
-    return JSON.parse(raw) as T;
+    return JSON.parse(
+      raw,
+    ) as T;
   } catch {
-    throw new Error(fallbackMessage);
+    throw new Error(
+      fallbackMessage,
+    );
   }
 }
 
 
-const QUESTION_TRANSITION_MS = 200;
+const QUESTION_TRANSITION_MS =
+  200;
 
 
 const INITIAL_QUESTION =
-  "What's creating the most friction in the business right now?";
+  "What's creating the most friction for your business right now?";
 
 
 export function RaDiscovery({
   email,
 }: RaDiscoveryProps) {
   const [mode, setMode] =
-    useState<DiscoveryMode>("closed");
+    useState<DiscoveryMode>(
+      "closed",
+    );
 
   const [contact, setContact] =
     useState<ContactState>({
@@ -72,29 +82,45 @@ export function RaDiscovery({
     });
 
   const [question, setQuestion] =
-    useState(INITIAL_QUESTION);
+    useState(
+      INITIAL_QUESTION,
+    );
 
   const [message, setMessage] =
     useState("");
 
-  const [lastAnswer, setLastAnswer] =
-    useState<string | null>(null);
+  const [
+    lastAnswer,
+    setLastAnswer,
+  ] =
+    useState<string | null>(
+      null,
+    );
 
-  const [questionNumber, setQuestionNumber] =
+  const [
+    questionNumber,
+    setQuestionNumber,
+  ] =
     useState(1);
 
   const [loading, setLoading] =
     useState(false);
 
-  const [transitioning, setTransitioning] =
+  const [
+    transitioning,
+    setTransitioning,
+  ] =
     useState(false);
 
   const [error, setError] =
-    useState<string | null>(null);
+    useState<string | null>(
+      null,
+    );
 
 
   async function beginDiscovery(
-    event: FormEvent<HTMLFormElement>,
+    event:
+      FormEvent<HTMLFormElement>,
   ) {
     event.preventDefault();
 
@@ -102,35 +128,52 @@ export function RaDiscovery({
     setError(null);
 
     try {
-      const response = await fetch(
-        "/api/discovery/session",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
+      const response =
+        await fetch(
+          "/api/discovery/session",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body:
+              JSON.stringify(
+                contact,
+              ),
           },
-          body: JSON.stringify(contact),
-        },
-      );
+        );
 
       const body =
-      await readJsonResponse<{
-        error?: string;
-      }>(
-        response,
-        "We couldn’t begin the discovery just now. Please try again.",
-      );
+        await readJsonResponse<{
+          error?: string;
+        }>(
+          response,
+          "We couldn’t begin the discovery just now. Please try again.",
+        );
 
-    if (!response.ok) {
+      if (!response.ok) {
         throw new Error(
           body.error ??
             "Unable to begin discovery.",
         );
       }
 
-      setMode("discovery");
-      setQuestion(INITIAL_QUESTION);
+      const firstName =
+        contact.firstName.trim();
+
+      setMode(
+        "discovery",
+      );
+
+      setQuestion(
+        firstName
+          ? `Hi ${firstName} — what's creating the most friction for your business right now?`
+          : INITIAL_QUESTION,
+      );
+
       setQuestionNumber(1);
     } catch (caught) {
       setError(
@@ -145,14 +188,18 @@ export function RaDiscovery({
 
 
   async function submitAnswer(
-    event: FormEvent<HTMLFormElement>,
+    event:
+      FormEvent<HTMLFormElement>,
   ) {
     event.preventDefault();
 
     const answer =
       message.trim();
 
-    if (!answer || loading) {
+    if (
+      !answer ||
+      loading
+    ) {
       return;
     }
 
@@ -160,83 +207,114 @@ export function RaDiscovery({
     setError(null);
 
     try {
-      const response = await fetch(
-        "/api/discovery/turn",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
+      const response =
+        await fetch(
+          "/api/discovery/turn",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body:
+              JSON.stringify({
+                message:
+                  answer,
+              }),
           },
-          body: JSON.stringify({
-            message: answer,
-          }),
-        },
+        );
+
+      const body =
+        await readJsonResponse<
+          | TurnResponse
+          | {
+              error?: string;
+            }
+        >(
+          response,
+          "We couldn’t continue the discovery just now. Please try again.",
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          "We couldn’t continue the discovery just now. Please try again.",
+        );
+      }
+
+      const result =
+        body as TurnResponse;
+
+      setTransitioning(
+        true,
       );
 
-    const body =
-      await readJsonResponse<
-        TurnResponse | { error?: string }
-      >(
-        response,
+      const transitionDelay =
+        window
+          .matchMedia(
+            "(prefers-reduced-motion: reduce)",
+          )
+          .matches
+          ? 0
+          : QUESTION_TRANSITION_MS;
+
+      if (
+        transitionDelay > 0
+      ) {
+        await new Promise<void>(
+          (resolve) => {
+            window.setTimeout(
+              resolve,
+              transitionDelay,
+            );
+          },
+        );
+      }
+
+      setLastAnswer(
+        answer,
+      );
+
+      setMessage("");
+
+      if (result.complete) {
+        setTransitioning(
+          false,
+        );
+
+        setMode(
+          "complete",
+        );
+
+        return;
+      }
+
+      setQuestion(
+        result.reply,
+      );
+
+      setQuestionNumber(
+        (current) =>
+          current + 1,
+      );
+
+      window
+        .requestAnimationFrame(
+          () => {
+            setTransitioning(
+              false,
+            );
+          },
+        );
+    } catch {
+      setTransitioning(
+        false,
+      );
+
+      setError(
         "We couldn’t continue the discovery just now. Please try again.",
       );
-
-    if (!response.ok) {
-      throw new Error(
-        "We couldn’t continue the discovery just now. Please try again.",
-      );
-    }
-
-    const result =
-      body as TurnResponse;
-
-    setTransitioning(true);
-
-    const transitionDelay =
-      window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches
-        ? 0
-        : QUESTION_TRANSITION_MS;
-
-    if (transitionDelay > 0) {
-      await new Promise<void>(
-        (resolve) => {
-          window.setTimeout(
-            resolve,
-            transitionDelay,
-          );
-        },
-      );
-    }
-
-    setLastAnswer(answer);
-    setMessage("");
-
-    if (result.complete) {
-      setTransitioning(false);
-      setMode("complete");
-      return;
-    }
-
-    setQuestion(result.reply);
-
-    setQuestionNumber(
-      (current) => current + 1,
-    );
-
-    window.requestAnimationFrame(
-      () => {
-        setTransitioning(false);
-      },
-    );
-  } catch {
-    setTransitioning(false);
-
-    setError(
-      "We couldn’t continue the discovery just now. Please try again.",
-    );
     } finally {
       setLoading(false);
     }
@@ -244,7 +322,9 @@ export function RaDiscovery({
 
 
   function restart() {
-    setMode("contact");
+    setMode(
+      "contact",
+    );
 
     setContact({
       firstName: "",
@@ -259,7 +339,7 @@ export function RaDiscovery({
     setMessage("");
     setLastAnswer(null);
     setQuestionNumber(1);
-  setTransitioning(false);
+    setTransitioning(false);
     setError(null);
   }
 
@@ -271,7 +351,9 @@ export function RaDiscovery({
           className="button button-primary"
           type="button"
           onClick={() =>
-            setMode("contact")
+            setMode(
+              "contact",
+            )
           }
         >
           Begin discovery
@@ -279,7 +361,8 @@ export function RaDiscovery({
         </button>
 
         <p className="ra-launch-note">
-          A short guided business assessment.
+          A short guided business
+          assessment.
         </p>
       </div>
     );
@@ -333,17 +416,23 @@ export function RaDiscovery({
             <p>
               Give us the basics first.
               From there, Ra will guide
-              the conversation around the
-              problem—not a generic form.
+              the conversation around
+              the problem—not a generic
+              form.
             </p>
           </div>
 
           <form
             className="ra-contact-form"
-            onSubmit={beginDiscovery}
+            onSubmit={
+              beginDiscovery
+            }
           >
             <label>
-              <span>First name</span>
+              <span>
+                First name
+              </span>
+
               <input
                 type="text"
                 autoComplete="given-name"
@@ -352,12 +441,18 @@ export function RaDiscovery({
                 value={
                   contact.firstName
                 }
-                onChange={(event) =>
+                onChange={(
+                  event,
+                ) =>
                   setContact(
-                    (current) => ({
+                    (
+                      current,
+                    ) => ({
                       ...current,
+
                       firstName:
-                        event.target
+                        event
+                          .target
                           .value,
                     }),
                   )
@@ -366,7 +461,10 @@ export function RaDiscovery({
             </label>
 
             <label>
-              <span>Company</span>
+              <span>
+                Company
+              </span>
+
               <input
                 type="text"
                 autoComplete="organization"
@@ -375,12 +473,18 @@ export function RaDiscovery({
                 value={
                   contact.company
                 }
-                onChange={(event) =>
+                onChange={(
+                  event,
+                ) =>
                   setContact(
-                    (current) => ({
+                    (
+                      current,
+                    ) => ({
                       ...current,
+
                       company:
-                        event.target
+                        event
+                          .target
                           .value,
                     }),
                   )
@@ -389,7 +493,10 @@ export function RaDiscovery({
             </label>
 
             <label className="ra-field-wide">
-              <span>Email</span>
+              <span>
+                Email
+              </span>
+
               <input
                 type="email"
                 autoComplete="email"
@@ -398,12 +505,18 @@ export function RaDiscovery({
                 value={
                   contact.email
                 }
-                onChange={(event) =>
+                onChange={(
+                  event,
+                ) =>
                   setContact(
-                    (current) => ({
+                    (
+                      current,
+                    ) => ({
                       ...current,
+
                       email:
-                        event.target
+                        event
+                          .target
                           .value,
                     }),
                   )
@@ -425,7 +538,9 @@ export function RaDiscovery({
                 className="ra-text-button"
                 type="button"
                 onClick={() =>
-                  setMode("closed")
+                  setMode(
+                    "closed",
+                  )
                 }
               >
                 Cancel
@@ -434,13 +549,18 @@ export function RaDiscovery({
               <button
                 className="button button-primary"
                 type="submit"
-                disabled={loading}
+                disabled={
+                  loading
+                }
               >
                 {loading
                   ? "Opening..."
                   : "Begin discovery"}
+
                 {!loading && (
-                  <span>→</span>
+                  <span>
+                    →
+                  </span>
                 )}
               </button>
             </div>
@@ -449,7 +569,8 @@ export function RaDiscovery({
       )}
 
 
-      {mode === "discovery" && (
+      {mode ===
+        "discovery" && (
         <div className="ra-conversation">
           {lastAnswer && (
             <div className="ra-last-response">
@@ -464,13 +585,13 @@ export function RaDiscovery({
           )}
 
           <div
-          className={`ra-current-question${
-            transitioning
-              ? " is-transitioning"
-              : ""
-          }`}
-          aria-live="polite"
-        >
+            className={`ra-current-question${
+              transitioning
+                ? " is-transitioning"
+                : ""
+            }`}
+            aria-live="polite"
+          >
             <p className="ra-overline">
               CURRENT FOCUS
             </p>
@@ -482,7 +603,9 @@ export function RaDiscovery({
 
           <form
             className="ra-response-form"
-            onSubmit={submitAnswer}
+            onSubmit={
+              submitAnswer
+            }
           >
             <label
               htmlFor="ra-response"
@@ -497,9 +620,12 @@ export function RaDiscovery({
               maxLength={6000}
               rows={5}
               placeholder="Tell us what's happening..."
-              onChange={(event) =>
+              onChange={(
+                event,
+              ) =>
                 setMessage(
-                  event.target.value,
+                  event.target
+                    .value,
                 )
               }
             />
@@ -530,8 +656,11 @@ export function RaDiscovery({
                 {loading
                   ? "Processing..."
                   : "Continue"}
+
                 {!loading && (
-                  <span>→</span>
+                  <span>
+                    →
+                  </span>
                 )}
               </button>
             </div>
@@ -551,27 +680,36 @@ export function RaDiscovery({
           </p>
 
           <h3>
-          Thanks, {contact.firstName}. We’ll be in touch.
-        </h3>
+            Thanks,{" "}
+            {contact.firstName}.
+            We’ll be in touch.
+          </h3>
 
-        <p className="ra-complete-reply">
-          Someone from the Paradigm Ra team will follow up to discuss
-          what you shared, your priorities, and the best next step.
-        </p>
+          <p className="ra-complete-reply">
+            Someone from the
+            Paradigm Ra team will
+            follow up to discuss what
+            you shared, your
+            priorities, and the best
+            next step.
+          </p>
 
-        <div className="ra-complete-actions">
-          <button
-            className="ra-text-button"
-            type="button"
-            onClick={restart}
-          >
-            Start over
-          </button>
-        </div>
+          <div className="ra-complete-actions">
+            <button
+              className="ra-text-button"
+              type="button"
+              onClick={
+                restart
+              }
+            >
+              Start over
+            </button>
+          </div>
 
-        <p className="ra-private-note">
-          Your discovery stays with Paradigm Ra.
-        </p>
+          <p className="ra-private-note">
+            Your discovery stays with
+            Paradigm Ra.
+          </p>
         </div>
       )}
     </div>
