@@ -7,20 +7,20 @@ export const site = {
 export const services = [
   {
     number: "01",
-    title: "Software Systems",
+    title: "Software + Systems",
     description:
-      "Custom applications, internal tools, integrations, and operational platforms designed around the way your business actually works.",
+      "Custom software, internal tools, web and digital solutions, integrations, and automation designed around the way your business actually works.",
   },
   {
     number: "02",
-    title: "Accounting Solutions",
+    title: "Bookkeeping + Accounting",
     description:
-      "Connected accounting workflows, reporting systems, reconciliation support, and financial operations built for visibility and control.",
+      "Bookkeeping, accounting support, reconciliations, reporting, financial workflows, and connected systems built for better visibility and control.",
   },
   {
     number: "03",
-    title: "Automation + Integration",
+    title: "Consulting + Implementation",
     description:
-      "APIs and intelligent workflows that move information between systems without forcing your team to move it manually.",
+      "Business process consulting, solution design, systems integration, and hands-on implementation focused on removing operational friction.",
   },
 ] as const;

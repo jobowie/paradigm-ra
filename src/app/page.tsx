@@ -23,10 +23,10 @@ export default function HomePage() {
 
         <div className="hero-content shell">
           <div className="hero-copy">
-            <p className="eyebrow"><span className="status-dot" /> SOFTWARE · ACCOUNTING · AUTOMATION</p>
+            <p className="eyebrow"><span className="status-dot" /> SOFTWARE · SYSTEMS · FINANCIAL CLARITY</p>
             <h1>Clarity,<br /><span>engineered.</span></h1>
             <p className="hero-lede">
-              Modern software and accounting systems that connect operations, reduce friction, and turn business complexity into useful intelligence.
+              Software, systems, accounting, automation, and consulting designed to reduce friction and make your business easier to operate.
             </p>
             <div className="actions">
               <a className="button button-primary" href="#solutions">Explore solutions <span>→</span></a>
@@ -43,7 +43,7 @@ export default function HomePage() {
             <h2>One business.<br />Connected systems.</h2>
           </div>
           <p>
-            Paradigm Ra brings software engineering and accounting operations into the same conversation—so the technology serving your business understands the work happening inside it.
+            Paradigm Ra brings software, systems, financial operations, and business consulting into the same conversation—then helps design and implement the right solution.
           </p>
         </div>
 
