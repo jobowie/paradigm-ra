@@ -205,10 +205,99 @@ h1 span { color: var(--accent); }
 .orbit-b { width: 360px; height: 360px; right: 17%; top: 24%; border-color: rgba(121,220,255,.2); animation: orbitFloat 16s ease-in-out infinite alternate-reverse; }
 .orbit-c { width: 90px; height: 90px; right: 36%; top: 45%; background: rgba(156,144,255,.05); animation: pulseScale 4s ease-in-out infinite; }
 
-.product { display: grid; grid-template-columns: .8fr 1.2fr; gap: 100px; align-items: end; }
-.product h2 { margin: 12px 0 0; font-size: clamp(50px, 6vw, 80px); font-weight: 520; letter-spacing: -.05em; }
-.product-copy p { color: var(--muted); font-size: 19px; line-height: 1.65; margin-bottom: 28px; }
-.product-status { display: inline-block; border: 1px solid var(--line); border-radius: 999px; padding: 9px 12px; color: #d7d8dc; font-size: 11px; letter-spacing: .14em; }
+.product {
+  position: relative;
+  display: grid;
+  grid-template-columns: .8fr 1.2fr;
+  gap: 100px;
+  align-items: center;
+}
+
+/* Xyloglyphic product signal */
+.product::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 100vw;
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    90deg,
+    rgba(156,144,255,.78) 0%,
+    rgba(121,220,255,.64) 48%,
+    rgba(121,220,255,.42) 76%,
+    rgba(121,220,255,.22) 100%
+  );
+}
+
+.product h2 {
+  margin: 12px 0 0;
+  font-size: clamp(50px, 6vw, 80px);
+  font-weight: 520;
+  letter-spacing: -.05em;
+}
+
+.product-subline {
+  margin: 15px 0 0;
+  color: #7f828d;
+  font-size: 13px;
+  letter-spacing: .04em;
+}
+
+.product-copy > p {
+  margin: 0 0 30px;
+  color: var(--muted);
+  font-size: 19px;
+  line-height: 1.65;
+}
+
+.product-proof {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 28px;
+  border-top: 1px solid var(--line);
+}
+
+.product-proof span {
+  position: relative;
+  padding: 17px 0;
+  border-bottom: 1px solid var(--line);
+  color: #b6b8c0;
+  font-size: 12px;
+  letter-spacing: .035em;
+}
+
+.product-proof span:nth-child(odd) {
+  padding-right: 22px;
+}
+
+.product-proof span:nth-child(even) {
+  padding-left: 22px;
+  border-left: 1px solid var(--line);
+}
+
+.product-proof span::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 10px;
+  border-radius: 50%;
+  background: var(--ra-cyan);
+  opacity: .7;
+}
+
+.product-status {
+  display: inline-block;
+  padding: 9px 12px;
+  border: 1px solid rgba(156,144,255,.16);
+  border-radius: 999px;
+  background: rgba(156,144,255,.015);
+  color: #d7d8dc;
+  font-size: 11px;
+  letter-spacing: .14em;
+}
 
 .cta { border-top: 1px solid var(--line); background: linear-gradient(145deg, #10131a, #090a0d); }
 .cta-inner { padding-top: 120px; padding-bottom: 120px; max-width: 910px; margin-left: max(20px, calc((100vw - var(--max)) / 2)); }
@@ -908,3 +997,1269 @@ h1 span { color: var(--accent); }
   white-space: nowrap;
 }
 
+
+@media (max-width: 560px) {
+  .product-proof {
+    grid-template-columns: 1fr;
+  }
+
+  .product-proof span:nth-child(odd),
+  .product-proof span:nth-child(even) {
+    padding-left: 0;
+    padding-right: 0;
+    border-left: 0;
+  }
+}
+
+
+/* ─────────────────────────────────────────────
+   CLIENT DELIVERY
+   MCT Visions Entertainment
+   ───────────────────────────────────────────── */
+
+.client-work {
+  position: relative;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+/* Client signal: violet / blue / restrained warm finish */
+.client-work::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(156,144,255,.64) 0%,
+    rgba(121,220,255,.52) 42%,
+    rgba(215,173,99,.34) 78%,
+    transparent 94%
+  );
+}
+
+.client-work-inner {
+  display: grid;
+  grid-template-columns: .8fr 1.2fr;
+  gap: 100px;
+  align-items: center;
+  padding-top: 118px;
+  padding-bottom: 118px;
+}
+
+.client-work-heading h2 {
+  margin: 16px 0 0;
+  max-width: 650px;
+  font-size: clamp(36px, 4.5vw, 60px);
+  line-height: .96;
+  letter-spacing: -.04em;
+  font-weight: 520;
+}
+
+.client-project-line {
+  margin: 18px 0 0;
+  color: #7f828d;
+  font-size: 13px;
+  letter-spacing: .04em;
+}
+
+.client-work-copy > p {
+  margin: 0 0 30px;
+  max-width: 680px;
+  color: var(--muted);
+  font-size: 19px;
+  line-height: 1.65;
+}
+
+.client-work-proof {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 28px;
+  border-top: 1px solid var(--line);
+}
+
+.client-work-proof span {
+  padding: 17px 0;
+  border-bottom: 1px solid var(--line);
+  color: #b6b8c0;
+  font-size: 12px;
+  letter-spacing: .035em;
+}
+
+.client-work-proof span:nth-child(odd) {
+  padding-right: 22px;
+}
+
+.client-work-proof span:nth-child(even) {
+  padding-left: 22px;
+  border-left: 1px solid var(--line);
+}
+
+.client-work-proof span::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 10px;
+  border-radius: 50%;
+  background: var(--ra-gold);
+  opacity: .68;
+}
+
+.client-work-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.client-work-meta > span {
+  color: #797c86;
+  font-size: 10px;
+  letter-spacing: .16em;
+}
+
+.client-work-meta a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #d7d8dc;
+  font-size: 12px;
+  transition: color .22s ease;
+}
+
+.client-work-meta a > span {
+  color: var(--ra-gold);
+  transition: transform .22s ease;
+}
+
+.client-work-meta a:hover {
+  color: white;
+}
+
+.client-work-meta a:hover > span {
+  transform: translate(3px, -3px);
+}
+
+@media (max-width: 760px) {
+  .client-work-inner {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    padding-top: 82px;
+    padding-bottom: 82px;
+  }
+
+  .client-work-copy > p {
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 560px) {
+  .client-work-proof {
+    grid-template-columns: 1fr;
+  }
+
+  .client-work-proof span:nth-child(odd),
+  .client-work-proof span:nth-child(even) {
+    padding-left: 0;
+    padding-right: 0;
+    border-left: 0;
+  }
+
+  .client-work-meta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+
+/* ─────────────────────────────────────────────
+   WORK VISUALS
+   Product + client proof
+   ───────────────────────────────────────────── */
+
+.product-visual {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 34px;
+  border: 1px solid rgba(255,255,255,.09);
+  background: #090a0d;
+}
+
+.product-visual::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgba(121,220,255,.025);
+}
+
+.product-visual img {
+  display: block;
+  width: 100%;
+  height: auto;
+  opacity: .88;
+  transition:
+    opacity .35s ease,
+    transform .6s cubic-bezier(.2,.8,.2,1);
+}
+
+.product-visual:hover img {
+  opacity: 1;
+  transform: scale(1.012);
+}
+
+.client-work-visuals {
+  display: grid;
+  grid-template-columns: 1.45fr .55fr;
+  gap: 12px;
+  margin-bottom: 34px;
+}
+
+.client-visual {
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  min-height: 210px;
+  border: 1px solid rgba(255,255,255,.09);
+  background: #090a0d;
+}
+
+.client-visual img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: .86;
+  transition:
+    opacity .35s ease,
+    transform .6s cubic-bezier(.2,.8,.2,1);
+}
+
+.client-visual:hover img {
+  opacity: 1;
+  transform: scale(1.015);
+}
+
+.client-visual-primary img {
+  object-position: center top;
+}
+
+@media (max-width: 760px) {
+  .client-work-visuals {
+    grid-template-columns: 1fr;
+  }
+
+  .client-visual {
+    min-height: 190px;
+  }
+}
+
+
+/* MCT visual reveal
+   Default presentation stays monochrome.
+   Selecting an image reveals the delivered work in full color. */
+
+.client-visual {
+  appearance: none;
+  padding: 0;
+  border-radius: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.client-visual img {
+  filter: grayscale(.92) saturate(.18) contrast(1.03);
+  opacity: .78;
+  transition:
+    filter .45s ease,
+    opacity .35s ease,
+    transform .6s cubic-bezier(.2,.8,.2,1);
+}
+
+.client-visual:focus {
+  outline: none;
+}
+
+.client-visual:focus img,
+.client-visual:active img {
+  filter: grayscale(0) saturate(1) contrast(1);
+  opacity: 1;
+}
+
+.client-visual:focus-visible {
+  outline: 1px solid rgba(215,173,99,.48);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .client-visual:hover img {
+    filter: grayscale(.72) saturate(.38);
+    opacity: .88;
+  }
+
+  .client-visual:focus:hover img {
+    filter: grayscale(0) saturate(1);
+    opacity: 1;
+  }
+}
+
+
+/* MCT interaction refinement:
+   grayscale at rest, full original color on hover/focus */
+
+@media (hover: hover) and (pointer: fine) {
+  .client-visual:hover img {
+    filter: grayscale(0) saturate(1) contrast(1);
+    opacity: 1;
+  }
+
+  .client-visual:focus:hover img {
+    filter: grayscale(0) saturate(1) contrast(1);
+    opacity: 1;
+  }
+}
+
+.client-visual:focus img,
+.client-visual:active img {
+  filter: grayscale(0) saturate(1) contrast(1);
+  opacity: 1;
+}
+
+/* Xyloglyphic product proof
+   Restrained at rest, original product color on engagement. */
+
+.product-visual {
+  appearance: none;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  margin: 0 0 34px;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 0;
+  background: #090a0d;
+  text-align: left;
+  cursor: pointer;
+}
+
+.product-visual img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: grayscale(.92) saturate(.18) contrast(1.03);
+  opacity: .78;
+  transition:
+    filter .45s ease,
+    opacity .35s ease,
+    transform .6s cubic-bezier(.2,.8,.2,1);
+}
+
+.product-visual:focus {
+  outline: none;
+}
+
+.product-visual:focus img,
+.product-visual:active img {
+  filter: grayscale(0) saturate(1) contrast(1);
+  opacity: 1;
+}
+
+.product-visual:focus-visible {
+  outline: 1px solid rgba(121,220,255,.48);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .product-visual:hover img {
+    filter: grayscale(0) saturate(1) contrast(1);
+    opacity: 1;
+    transform: scale(1.008);
+  }
+}
+
+
+/* Xyloglyphic visual scale refinement */
+.product-visual {
+  width: min(82%, 620px);
+}
+
+@media (max-width: 760px) {
+  .product-visual {
+    width: 100%;
+  }
+}
+
+
+/* Match MCT client proof scale to Xyloglyphic */
+.client-work-visuals {
+  width: min(82%, 620px);
+}
+
+@media (max-width: 760px) {
+  .client-work-visuals {
+    width: 100%;
+  }
+}
+
+
+/* Definitive Paradigm Ra header lockup */
+.brand-logo {
+  display: block;
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.brand-name {
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: .24em;
+}
+
+@media (max-width: 760px) {
+  .brand-logo {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+
+/* Definitive Paradigm Ra header lockup */
+.brand-logo {
+  display: block;
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.brand-name {
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: .24em;
+}
+
+@media (max-width: 760px) {
+  .brand-logo {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+
+/* ─────────────────────────────────────────────
+   PARADIGM RA HERO V2
+   ───────────────────────────────────────────── */
+
+.hero {
+  min-height: 690px;
+}
+
+/* More deliberate left/right balance */
+.hero-shade {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(3,4,6,.97) 0%,
+      rgba(3,4,6,.92) 27%,
+      rgba(3,4,6,.67) 45%,
+      rgba(3,4,6,.22) 66%,
+      rgba(3,4,6,.04) 100%
+    ),
+    linear-gradient(
+      0deg,
+      rgba(3,4,6,.38),
+      transparent 42%
+    );
+}
+
+/* Full-width Paradigm Ra signal */
+.hero::after {
+  content: "";
+  position: absolute;
+  z-index: 7;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--ra-spectrum);
+  opacity: .72;
+}
+
+/* Header */
+.site-header {
+  height: 88px;
+}
+
+.brand {
+  gap: 13px;
+}
+
+/* Main composition */
+.hero-grid {
+  min-height: 602px;
+  display: grid;
+  grid-template-columns: 42% 58%;
+  align-items: center;
+  padding-top: 0;
+  padding-bottom: 24px;
+}
+
+.hero-copy {
+  grid-column: 1;
+  width: 100%;
+  max-width: 660px;
+}
+
+/* Headline stays neutral and authoritative */
+.hero h1 {
+  margin: 20px 0 24px;
+  font-size: clamp(68px, 7vw, 106px);
+  line-height: .88;
+  letter-spacing: -.055em;
+}
+
+.hero h1,
+.hero h1 span {
+  color: var(--text);
+}
+
+.hero-lede {
+  max-width: 610px;
+  color: #c7c9d0;
+  font-size: clamp(18px, 1.6vw, 21px);
+  line-height: 1.55;
+}
+
+/* Quiet system signal */
+.hero .status-dot {
+  background: var(--ra-violet);
+  box-shadow: 0 0 0 7px rgba(156,144,255,.07);
+}
+
+/* Action carries the spectrum instead of the headline */
+.hero .button-primary {
+  border: 0;
+  background:
+    linear-gradient(
+      108deg,
+      var(--ra-violet) 0%,
+      var(--ra-cyan) 58%,
+      var(--ra-teal) 100%
+    );
+  color: #08090b;
+}
+
+.hero .button-secondary {
+  border-color: rgba(255,255,255,.16);
+  background: rgba(5,6,8,.30);
+}
+
+/* Reduce the architecture slightly so it occupies
+   the right side rather than overwhelming the message */
+.hero-svg {
+  transform:
+    translate3d(
+      calc(var(--mx) * .14),
+      calc(var(--my) * .14),
+      0
+    )
+    scale(.98);
+  transform-origin: 70% 50%;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .hero-grid {
+    grid-template-columns: 50% 50%;
+  }
+
+  .hero h1 {
+    font-size: clamp(62px, 9vw, 90px);
+  }
+}
+
+/* Mobile */
+@media (max-width: 760px) {
+  .hero {
+    min-height: 700px;
+  }
+
+  .site-header {
+    height: 76px;
+  }
+
+  .hero-grid {
+    min-height: 624px;
+    display: flex;
+    align-items: center;
+    padding-top: 10px;
+    padding-bottom: 54px;
+  }
+
+  .hero-copy {
+    max-width: 100%;
+  }
+
+  .hero-shade {
+    background:
+      linear-gradient(
+        90deg,
+        rgba(3,4,6,.95),
+        rgba(3,4,6,.66)
+      ),
+      linear-gradient(
+        0deg,
+        rgba(3,4,6,.52),
+        transparent 48%
+      );
+  }
+
+  .hero h1 {
+    font-size: clamp(58px, 17vw, 82px);
+  }
+}
+
+
+/* ─────────────────────────────────────────────
+   HERO V2 — SCALE + SATURATION REFINEMENT
+   ───────────────────────────────────────────── */
+
+/* Hero gets its own wider presentation grid */
+.hero .shell {
+  width: min(calc(100% - 72px), 1440px);
+}
+
+/* Give the opening more presence */
+.hero {
+  min-height: 770px;
+}
+
+.site-header {
+  height: 104px;
+}
+
+/* Eclipse mark needs more authority.
+   The PNG contains internal breathing room,
+   so its CSS box can be larger without feeling oversized. */
+.brand-logo {
+  width: 64px;
+  height: 64px;
+}
+
+.brand {
+  gap: 16px;
+}
+
+.brand-name {
+  font-size: 13px;
+  letter-spacing: .27em;
+}
+
+/* Slightly stronger nav presence */
+.nav {
+  gap: 34px;
+  font-size: 13px;
+}
+
+/* Larger 42 / 58 hero composition */
+.hero-grid {
+  min-height: 665px;
+  grid-template-columns: 42% 58%;
+  padding-bottom: 34px;
+}
+
+.hero-copy {
+  max-width: 720px;
+}
+
+.hero .eyebrow {
+  font-size: 12px;
+  letter-spacing: .19em;
+}
+
+/* Closer to the mock's scale while staying all white */
+.hero h1 {
+  margin: 24px 0 28px;
+  font-size: clamp(78px, 7.8vw, 122px);
+  line-height: .86;
+  letter-spacing: -.058em;
+}
+
+.hero h1,
+.hero h1 span {
+  color: #f7f6f2;
+}
+
+.hero-lede {
+  max-width: 650px;
+  font-size: clamp(19px, 1.65vw, 23px);
+  line-height: 1.55;
+  color: #d2d3d8;
+}
+
+.hero .actions {
+  margin-top: 38px;
+  gap: 14px;
+}
+
+.hero .button {
+  min-height: 54px;
+  padding: 0 23px;
+  font-size: 14px;
+}
+
+/* Stronger Paradigm Ra spectrum without moving it into the headline */
+.hero .button-primary {
+  background:
+    linear-gradient(
+      108deg,
+      #9b72ff 0%,
+      #6fa8ff 28%,
+      #48d7e7 61%,
+      #43d6bc 100%
+    );
+  box-shadow:
+    0 0 28px rgba(121,220,255,.08);
+}
+
+/* Let the existing architecture carry richer color */
+.hero-svg {
+  filter:
+    saturate(1.42)
+    contrast(1.06)
+    brightness(1.05);
+
+  transform:
+    translate3d(
+      calc(var(--mx) * .14),
+      calc(var(--my) * .14),
+      0
+    )
+    scale(1.035);
+
+  transform-origin: 72% 50%;
+}
+
+/* Strengthen small active elements */
+.hero .status-dot {
+  background: #a388ff;
+  box-shadow:
+    0 0 0 7px rgba(156,144,255,.09),
+    0 0 18px rgba(156,144,255,.32);
+}
+
+/* Make the closing spectrum actually register */
+.hero::after {
+  height: 2px;
+  opacity: .92;
+  background: linear-gradient(
+    90deg,
+    #9c70ff 0%,
+    #6d9dff 24%,
+    #55dcff 43%,
+    #4edac0 63%,
+    #d7ad63 82%,
+    #f08a3c 100%
+  );
+}
+
+@media (max-width: 900px) {
+  .hero .shell {
+    width: min(calc(100% - 44px), 1440px);
+  }
+
+  .brand-logo {
+    width: 56px;
+    height: 56px;
+  }
+
+  .hero h1 {
+    font-size: clamp(68px, 9vw, 100px);
+  }
+}
+
+@media (max-width: 760px) {
+  .hero .shell {
+    width: min(calc(100% - 28px), 1440px);
+  }
+
+  .hero {
+    min-height: 720px;
+  }
+
+  .site-header {
+    height: 82px;
+  }
+
+  .brand-logo {
+    width: 46px;
+    height: 46px;
+  }
+
+  .hero-grid {
+    min-height: 638px;
+  }
+
+  .hero h1 {
+    font-size: clamp(60px, 17vw, 84px);
+  }
+}
+
+
+/* ─────────────────────────────────────────────
+   HERO V2 — SCALE + SATURATION REFINEMENT
+   ───────────────────────────────────────────── */
+
+/* Hero gets its own wider presentation grid */
+.hero .shell {
+  width: min(calc(100% - 72px), 1440px);
+}
+
+/* Give the opening more presence */
+.hero {
+  min-height: 770px;
+}
+
+.site-header {
+  height: 104px;
+}
+
+/* Eclipse mark needs more authority.
+   The PNG contains internal breathing room,
+   so its CSS box can be larger without feeling oversized. */
+.brand-logo {
+  width: 64px;
+  height: 64px;
+}
+
+.brand {
+  gap: 16px;
+}
+
+.brand-name {
+  font-size: 13px;
+  letter-spacing: .27em;
+}
+
+/* Slightly stronger nav presence */
+.nav {
+  gap: 34px;
+  font-size: 13px;
+}
+
+/* Larger 42 / 58 hero composition */
+.hero-grid {
+  min-height: 665px;
+  grid-template-columns: 42% 58%;
+  padding-bottom: 34px;
+}
+
+.hero-copy {
+  max-width: 720px;
+}
+
+.hero .eyebrow {
+  font-size: 12px;
+  letter-spacing: .19em;
+}
+
+/* Closer to the mock's scale while staying all white */
+.hero h1 {
+  margin: 24px 0 28px;
+  font-size: clamp(78px, 7.8vw, 122px);
+  line-height: .86;
+  letter-spacing: -.058em;
+}
+
+.hero h1,
+.hero h1 span {
+  color: #f7f6f2;
+}
+
+.hero-lede {
+  max-width: 650px;
+  font-size: clamp(19px, 1.65vw, 23px);
+  line-height: 1.55;
+  color: #d2d3d8;
+}
+
+.hero .actions {
+  margin-top: 38px;
+  gap: 14px;
+}
+
+.hero .button {
+  min-height: 54px;
+  padding: 0 23px;
+  font-size: 14px;
+}
+
+/* Stronger Paradigm Ra spectrum without moving it into the headline */
+.hero .button-primary {
+  background:
+    linear-gradient(
+      108deg,
+      #9b72ff 0%,
+      #6fa8ff 28%,
+      #48d7e7 61%,
+      #43d6bc 100%
+    );
+  box-shadow:
+    0 0 28px rgba(121,220,255,.08);
+}
+
+/* Let the existing architecture carry richer color */
+.hero-svg {
+  filter:
+    saturate(1.42)
+    contrast(1.06)
+    brightness(1.05);
+
+  transform:
+    translate3d(
+      calc(var(--mx) * .14),
+      calc(var(--my) * .14),
+      0
+    )
+    scale(1.035);
+
+  transform-origin: 72% 50%;
+}
+
+/* Strengthen small active elements */
+.hero .status-dot {
+  background: #a388ff;
+  box-shadow:
+    0 0 0 7px rgba(156,144,255,.09),
+    0 0 18px rgba(156,144,255,.32);
+}
+
+/* Make the closing spectrum actually register */
+.hero::after {
+  height: 2px;
+  opacity: .92;
+  background: linear-gradient(
+    90deg,
+    #9c70ff 0%,
+    #6d9dff 24%,
+    #55dcff 43%,
+    #4edac0 63%,
+    #d7ad63 82%,
+    #f08a3c 100%
+  );
+}
+
+@media (max-width: 900px) {
+  .hero .shell {
+    width: min(calc(100% - 44px), 1440px);
+  }
+
+  .brand-logo {
+    width: 56px;
+    height: 56px;
+  }
+
+  .hero h1 {
+    font-size: clamp(68px, 9vw, 100px);
+  }
+}
+
+@media (max-width: 760px) {
+  .hero .shell {
+    width: min(calc(100% - 28px), 1440px);
+  }
+
+  .hero {
+    min-height: 720px;
+  }
+
+  .site-header {
+    height: 82px;
+  }
+
+  .brand-logo {
+    width: 46px;
+    height: 46px;
+  }
+
+  .hero-grid {
+    min-height: 638px;
+  }
+
+  .hero h1 {
+    font-size: clamp(60px, 17vw, 84px);
+  }
+}
+
+
+/* Hero v2 final balance */
+.hero-svg {
+  filter:
+    saturate(1.55)
+    contrast(1.07)
+    brightness(1.06);
+
+  transform:
+    translate3d(
+      calc((var(--mx) * .14) + 22px),
+      calc(var(--my) * .14),
+      0
+    )
+    scale(1.035);
+
+  transform-origin: 74% 50%;
+}
+
+/* Hero primary CTA — stronger signal */
+.hero .button-primary {
+  min-height: 56px;
+  padding: 0 26px;
+
+  background:
+    linear-gradient(
+      105deg,
+      #8f6cff 0%,
+      #6f8dff 28%,
+      #55cfff 56%,
+      #42d8c1 100%
+    );
+
+  color: #050608;
+  font-weight: 720;
+
+  border: 1px solid rgba(255,255,255,.16);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.28),
+    0 8px 28px rgba(85,207,255,.14),
+    0 0 34px rgba(143,108,255,.10);
+
+  transition:
+    transform .22s ease,
+    box-shadow .22s ease,
+    filter .22s ease;
+}
+
+.hero .button-primary:hover {
+  transform: translateY(-2px);
+  filter: saturate(1.12) brightness(1.05);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.34),
+    0 12px 34px rgba(85,207,255,.19),
+    0 0 42px rgba(143,108,255,.14);
+}
+
+
+/* Hero upper-right presence */
+.hero-shade::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      circle at 78% 13%,
+      rgba(125,105,255,.18) 0%,
+      rgba(91,130,255,.10) 22%,
+      transparent 46%
+    ),
+    radial-gradient(
+      circle at 94% 28%,
+      rgba(75,203,255,.10) 0%,
+      transparent 34%
+    );
+}
+
+/* Give the upper-right navigation a little more authority */
+.hero .nav {
+  color: #e1e3e8;
+  font-weight: 520;
+}
+
+.hero .nav a {
+  text-shadow: 0 1px 18px rgba(121,220,255,.06);
+}
+
+.hero .nav a::after {
+  background: linear-gradient(
+    90deg,
+    var(--ra-violet),
+    var(--ra-cyan)
+  );
+}
+
+/* Hero navigation — stronger architectural rail */
+.hero .nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 8px 10px;
+
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 10px;
+
+  background: rgba(5,7,12,.52);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 10px 34px rgba(0,0,0,.14);
+}
+
+.hero .nav a {
+  position: relative;
+
+  padding: 8px 12px;
+
+  color: #f0f1f4;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: .015em;
+
+  text-shadow:
+    0 1px 14px rgba(0,0,0,.44);
+
+  transition:
+    color .2s ease,
+    background .2s ease;
+}
+
+.hero .nav a::after {
+  content: "";
+  position: absolute;
+
+  left: 12px;
+  right: 12px;
+  bottom: 3px;
+
+  height: 2px;
+
+  background: linear-gradient(
+    90deg,
+    var(--ra-violet),
+    var(--ra-cyan),
+    var(--ra-teal)
+  );
+
+  transform: scaleX(0);
+  transform-origin: left;
+  opacity: .95;
+
+  transition: transform .24s ease;
+}
+
+.hero .nav a:hover {
+  color: #ffffff;
+  background: rgba(255,255,255,.035);
+}
+
+.hero .nav a:hover::after {
+  transform: scaleX(1);
+}
+
+/* Ra Discovery launch — Paradigm Ra intelligence spectrum */
+.ra-launch .button-primary {
+  border: 1px solid rgba(255,255,255,.14);
+
+  background: linear-gradient(
+    108deg,
+    var(--ra-violet) 0%,
+    var(--ra-cyan) 48%,
+    var(--ra-gold) 100%
+  );
+
+  color: #08090b;
+  font-weight: 720;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.30),
+    0 10px 30px rgba(121,220,255,.10),
+    0 0 34px rgba(215,173,99,.07);
+
+  transition:
+    transform .22s ease,
+    filter .22s ease,
+    box-shadow .22s ease;
+}
+
+.ra-launch .button-primary:hover {
+  transform: translateY(-2px);
+  filter: saturate(1.12) brightness(1.05);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.34),
+    0 12px 34px rgba(121,220,255,.15),
+    0 0 40px rgba(215,173,99,.11);
+}
+
+/* Ra Discovery — ultra signature CTA */
+.ra-launch .button-primary {
+  min-height: 62px;
+  padding: 0 30px;
+
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      112deg,
+      #8f6cff 0%,
+      #6d8cff 18%,
+      #55d7ff 44%,
+      #63ded0 62%,
+      #e0bd72 82%,
+      #f09a4f 100%
+    );
+
+  color: #06070a;
+
+  font-size: 15px;
+  font-weight: 760;
+  letter-spacing: -.01em;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.48),
+    inset 0 -1px 0 rgba(0,0,0,.16),
+    0 12px 34px rgba(85,215,255,.17),
+    0 0 36px rgba(143,108,255,.13),
+    0 0 44px rgba(224,189,114,.08);
+
+  text-shadow:
+    0 1px 0 rgba(255,255,255,.18);
+
+  transition:
+    transform .22s ease,
+    filter .22s ease,
+    box-shadow .22s ease;
+}
+
+.ra-launch .button-primary:hover {
+  transform: translateY(-3px) scale(1.015);
+
+  filter:
+    saturate(1.16)
+    brightness(1.06);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.56),
+    inset 0 -1px 0 rgba(0,0,0,.12),
+    0 16px 42px rgba(85,215,255,.23),
+    0 0 46px rgba(143,108,255,.18),
+    0 0 52px rgba(224,189,114,.12);
+}
+
+.ra-launch .button-primary span {
+  font-size: 18px;
+  font-weight: 700;
+}

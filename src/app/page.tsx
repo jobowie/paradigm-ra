@@ -10,8 +10,13 @@ export default function HomePage() {
         <div className="hero-shade" />
         <header className="site-header shell">
           <a className="brand" href="#top" aria-label="Paradigm Ra home">
-             <span className="brand-mark">RA</span>
-             <span className="brand-name">PARADIGM RA</span>
+            <img
+              className="brand-logo"
+              src="/work/RALogo.png"
+              alt=""
+              aria-hidden="true"
+            />
+            <span className="brand-name">PARADIGM RA</span>
           </a>
           <nav className="nav" aria-label="Primary navigation">
             <a href="#solutions">Solutions</a>
@@ -21,7 +26,7 @@ export default function HomePage() {
           </nav>
         </header>
 
-        <div className="hero-content shell">
+        <div className="hero-content hero-grid shell">
           <div className="hero-copy">
             <p className="eyebrow"><span className="status-dot" /> SOFTWARE · SYSTEMS · FINANCIAL CLARITY</p>
             <h1>Clarity,<br /><span>engineered.</span></h1>
@@ -77,15 +82,106 @@ export default function HomePage() {
       </section>
 
       <section className="product section shell" id="products">
-        <div>
-          <p className="kicker">PARADIGM RA / 001</p>
+        <div className="product-heading">
+          <p className="kicker">PRODUCT ENGINEERING / PARADIGM RA</p>
           <h2>Xyloglyphic</h2>
-        </div>
-        <div className="product-copy">
-          <p>
-            A proprietary production-workflow system designed to translate creative intent into structured DAW sessions—built by Paradigm Ra as the first expression of our product R&amp;D practice.
+          <p className="product-subline">
+            Build the environment. Keep the authorship.
           </p>
-          <span className="product-status">IN DEVELOPMENT</span>
+        </div>
+
+        <div className="product-copy">
+          <div className="product-visual">
+            <img
+              src="/work/xyloglyphic-product.png"
+              alt="Xyloglyphic desktop music production system"
+            />
+          </div>
+
+          <p>
+            A desktop music-production system that translates creative intent
+            into structured DAW sessions through deterministic orchestration,
+            reusable session blueprints, and isolated DAW integrations.
+          </p>
+
+          <div
+            className="product-proof"
+            aria-label="Xyloglyphic capabilities"
+          >
+            <span>Desktop software</span>
+            <span>Session blueprints</span>
+            <span>DAW orchestration</span>
+            <span>FL Studio integration</span>
+          </div>
+
+          <span className="product-status">
+            ACTIVE PRODUCT R&amp;D
+          </span>
+        </div>
+      </section>
+
+      <section className="client-work" id="work">
+        <div className="shell client-work-inner">
+          <div className="client-work-heading">
+            <p className="kicker">CLIENT DELIVERY / PARADIGM RA</p>
+            <h2>MCT VISIONS ENT</h2>
+            <p className="client-project-line">
+              From vision to digital presence.
+            </p>
+          </div>
+
+          <div className="client-work-copy">
+            <div className="client-work-visuals">
+            <button
+              type="button"
+              className="client-visual client-visual-primary"
+              aria-label="View MCT Visions website in full color"
+            >
+              <img
+                src="/work/mct-visions-site.png"
+                alt="MCT Visions Entertainment website"
+              />
+            </button>
+
+            <button
+              type="button"
+              className="client-visual client-visual-campaign"
+              aria-label="View Cold Feet campaign artwork in full color"
+            >
+              <img
+                src="/work/mct-cold-feet.png"
+                alt="Cold Feet promotional campaign artwork"
+              />
+            </button>
+          </div>
+
+          <p>
+              Website design and development, responsive implementation,
+              digital brand support, and promotional collateral created
+              around MCT Visions Entertainment's film and event work.
+            </p>
+
+            <div
+              className="client-work-proof"
+              aria-label="MCT Visions project deliverables"
+            >
+              <span>Website development</span>
+              <span>Responsive experience</span>
+              <span>Digital brand support</span>
+              <span>Campaign collateral</span>
+            </div>
+
+            <div className="client-work-meta">
+              <span>CLIENT PROJECT</span>
+              <a
+                href="https://mctvisions.com"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Visit MCT Visions <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
