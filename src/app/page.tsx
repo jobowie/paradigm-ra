@@ -48,8 +48,8 @@ export default function HomePage() {
         </div>
 
         <div className="service-list">
-          {services.map((service) => (
-            <article className="service-row" key={service.number} id={service.number === "02" ? "accounting" : undefined}>
+          {services.map((service, index) => (
+            <article className={`service-row service-row-${index + 1}`} key={service.number} id={service.number === "02" ? "accounting" : undefined}>
               <span className="service-number">{service.number}</span>
               <h3>{service.title}</h3>
               <p>{service.description}</p>
