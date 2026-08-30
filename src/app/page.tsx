@@ -1,5 +1,6 @@
 import { HeroMotion } from "@/components/HeroMotion";
 import { RaDiscovery } from "@/components/RaDiscovery";
+import { MobileNav } from "@/components/MobileNav";
 import { ServiceScrollMotion } from "@/components/ServiceScrollMotion";
 import { services, site } from "@/content/site";
 
@@ -26,6 +27,8 @@ export default function HomePage() {
             <a href="#approach">Technology</a>
             <a href="#products">Products</a>
           </nav>
+
+          <MobileNav />
         </header>
 
         <div className="hero-content hero-grid shell">

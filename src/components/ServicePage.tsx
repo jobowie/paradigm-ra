@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MobileNav } from "@/components/MobileNav";
 import { ServiceScrollMotion } from "@/components/ServiceScrollMotion";
 import { site } from "@/content/site";
 
@@ -53,6 +54,8 @@ export function ServicePage({ content }: ServicePageProps) {
           <Link href="/#approach">Technology</Link>
           <Link href="/#products">Products</Link>
         </nav>
+
+        <MobileNav />
       </header>
 
       <section className="service-hero">
