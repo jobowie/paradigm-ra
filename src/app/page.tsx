@@ -1,10 +1,12 @@
 import { HeroMotion } from "@/components/HeroMotion";
 import { RaDiscovery } from "@/components/RaDiscovery";
+import { ServiceScrollMotion } from "@/components/ServiceScrollMotion";
 import { services, site } from "@/content/site";
 
 export default function HomePage() {
   return (
     <main>
+      <ServiceScrollMotion />
       <section className="hero" id="top">
         <HeroMotion />
         <div className="hero-shade" />
@@ -42,7 +44,7 @@ export default function HomePage() {
       </section>
 
       <section className="section shell" id="solutions">
-        <div className="section-intro">
+        <div className="section-intro" data-ra-reveal="lock">
           <div>
             <p className="kicker">WHAT WE BUILD</p>
             <h2>One business.<br />Connected systems.</h2>
@@ -68,6 +70,8 @@ export default function HomePage() {
                 id={service.number === "02" ? "accounting" : undefined}
                 href={href}
                 aria-label={`Explore ${service.title}`}
+                data-ra-reveal="lock"
+                data-ra-delay={index * 70}
               >
                 <span className="service-number">{service.number}</span>
                 <h3>{service.title}</h3>
@@ -84,7 +88,7 @@ export default function HomePage() {
           <span className="system-orbit orbit-b" />
           <span className="system-orbit orbit-c" />
         </div>
-        <div className="shell systems-inner">
+        <div className="shell systems-inner" data-ra-reveal="lock">
           <p className="kicker">PARADIGM RA SYSTEMS</p>
           <h2>From complexity<br />to clarity.</h2>
           <div className="flow-grid">
@@ -105,7 +109,7 @@ export default function HomePage() {
       </section>
 
       <section className="product section shell" id="products">
-        <div className="product-heading">
+        <div className="product-heading" data-ra-reveal="left">
           <p className="kicker">PRODUCT ENGINEERING / PARADIGM RA</p>
           <h2>Xyloglyphic</h2>
           <p className="product-subline">
@@ -113,7 +117,7 @@ export default function HomePage() {
           </p>
         </div>
 
-        <div className="product-copy">
+        <div className="product-copy" data-ra-reveal="right" data-ra-delay="100">
           <div className="product-visual">
             <img
               src="/work/xyloglyphic-product.jpg"
@@ -145,7 +149,7 @@ export default function HomePage() {
 
       <section className="client-work" id="work">
         <div className="shell client-work-inner">
-          <div className="client-work-heading">
+          <div className="client-work-heading" data-ra-reveal="left">
             <p className="kicker">CLIENT DELIVERY / PARADIGM RA</p>
             <h2>MCT VISIONS ENT</h2>
             <p className="client-project-line">
@@ -153,7 +157,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="client-work-copy">
+          <div className="client-work-copy" data-ra-reveal="right" data-ra-delay="100">
             <div className="client-work-visuals">
             <button
               type="button"
