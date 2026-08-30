@@ -2,6 +2,7 @@
 
 import {
   FormEvent,
+  useEffect,
   useState,
 } from "react";
 
@@ -116,6 +117,68 @@ export function RaDiscovery({
     useState<string | null>(
       null,
     );
+
+
+
+  /*
+   * Service-page deep link:
+   * /?discovery=start#discovery
+   *
+   * Skips the closed launch state and opens the existing
+   * contact intake directly. The normal homepage path
+   * remains unchanged.
+   */
+  useEffect(() => {
+    const params =
+      new URLSearchParams(
+        window.location.search,
+      );
+
+    if (
+      params.get("discovery") ===
+      "start"
+    ) {
+      setMode("contact");
+    }
+  }, []);
+
+
+  /*
+   * Once the intake has rendered, place the visitor
+   * directly at the first usable field without forcing
+   * an additional scroll.
+   */
+  useEffect(() => {
+    if (mode !== "contact") {
+      return;
+    }
+
+    const params =
+      new URLSearchParams(
+        window.location.search,
+      );
+
+    if (
+      params.get("discovery") !==
+      "start"
+    ) {
+      return;
+    }
+
+    const timer =
+      window.setTimeout(() => {
+        document
+          .querySelector<HTMLInputElement>(
+            ".ra-contact-form input",
+          )
+          ?.focus({
+            preventScroll: true,
+          });
+      }, 120);
+
+    return () =>
+      window.clearTimeout(timer);
+  }, [mode]);
 
 
   async function beginDiscovery(
@@ -547,15 +610,15 @@ export function RaDiscovery({
               </button>
 
               <button
-                className="button button-primary"
-                type="submit"
+                className="button button-primary ra-discovery-enter"
+              type="submit"
                 disabled={
                   loading
                 }
               >
                 {loading
-                  ? "Opening..."
-                  : "Begin discovery"}
+                ? "Entering..."
+                : "Enter"}
 
                 {!loading && (
                   <span>

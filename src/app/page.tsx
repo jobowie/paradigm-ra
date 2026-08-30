@@ -53,13 +53,28 @@ export default function HomePage() {
         </div>
 
         <div className="service-list">
-          {services.map((service, index) => (
-            <article className={`service-row service-row-${index + 1}`} key={service.number} id={service.number === "02" ? "accounting" : undefined}>
-              <span className="service-number">{service.number}</span>
-              <h3>{service.title}</h3>
-              <p>{service.description}</p>
-            </article>
-          ))}
+          {services.map((service, index) => {
+            const href =
+              service.number === "01"
+                ? "/services/web-software-solutions"
+                : service.number === "02"
+                  ? "/services/accounting-operational-solutions"
+                  : "/services/business-systems-technical-consulting";
+
+            return (
+              <a
+                className={`service-row service-row-${index + 1}`}
+                key={service.number}
+                id={service.number === "02" ? "accounting" : undefined}
+                href={href}
+                aria-label={`Explore ${service.title}`}
+              >
+                <span className="service-number">{service.number}</span>
+                <h3>{service.title}</h3>
+                <p>{service.description}</p>
+              </a>
+            );
+          })}
         </div>
       </section>
 
@@ -78,6 +93,14 @@ export default function HomePage() {
             <div><span>UNDERSTAND</span><strong>Insight</strong></div>
             <div><span>ACT</span><strong>Decisions</strong></div>
           </div>
+
+          <a
+            className="systems-service-link"
+            href="/services/business-automation"
+          >
+            Explore Business Automation + Integration
+            <span aria-hidden="true">→</span>
+          </a>
         </div>
       </section>
 
@@ -93,7 +116,7 @@ export default function HomePage() {
         <div className="product-copy">
           <div className="product-visual">
             <img
-              src="/work/xyloglyphic-product.png"
+              src="/work/xyloglyphic-product.jpg"
               alt="Xyloglyphic desktop music production system"
             />
           </div>
@@ -138,7 +161,7 @@ export default function HomePage() {
               aria-label="View MCT Visions website in full color"
             >
               <img
-                src="/work/mct-visions-site.png"
+                src="/work/mct-visions-site.jpg"
                 alt="MCT Visions Entertainment website"
               />
             </button>
@@ -149,7 +172,7 @@ export default function HomePage() {
               aria-label="View Cold Feet campaign artwork in full color"
             >
               <img
-                src="/work/mct-cold-feet.png"
+                src="/work/mct-cold-feet.jpg"
                 alt="Cold Feet promotional campaign artwork"
               />
             </button>
@@ -185,7 +208,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="cta">
+      <section className="cta" id="discovery">
         <div className="shell cta-inner">
           <p className="kicker">START A CONVERSATION</p>
           <h2>Better systems begin with a clearer problem.</h2>
