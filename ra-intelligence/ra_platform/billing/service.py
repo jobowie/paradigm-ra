@@ -1,0 +1,323 @@
+from datetime import date, timedelta
+from decimal import Decimal
+from uuid import UUID
+
+from .models import (
+    EngagementBillingTerms,
+    Invoice,
+    InvoiceLine,
+    InvoiceStatus,
+    Payment,
+    PaymentStatus,
+    TimeEntry,
+    TimeEntryStatus,
+)
+from .repository import BillingUnitOfWork
+
+
+def calculate_line_amount(
+    quantity: Decimal,
+    unit_rate: Decimal,
+) -> Decimal:
+    return quantity * unit_rate
+
+
+def calculate_subtotal(invoice: Invoice) -> Decimal:
+    return sum(
+        (
+            calculate_line_amount(
+                line.quantity,
+                line.unit_rate,
+            )
+            for line in invoice.line_items
+        ),
+        start=Decimal("0.00"),
+    )
+
+
+def calculate_total(invoice: Invoice) -> Decimal:
+    return calculate_subtotal(invoice) + invoice.tax_amount
+
+
+def calculate_amount_paid(
+    invoice: Invoice,
+    payments: list[Payment],
+) -> Decimal:
+    return sum(
+        (
+            payment.amount
+            for payment in payments
+            if payment.invoice_id == invoice.id
+            and payment.status == PaymentStatus.RECEIVED
+        ),
+        start=Decimal("0.00"),
+    )
+
+
+def calculate_balance_due(
+    invoice: Invoice,
+    payments: list[Payment],
+) -> Decimal:
+    total = calculate_total(invoice)
+    amount_paid = calculate_amount_paid(
+        invoice,
+        payments,
+    )
+
+    return max(
+        total - amount_paid,
+        Decimal("0.00"),
+    )
+
+
+def determine_invoice_status(
+    invoice: Invoice,
+    payments: list[Payment],
+) -> InvoiceStatus:
+    if invoice.status == InvoiceStatus.VOID:
+        return InvoiceStatus.VOID
+
+    total = calculate_total(invoice)
+    amount_paid = calculate_amount_paid(
+        invoice,
+        payments,
+    )
+
+    if (
+        amount_paid >= total
+        and total > Decimal("0.00")
+    ):
+        return InvoiceStatus.PAID
+
+    if amount_paid > Decimal("0.00"):
+        return InvoiceStatus.PARTIALLY_PAID
+
+    return invoice.status
+
+
+def refresh_invoice(
+    invoice: Invoice,
+    payments: list[Payment],
+) -> Invoice:
+    for line in invoice.line_items:
+        line.amount = calculate_line_amount(
+            line.quantity,
+            line.unit_rate,
+        )
+
+    invoice.subtotal = calculate_subtotal(invoice)
+    invoice.total = calculate_total(invoice)
+
+    invoice.amount_paid = calculate_amount_paid(
+        invoice,
+        payments,
+    )
+
+    invoice.balance_due = calculate_balance_due(
+        invoice,
+        payments,
+    )
+
+    invoice.status = determine_invoice_status(
+        invoice,
+        payments,
+    )
+
+    return invoice
+
+
+def resolve_hourly_rate(
+    engagement_id: UUID,
+    work_date: date,
+    billing_terms: list[EngagementBillingTerms],
+) -> Decimal:
+    matching_terms = [
+        terms
+        for terms in billing_terms
+        if terms.engagement_id == engagement_id
+        and terms.effective_from <= work_date
+        and (
+            terms.effective_to is None
+            or work_date <= terms.effective_to
+        )
+    ]
+
+    if not matching_terms:
+        raise ValueError(
+            "No billing terms found for engagement "
+            f"{engagement_id} on {work_date}"
+        )
+
+    matching_terms.sort(
+        key=lambda terms: terms.effective_from,
+        reverse=True,
+    )
+
+    rate = matching_terms[0].hourly_rate
+
+    if rate is None:
+        raise ValueError(
+            f"Engagement {engagement_id} "
+            "does not have an hourly rate"
+        )
+
+    return rate
+
+
+def build_invoice_lines_from_time_entries(
+    time_entries: list[TimeEntry],
+    billing_terms: list[EngagementBillingTerms],
+) -> list[InvoiceLine]:
+    invoice_lines: list[InvoiceLine] = []
+
+    for entry in time_entries:
+        if entry.status != TimeEntryStatus.APPROVED:
+            continue
+
+        rate = resolve_hourly_rate(
+            engagement_id=entry.engagement_id,
+            work_date=entry.work_date,
+            billing_terms=billing_terms,
+        )
+
+        amount = calculate_line_amount(
+            quantity=entry.hours,
+            unit_rate=rate,
+        )
+
+        invoice_lines.append(
+            InvoiceLine(
+                engagement_id=entry.engagement_id,
+                source_time_entry_ids=[entry.id],
+                description=(
+                    f"{entry.work_date.isoformat()} - "
+                    f"{entry.description}"
+                ),
+                quantity=entry.hours,
+                unit_rate=rate,
+                amount=amount,
+            )
+        )
+
+    return invoice_lines
+
+
+def mark_time_entries_invoiced(
+    time_entries: list[TimeEntry],
+    invoice: Invoice,
+) -> list[TimeEntry]:
+    invoiced_entry_ids = {
+        time_entry_id
+        for line in invoice.line_items
+        for time_entry_id in line.source_time_entry_ids
+    }
+
+    for entry in time_entries:
+        if entry.id in invoiced_entry_ids:
+            entry.status = TimeEntryStatus.INVOICED
+            entry.invoice_id = invoice.id
+
+    return time_entries
+
+
+def generate_invoice_from_time_entries(
+    *,
+    client_organization_id: UUID,
+    invoice_number: str,
+    time_entries: list[TimeEntry],
+    billing_terms: list[EngagementBillingTerms],
+    bill_to_name: str,
+    issue_date: date,
+    payment_terms_days: int = 30,
+    tax_amount: Decimal = Decimal("0.00"),
+    bill_to_email: str | None = None,
+    bill_to_address: str | None = None,
+    notes: str | None = None,
+) -> Invoice:
+    eligible_entries = [
+        entry
+        for entry in time_entries
+        if entry.status == TimeEntryStatus.APPROVED
+        and entry.invoice_id is None
+    ]
+
+    if not eligible_entries:
+        raise ValueError(
+            "No approved, uninvoiced time entries were provided."
+        )
+
+    invoice_lines = build_invoice_lines_from_time_entries(
+        time_entries=eligible_entries,
+        billing_terms=billing_terms,
+    )
+
+    if not invoice_lines:
+        raise ValueError(
+            "No invoice lines could be generated."
+        )
+
+    invoice = Invoice(
+        client_organization_id=client_organization_id,
+        invoice_number=invoice_number,
+        issue_date=issue_date,
+        due_date=issue_date + timedelta(
+            days=payment_terms_days
+        ),
+        bill_to_name=bill_to_name,
+        bill_to_email=bill_to_email,
+        bill_to_address=bill_to_address,
+        line_items=invoice_lines,
+        tax_amount=tax_amount,
+        notes=notes,
+    )
+
+    return refresh_invoice(
+        invoice=invoice,
+        payments=[],
+    )
+
+
+def create_invoice_from_time_entries(
+    *,
+    uow: BillingUnitOfWork,
+    client_organization_id: UUID,
+    invoice_number: str,
+    time_entries: list[TimeEntry],
+    billing_terms: list[EngagementBillingTerms],
+    bill_to_name: str,
+    issue_date: date,
+    payment_terms_days: int = 30,
+    tax_amount: Decimal = Decimal("0.00"),
+    bill_to_email: str | None = None,
+    bill_to_address: str | None = None,
+    notes: str | None = None,
+) -> Invoice:
+    invoice = generate_invoice_from_time_entries(
+        client_organization_id=client_organization_id,
+        invoice_number=invoice_number,
+        time_entries=time_entries,
+        billing_terms=billing_terms,
+        bill_to_name=bill_to_name,
+        issue_date=issue_date,
+        payment_terms_days=payment_terms_days,
+        tax_amount=tax_amount,
+        bill_to_email=bill_to_email,
+        bill_to_address=bill_to_address,
+        notes=notes,
+    )
+
+    with uow:
+        uow.invoices.add(invoice)
+
+        updated_entries = mark_time_entries_invoiced(
+            time_entries=time_entries,
+            invoice=invoice,
+        )
+
+        uow.time_entries.update_many(
+            updated_entries
+        )
+
+        uow.commit()
+
+    return invoice
