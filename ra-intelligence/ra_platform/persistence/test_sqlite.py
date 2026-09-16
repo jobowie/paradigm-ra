@@ -159,3 +159,156 @@ def test_brewbird_organization_and_engagement_round_trip():
         saved_engagement.source
         == EngagementSource.CONTRACT_CONVERSION
     )
+
+from datetime import date
+from decimal import Decimal
+
+from ra_platform.billing.models import (
+    BillingCadence,
+    BillingType,
+    EngagementBillingTerms,
+    TimeEntry,
+    TimeEntryStatus,
+)
+
+from ra_platform.billing.service import (
+    create_invoice_from_time_entries,
+)
+
+from .sqlite_repositories import (
+    SQLiteBillingUnitOfWork,
+    SQLiteEngagementRepository,
+    SQLiteOrganizationRepository,
+    SQLiteTimeEntryRepository,
+)
+
+def test_brewbird_invoice_transaction_round_trip():
+    connection = build_memory_database()
+
+    organizations = SQLiteOrganizationRepository(
+        connection
+    )
+    engagements = SQLiteEngagementRepository(
+        connection
+    )
+    time_entry_repository = SQLiteTimeEntryRepository(
+        connection
+    )
+
+    paradigm_ra = Organization(
+        name="Paradigm Ra",
+        type=OrganizationType.PARADIGM_RA,
+    )
+
+    brewbird = Organization(
+        name="BrewBird Coffee",
+        type=OrganizationType.CLIENT,
+    )
+
+    organizations.add(paradigm_ra)
+    organizations.add(brewbird)
+
+    bookkeeping = Engagement(
+        client_organization_id=brewbird.id,
+        owner_organization_id=paradigm_ra.id,
+        name="Bookkeeping",
+        service_type="bookkeeping",
+        source=EngagementSource.CONTRACT_CONVERSION,
+        status=EngagementStatus.ACTIVE,
+    )
+
+    engagements.add(bookkeeping)
+
+    time_entries = [
+        TimeEntry(
+            engagement_id=bookkeeping.id,
+            work_date=date(2026, 9, 15),
+            description="Bank reconciliation",
+            hours=Decimal("5"),
+            status=TimeEntryStatus.APPROVED,
+        ),
+        TimeEntry(
+            engagement_id=bookkeeping.id,
+            work_date=date(2026, 9, 16),
+            description="Accounts payable review",
+            hours=Decimal("6"),
+            status=TimeEntryStatus.APPROVED,
+        ),
+    ]
+
+    time_entry_repository.add_many(
+        time_entries
+    )
+
+    connection.commit()
+
+    billing_terms = [
+        EngagementBillingTerms(
+            engagement_id=bookkeeping.id,
+            billing_type=BillingType.HOURLY,
+            billing_cadence=BillingCadence.WEEKLY,
+            hourly_rate=Decimal("70.00"),
+            expected_hours_min=Decimal("15"),
+            expected_hours_max=Decimal("30"),
+            payment_terms_days=30,
+            effective_from=date(2026, 9, 15),
+        )
+    ]
+
+    uow = SQLiteBillingUnitOfWork(
+        connection
+    )
+
+    invoice = create_invoice_from_time_entries(
+        uow=uow,
+        client_organization_id=brewbird.id,
+        invoice_number="RA-2026-001",
+        time_entries=time_entries,
+        billing_terms=billing_terms,
+        bill_to_name="BrewBird Coffee",
+        issue_date=date(2026, 9, 30),
+    )
+
+    saved_invoice = uow.invoices.get(
+        invoice.id
+    )
+
+    saved_entry_one = uow.time_entries.get(
+        time_entries[0].id
+    )
+
+    saved_entry_two = uow.time_entries.get(
+        time_entries[1].id
+    )
+
+    assert saved_invoice is not None
+    assert saved_invoice.total == Decimal(
+        "770.00"
+    )
+
+    assert len(
+        saved_invoice.line_items
+    ) == 2
+
+    assert saved_entry_one is not None
+    assert saved_entry_two is not None
+
+    assert (
+        saved_entry_one.status
+        == TimeEntryStatus.INVOICED
+    )
+
+    assert (
+        saved_entry_two.status
+        == TimeEntryStatus.INVOICED
+    )
+
+    assert (
+        saved_entry_one.invoice_id
+        == invoice.id
+    )
+
+    assert (
+        saved_entry_two.invoice_id
+        == invoice.id
+    )
