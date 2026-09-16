@@ -22,6 +22,40 @@ class QuoteStatus(str, Enum):
     EXPIRED = "expired"
 
 
+class PaymentStatus(str, Enum):
+    PENDING = "pending"
+    RECEIVED = "received"
+    FAILED = "failed"
+    REFUNDED = "refunded"
+
+
+class PaymentMethod(str, Enum):
+    EXTERNAL_AP = "external_ap"
+    BANK_TRANSFER = "bank_transfer"
+    CHECK = "check"
+    CARD = "card"
+    OTHER = "other"
+
+
+class BillingType(str, Enum):
+    HOURLY = "hourly"
+    FIXED = "fixed"
+    RETAINER = "retainer"
+
+
+class BillingCadence(str, Enum):
+    WEEKLY = "weekly"
+    BIWEEKLY = "biweekly"
+    MONTHLY = "monthly"
+    MILESTONE = "milestone"
+
+
+class TimeEntryStatus(str, Enum):
+    DRAFT = "draft"
+    APPROVED = "approved"
+    INVOICED = "invoiced"
+
+
 class QuoteLine(BaseModel):
     id: UUID = Field(default_factory=uuid4)
 
@@ -75,39 +109,6 @@ class Quote(BaseModel):
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)
     )
-    
-class PaymentStatus(str, Enum):
-    PENDING = "pending"
-    RECEIVED = "received"
-    FAILED = "failed"
-    REFUNDED = "refunded"
-
-
-class PaymentMethod(str, Enum):
-    EXTERNAL_AP = "external_ap"
-    BANK_TRANSFER = "bank_transfer"
-    CHECK = "check"
-    CARD = "card"
-    OTHER = "other"
-
-
-class BillingType(str, Enum):
-    HOURLY = "hourly"
-    FIXED = "fixed"
-    RETAINER = "retainer"
-
-
-class BillingCadence(str, Enum):
-    WEEKLY = "weekly"
-    BIWEEKLY = "biweekly"
-    MONTHLY = "monthly"
-    MILESTONE = "milestone"
-
-
-class TimeEntryStatus(str, Enum):
-    DRAFT = "draft"
-    APPROVED = "approved"
-    INVOICED = "invoiced"
 
 
 class InvoiceLine(BaseModel):
@@ -126,19 +127,15 @@ class InvoiceLine(BaseModel):
 
     amount: Decimal = Field(
         default=Decimal("0.00"),
-        ge=0
+        ge=0,
     )
-    source_quote_id: UUID | None = None,
-    
-    terms: str | None = None,
-    
-    
 
 
 class Invoice(BaseModel):
     id: UUID = Field(default_factory=uuid4)
 
     client_organization_id: UUID
+    source_quote_id: UUID | None = None
 
     invoice_number: str = Field(min_length=1)
 
@@ -163,6 +160,7 @@ class Invoice(BaseModel):
     balance_due: Decimal = Decimal("0.00")
 
     notes: str | None = None
+    terms: str | None = None
 
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)
@@ -234,3 +232,4 @@ class TimeEntry(BaseModel):
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)
     )
+    

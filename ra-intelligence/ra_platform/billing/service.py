@@ -431,3 +431,67 @@ def decline_quote(
     )
 
     return quote
+
+def create_invoice_from_accepted_quote(
+    *,
+    quote: Quote,
+    invoice_number: str,
+    invoice_amount: Decimal,
+    description: str,
+    issue_date: date,
+    due_date: date,
+    existing_invoices: list[Invoice] | None = None,
+) -> Invoice:
+    if quote.status != QuoteStatus.ACCEPTED:
+        raise ValueError(
+            "Only accepted quotes can create invoices."
+        )
+
+    if invoice_amount <= Decimal("0.00"):
+        raise ValueError(
+            "Invoice amount must be greater than zero."
+        )
+
+    existing_invoices = existing_invoices or []
+
+    already_invoiced = sum(
+        (
+            invoice.total
+            for invoice in existing_invoices
+            if invoice.source_quote_id == quote.id
+            and invoice.status != InvoiceStatus.VOID
+        ),
+        start=Decimal("0.00"),
+    )
+
+    if already_invoiced + invoice_amount > quote.total:
+        raise ValueError(
+            "Invoice would exceed the accepted quote total."
+        )
+
+    invoice = Invoice(
+        client_organization_id=quote.client_organization_id,
+        source_quote_id=quote.id,
+        invoice_number=invoice_number,
+        issue_date=issue_date,
+        due_date=due_date,
+        bill_to_name=quote.bill_to_name,
+        bill_to_email=quote.bill_to_email,
+        bill_to_address=quote.bill_to_address,
+        line_items=[
+            InvoiceLine(
+                engagement_id=quote.engagement_id,
+                description=description,
+                quantity=Decimal("1"),
+                unit_rate=invoice_amount,
+            )
+        ],
+        notes=quote.notes,
+        terms=quote.terms,
+    )
+
+    return refresh_invoice(
+        invoice=invoice,
+        payments=[],
+    )
+

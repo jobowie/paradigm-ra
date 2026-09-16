@@ -1,4 +1,7 @@
 import sqlite3
+
+from datetime import date, datetime
+from decimal import Decimal
 from uuid import UUID
 
 from ra_platform.organizations.models import (
@@ -6,10 +9,22 @@ from ra_platform.organizations.models import (
     OrganizationStatus,
     OrganizationType,
 )
+
 from ra_platform.engagements.models import (
     Engagement,
     EngagementSource,
     EngagementStatus,
+)
+
+from ra_platform.billing.models import (
+    Invoice,
+    InvoiceLine,
+    InvoiceStatus,
+    Quote,
+    QuoteLine,
+    QuoteStatus,
+    TimeEntry,
+    TimeEntryStatus,
 )
 
 
@@ -164,16 +179,233 @@ class SQLiteEngagementRepository:
             created_at=row["created_at"],
             updated_at=row["updated_at"],
         )
-from datetime import date
-from decimal import Decimal
 
-from ra_platform.billing.models import (
-    Invoice,
-    InvoiceLine,
-    InvoiceStatus,
-    TimeEntry,
-    TimeEntryStatus,
-)
+
+class SQLiteQuoteRepository:
+    def __init__(
+        self,
+        connection: sqlite3.Connection,
+    ) -> None:
+        self.connection = connection
+
+    def add(
+        self,
+        quote: Quote,
+    ) -> None:
+        engagement_row = self.connection.execute(
+            """
+            SELECT client_organization_id
+            FROM engagements
+            WHERE id = ?
+            """,
+            (str(quote.engagement_id),),
+        ).fetchone()
+
+        if engagement_row is None:
+            raise ValueError(
+                "Quote engagement does not exist."
+            )
+
+        if (
+            engagement_row["client_organization_id"]
+            != str(quote.client_organization_id)
+        ):
+            raise ValueError(
+                "Quote client organization does not match "
+                "the engagement client organization."
+            )
+
+        self.connection.execute(
+            """
+            INSERT INTO quotes (
+                id,
+                client_organization_id,
+                engagement_id,
+                quote_number,
+                status,
+                issue_date,
+                expiration_date,
+                bill_to_name,
+                bill_to_email,
+                bill_to_address,
+                subtotal,
+                tax_amount,
+                total,
+                notes,
+                terms,
+                sent_at,
+                accepted_at,
+                declined_at,
+                created_at,
+                updated_at
+            )
+            VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            )
+            """,
+            (
+                str(quote.id),
+                str(quote.client_organization_id),
+                str(quote.engagement_id),
+                quote.quote_number,
+                quote.status.value,
+                (
+                    quote.issue_date.isoformat()
+                    if quote.issue_date
+                    else None
+                ),
+                (
+                    quote.expiration_date.isoformat()
+                    if quote.expiration_date
+                    else None
+                ),
+                quote.bill_to_name,
+                quote.bill_to_email,
+                quote.bill_to_address,
+                str(quote.subtotal),
+                str(quote.tax_amount),
+                str(quote.total),
+                quote.notes,
+                quote.terms,
+                (
+                    quote.sent_at.isoformat()
+                    if quote.sent_at
+                    else None
+                ),
+                (
+                    quote.accepted_at.isoformat()
+                    if quote.accepted_at
+                    else None
+                ),
+                (
+                    quote.declined_at.isoformat()
+                    if quote.declined_at
+                    else None
+                ),
+                quote.created_at.isoformat(),
+                quote.updated_at.isoformat(),
+            ),
+        )
+
+        for line in quote.line_items:
+            self.connection.execute(
+                """
+                INSERT INTO quote_lines (
+                    id,
+                    quote_id,
+                    description,
+                    quantity,
+                    unit_rate,
+                    amount
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    str(line.id),
+                    str(quote.id),
+                    line.description,
+                    str(line.quantity),
+                    str(line.unit_rate),
+                    str(line.amount),
+                ),
+            )
+
+    def get_for_client(
+        self,
+        quote_id: UUID,
+        client_organization_id: UUID,
+    ) -> Quote | None:
+        row = self.connection.execute(
+            """
+            SELECT *
+            FROM quotes
+            WHERE id = ?
+              AND client_organization_id = ?
+            """,
+            (
+                str(quote_id),
+                str(client_organization_id),
+            ),
+        ).fetchone()
+
+        if row is None:
+            return None
+
+        line_rows = self.connection.execute(
+            """
+            SELECT *
+            FROM quote_lines
+            WHERE quote_id = ?
+            ORDER BY rowid
+            """,
+            (str(quote_id),),
+        ).fetchall()
+
+        line_items = [
+            QuoteLine(
+                id=UUID(line["id"]),
+                description=line["description"],
+                quantity=Decimal(line["quantity"]),
+                unit_rate=Decimal(line["unit_rate"]),
+                amount=Decimal(line["amount"]),
+            )
+            for line in line_rows
+        ]
+
+        return Quote(
+            id=UUID(row["id"]),
+            client_organization_id=UUID(
+                row["client_organization_id"]
+            ),
+            engagement_id=UUID(
+                row["engagement_id"]
+            ),
+            quote_number=row["quote_number"],
+            status=QuoteStatus(row["status"]),
+            issue_date=(
+                date.fromisoformat(row["issue_date"])
+                if row["issue_date"]
+                else None
+            ),
+            expiration_date=(
+                date.fromisoformat(
+                    row["expiration_date"]
+                )
+                if row["expiration_date"]
+                else None
+            ),
+            bill_to_name=row["bill_to_name"],
+            bill_to_email=row["bill_to_email"],
+            bill_to_address=row["bill_to_address"],
+            line_items=line_items,
+            subtotal=Decimal(row["subtotal"]),
+            tax_amount=Decimal(row["tax_amount"]),
+            total=Decimal(row["total"]),
+            notes=row["notes"],
+            terms=row["terms"],
+            sent_at=(
+                datetime.fromisoformat(row["sent_at"])
+                if row["sent_at"]
+                else None
+            ),
+            accepted_at=(
+                datetime.fromisoformat(
+                    row["accepted_at"]
+                )
+                if row["accepted_at"]
+                else None
+            ),
+            declined_at=(
+                datetime.fromisoformat(
+                    row["declined_at"]
+                )
+                if row["declined_at"]
+                else None
+            ),
+            created_at=row["created_at"],
+            updated_at=row["updated_at"],
+        )
 
 
 class SQLiteInvoiceRepository:
@@ -192,6 +424,7 @@ class SQLiteInvoiceRepository:
             INSERT INTO invoices (
                 id,
                 client_organization_id,
+                source_quote_id,
                 invoice_number,
                 status,
                 issue_date,
@@ -205,20 +438,35 @@ class SQLiteInvoiceRepository:
                 amount_paid,
                 balance_due,
                 notes,
+                terms,
                 created_at,
                 updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?, ?, ?, ?
+            )
             """,
             (
                 str(invoice.id),
                 str(invoice.client_organization_id),
+                (
+                    str(invoice.source_quote_id)
+                    if invoice.source_quote_id
+                    else None
+                ),
                 invoice.invoice_number,
                 invoice.status.value,
-                invoice.issue_date.isoformat()
-                if invoice.issue_date else None,
-                invoice.due_date.isoformat()
-                if invoice.due_date else None,
+                (
+                    invoice.issue_date.isoformat()
+                    if invoice.issue_date
+                    else None
+                ),
+                (
+                    invoice.due_date.isoformat()
+                    if invoice.due_date
+                    else None
+                ),
                 invoice.bill_to_name,
                 invoice.bill_to_email,
                 invoice.bill_to_address,
@@ -228,6 +476,7 @@ class SQLiteInvoiceRepository:
                 str(invoice.amount_paid),
                 str(invoice.balance_due),
                 invoice.notes,
+                invoice.terms,
                 invoice.created_at.isoformat(),
                 invoice.updated_at.isoformat(),
             ),
@@ -339,6 +588,11 @@ class SQLiteInvoiceRepository:
             client_organization_id=UUID(
                 row["client_organization_id"]
             ),
+            source_quote_id=(
+                UUID(row["source_quote_id"])
+                if row["source_quote_id"]
+                else None
+            ),
             invoice_number=row["invoice_number"],
             status=InvoiceStatus(row["status"]),
             issue_date=(
@@ -361,6 +615,7 @@ class SQLiteInvoiceRepository:
             amount_paid=Decimal(row["amount_paid"]),
             balance_due=Decimal(row["balance_due"]),
             notes=row["notes"],
+            terms=row["terms"],
             created_at=row["created_at"],
             updated_at=row["updated_at"],
         )

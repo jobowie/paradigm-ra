@@ -11,9 +11,24 @@ from ra_platform.engagements.models import (
 )
 
 from .sqlite import initialize_database
+
 from .sqlite_repositories import (
     SQLiteEngagementRepository,
     SQLiteOrganizationRepository,
+)
+
+from ra_platform.billing.models import (
+    Quote,
+    QuoteLine,
+    QuoteStatus,
+)
+
+from ra_platform.billing.service import (
+    refresh_quote,
+)
+
+from .sqlite_repositories import (
+    SQLiteQuoteRepository,
 )
 
 
@@ -312,3 +327,95 @@ def test_brewbird_invoice_transaction_round_trip():
         saved_entry_two.invoice_id
         == invoice.id
     )
+
+def test_strategic_quote_round_trip_and_client_isolation():
+    connection = build_memory_database()
+
+    organizations = SQLiteOrganizationRepository(
+        connection
+    )
+    engagements = SQLiteEngagementRepository(
+        connection
+    )
+    quotes = SQLiteQuoteRepository(
+        connection
+    )
+
+    paradigm_ra = Organization(
+        name="Paradigm Ra",
+        type=OrganizationType.PARADIGM_RA,
+    )
+
+    strategic = Organization(
+        name="Strategic Crime Prevention",
+        type=OrganizationType.CLIENT,
+    )
+
+    brewbird = Organization(
+        name="BrewBird Coffee",
+        type=OrganizationType.CLIENT,
+    )
+
+    organizations.add(paradigm_ra)
+    organizations.add(strategic)
+    organizations.add(brewbird)
+
+    website_engagement = Engagement(
+        client_organization_id=strategic.id,
+        owner_organization_id=paradigm_ra.id,
+        name="Website Design & Development",
+        service_type="website_design_development",
+        source=EngagementSource.DIRECT,
+        status=EngagementStatus.ACTIVE,
+    )
+
+    engagements.add(website_engagement)
+
+    quote = Quote(
+        client_organization_id=strategic.id,
+        engagement_id=website_engagement.id,
+        quote_number="RA-Q-2026-001",
+        issue_date=date(2026, 9, 16),
+        expiration_date=date(2026, 9, 30),
+        bill_to_name="Strategic Crime Prevention",
+        line_items=[
+            QuoteLine(
+                description=(
+                    "Website Design & Development"
+                ),
+                quantity=Decimal("1"),
+                unit_rate=Decimal("750.00"),
+            )
+        ],
+        terms=(
+            "50% deposit on acceptance. "
+            "Remaining 50% due before launch. "
+            "Two revision rounds included. "
+            "Ongoing support is separate."
+        ),
+    )
+
+    refresh_quote(quote)
+
+    quotes.add(quote)
+
+    connection.commit()
+
+    saved_quote = quotes.get_for_client(
+        quote.id,
+        strategic.id,
+    )
+
+    assert saved_quote is not None
+    assert saved_quote.id == quote.id
+    assert saved_quote.total == Decimal("750.00")
+    assert saved_quote.client_organization_id == strategic.id
+    assert saved_quote.engagement_id == website_engagement.id
+    assert len(saved_quote.line_items) == 1
+
+    brewbird_attempt = quotes.get_for_client(
+        quote.id,
+        brewbird.id,
+    )
+
+    assert brewbird_attempt is None
