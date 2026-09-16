@@ -1,6 +1,7 @@
 import sqlite3
 from pathlib import Path
 
+
 DEFAULT_DB_PATH = Path("data/paradigm_ra.db")
 
 
@@ -14,8 +15,6 @@ def create_connection(
 
     connection = sqlite3.connect(db_path)
     connection.row_factory = sqlite3.Row
-
-    # Enforce our Organization / Engagement relationships.
     connection.execute("PRAGMA foreign_keys = ON")
 
     return connection
@@ -24,6 +23,8 @@ def create_connection(
 def initialize_database(
     connection: sqlite3.Connection,
 ) -> None:
+    connection.execute("PRAGMA foreign_keys = ON")
+
     connection.executescript(
         """
         CREATE TABLE IF NOT EXISTS organizations (
