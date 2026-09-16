@@ -36,6 +36,7 @@ def initialize_database(
             updated_at TEXT NOT NULL
         );
 
+
         CREATE TABLE IF NOT EXISTS engagements (
             id TEXT PRIMARY KEY,
 
@@ -61,6 +62,7 @@ def initialize_database(
                 REFERENCES organizations(id)
         );
 
+
         CREATE TABLE IF NOT EXISTS engagement_billing_terms (
             id TEXT PRIMARY KEY,
 
@@ -85,10 +87,66 @@ def initialize_database(
                 REFERENCES engagements(id)
         );
 
+
+        CREATE TABLE IF NOT EXISTS quotes (
+            id TEXT PRIMARY KEY,
+
+            client_organization_id TEXT NOT NULL,
+            engagement_id TEXT NOT NULL,
+
+            quote_number TEXT NOT NULL UNIQUE,
+            status TEXT NOT NULL,
+
+            issue_date TEXT,
+            expiration_date TEXT,
+
+            bill_to_name TEXT NOT NULL,
+            bill_to_email TEXT,
+            bill_to_address TEXT,
+
+            subtotal TEXT NOT NULL,
+            tax_amount TEXT NOT NULL,
+            total TEXT NOT NULL,
+
+            notes TEXT,
+            terms TEXT,
+
+            sent_at TEXT,
+            accepted_at TEXT,
+            declined_at TEXT,
+
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+
+            FOREIGN KEY (client_organization_id)
+                REFERENCES organizations(id),
+
+            FOREIGN KEY (engagement_id)
+                REFERENCES engagements(id)
+        );
+
+
+        CREATE TABLE IF NOT EXISTS quote_lines (
+            id TEXT PRIMARY KEY,
+
+            quote_id TEXT NOT NULL,
+
+            description TEXT NOT NULL,
+
+            quantity TEXT NOT NULL,
+            unit_rate TEXT NOT NULL,
+            amount TEXT NOT NULL,
+
+            FOREIGN KEY (quote_id)
+                REFERENCES quotes(id)
+        );
+
+
         CREATE TABLE IF NOT EXISTS invoices (
             id TEXT PRIMARY KEY,
 
             client_organization_id TEXT NOT NULL,
+            source_quote_id TEXT,
 
             invoice_number TEXT NOT NULL UNIQUE,
             status TEXT NOT NULL,
@@ -108,13 +166,18 @@ def initialize_database(
             balance_due TEXT NOT NULL,
 
             notes TEXT,
+            terms TEXT,
 
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
 
             FOREIGN KEY (client_organization_id)
-                REFERENCES organizations(id)
+                REFERENCES organizations(id),
+
+            FOREIGN KEY (source_quote_id)
+                REFERENCES quotes(id)
         );
+
 
         CREATE TABLE IF NOT EXISTS invoice_lines (
             id TEXT PRIMARY KEY,
@@ -134,6 +197,7 @@ def initialize_database(
             FOREIGN KEY (engagement_id)
                 REFERENCES engagements(id)
         );
+
 
         CREATE TABLE IF NOT EXISTS time_entries (
             id TEXT PRIMARY KEY,
@@ -156,6 +220,7 @@ def initialize_database(
                 REFERENCES invoices(id)
         );
 
+
         CREATE TABLE IF NOT EXISTS invoice_line_time_entries (
             invoice_line_id TEXT NOT NULL,
             time_entry_id TEXT NOT NULL,
@@ -171,6 +236,7 @@ def initialize_database(
             FOREIGN KEY (time_entry_id)
                 REFERENCES time_entries(id)
         );
+
 
         CREATE TABLE IF NOT EXISTS payments (
             id TEXT PRIMARY KEY,
@@ -192,3 +258,4 @@ def initialize_database(
     )
 
     connection.commit()
+    
