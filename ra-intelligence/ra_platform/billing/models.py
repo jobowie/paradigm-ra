@@ -8,13 +8,74 @@ from pydantic import BaseModel, Field
 
 class InvoiceStatus(str, Enum):
     DRAFT = "draft"
-    ISSUED = "issued"
-    PARTIALLY_PAID = "partially_paid"
+    SENT = "sent"
     PAID = "paid"
     OVERDUE = "overdue"
     VOID = "void"
 
 
+class QuoteStatus(str, Enum):
+    DRAFT = "draft"
+    SENT = "sent"
+    ACCEPTED = "accepted"
+    DECLINED = "declined"
+    EXPIRED = "expired"
+
+
+class QuoteLine(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
+
+    description: str = Field(min_length=1)
+
+    quantity: Decimal = Field(gt=0)
+    unit_rate: Decimal = Field(ge=0)
+
+    amount: Decimal = Field(
+        default=Decimal("0.00"),
+        ge=0,
+    )
+
+
+class Quote(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
+
+    client_organization_id: UUID
+    engagement_id: UUID
+
+    quote_number: str = Field(min_length=1)
+
+    status: QuoteStatus = QuoteStatus.DRAFT
+
+    issue_date: date | None = None
+    expiration_date: date | None = None
+
+    bill_to_name: str = Field(min_length=1)
+    bill_to_email: str | None = None
+    bill_to_address: str | None = None
+
+    line_items: list[QuoteLine] = Field(
+        default_factory=list
+    )
+
+    subtotal: Decimal = Decimal("0.00")
+    tax_amount: Decimal = Decimal("0.00")
+    total: Decimal = Decimal("0.00")
+
+    notes: str | None = None
+    terms: str | None = None
+
+    sent_at: datetime | None = None
+    accepted_at: datetime | None = None
+    declined_at: datetime | None = None
+
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
+
+    updated_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
+    
 class PaymentStatus(str, Enum):
     PENDING = "pending"
     RECEIVED = "received"
@@ -65,8 +126,13 @@ class InvoiceLine(BaseModel):
 
     amount: Decimal = Field(
         default=Decimal("0.00"),
-        ge=0,
+        ge=0
     )
+    source_quote_id: UUID | None = None,
+    
+    terms: str | None = None,
+    
+    
 
 
 class Invoice(BaseModel):

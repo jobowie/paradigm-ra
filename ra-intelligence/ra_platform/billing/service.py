@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from uuid import UUID
 
@@ -9,6 +9,8 @@ from .models import (
     InvoiceStatus,
     Payment,
     PaymentStatus,
+    Quote,
+    QuoteStatus,
     TimeEntry,
     TimeEntryStatus,
 )
@@ -88,11 +90,9 @@ def determine_invoice_status(
         and total > Decimal("0.00")
     ):
         return InvoiceStatus.PAID
-
-    if amount_paid > Decimal("0.00"):
-        return InvoiceStatus.PARTIALLY_PAID
-
     return invoice.status
+
+
 
 
 def refresh_invoice(
@@ -321,3 +321,113 @@ def create_invoice_from_time_entries(
         uow.commit()
 
     return invoice
+
+def calculate_quote_subtotal(
+    quote: Quote,
+) -> Decimal:
+    return sum(
+        (
+            line.quantity * line.unit_rate
+            for line in quote.line_items
+        ),
+        start=Decimal("0.00"),
+    )
+
+
+def calculate_quote_total(
+    quote: Quote,
+) -> Decimal:
+    return (
+        calculate_quote_subtotal(quote)
+        + quote.tax_amount
+    )
+
+
+def refresh_quote(
+    quote: Quote,
+) -> Quote:
+    for line in quote.line_items:
+        line.amount = (
+            line.quantity
+            * line.unit_rate
+        )
+
+    quote.subtotal = calculate_quote_subtotal(
+        quote
+    )
+
+    quote.total = calculate_quote_total(
+        quote
+    )
+
+    return quote
+
+
+def send_quote(
+    quote: Quote,
+    *,
+    sent_at: datetime | None = None,
+) -> Quote:
+    if quote.status != QuoteStatus.DRAFT:
+        raise ValueError(
+            "Only draft quotes can be sent."
+        )
+
+    quote.status = QuoteStatus.SENT
+    quote.sent_at = (
+        sent_at
+        or datetime.now(timezone.utc)
+    )
+
+    return quote
+
+
+def accept_quote(
+    quote: Quote,
+    *,
+    accepted_at: datetime | None = None,
+) -> Quote:
+    if quote.status != QuoteStatus.SENT:
+        raise ValueError(
+            "Only sent quotes can be accepted."
+        )
+
+    timestamp = (
+        accepted_at
+        or datetime.now(timezone.utc)
+    )
+
+    if (
+        quote.expiration_date is not None
+        and timestamp.date()
+        > quote.expiration_date
+    ):
+        quote.status = QuoteStatus.EXPIRED
+
+        raise ValueError(
+            "Expired quotes cannot be accepted."
+        )
+
+    quote.status = QuoteStatus.ACCEPTED
+    quote.accepted_at = timestamp
+
+    return quote
+
+
+def decline_quote(
+    quote: Quote,
+    *,
+    declined_at: datetime | None = None,
+) -> Quote:
+    if quote.status != QuoteStatus.SENT:
+        raise ValueError(
+            "Only sent quotes can be declined."
+        )
+
+    quote.status = QuoteStatus.DECLINED
+    quote.declined_at = (
+        declined_at
+        or datetime.now(timezone.utc)
+    )
+
+    return quote
