@@ -96,7 +96,7 @@ export function AdminQuoteForm() {
 
     try {
       const response = await fetch(
-        "/api/admin/quotes",
+        "https://ra-platform-api.onrender.com/admin/quotes",
         {
           method: "POST",
           headers: {

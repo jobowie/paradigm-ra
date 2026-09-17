@@ -30,7 +30,7 @@ export function QuoteAcceptance({
 
     try {
       const response = await fetch(
-        `/api/quotes/${encodeURIComponent(token)}/accept`,
+        `https://ra-platform-api.onrender.com/quotes/public/${encodeURIComponent(token)}/accept`,
         {
           method: "POST",
         },
