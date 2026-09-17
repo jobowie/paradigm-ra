@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 from uuid import UUID
 
+from ra_platform.api.dependencies import get_database_path
 from ra_platform.billing.models import (
     Quote,
     QuoteLine,
@@ -51,7 +52,7 @@ STRATEGIC_QUOTE_ID = UUID(
 
 
 def main():
-    connection = create_connection()
+    connection = create_connection(get_database_path())
 
     initialize_database(connection)
 

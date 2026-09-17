@@ -1,3 +1,4 @@
+from ra_platform.api.dependencies import get_database_path
 from ra_platform.billing.models import QuoteStatus
 from ra_platform.billing.service import send_quote
 from ra_platform.persistence.sqlite import (
@@ -18,7 +19,7 @@ from ra_platform.scripts.create_strategic_quote import (
 
 
 def main():
-    connection = create_connection()
+    connection = create_connection(get_database_path())
     initialize_database(connection)
 
     repository = SQLiteQuoteRepository(
