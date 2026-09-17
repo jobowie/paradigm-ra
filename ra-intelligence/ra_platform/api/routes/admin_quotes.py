@@ -110,6 +110,16 @@ def require_admin_key(
         )
 
 
+@router.post("/verify")
+def verify_admin_access(
+    _: None = Depends(require_admin_key),
+):
+    return {
+        "authorized": True,
+    }
+
+
+
 def get_or_create_organization(
     connection: sqlite3.Connection,
     *,

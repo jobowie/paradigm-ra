@@ -28,9 +28,13 @@ function defaultExpiration() {
     .slice(0, 10);
 }
 
-export function AdminQuoteForm() {
-  const [adminKey, setAdminKey] =
-    useState("");
+interface AdminQuoteFormProps {
+  adminKey: string;
+}
+
+export function AdminQuoteForm({
+  adminKey,
+}: AdminQuoteFormProps) {
 
   const [clientName, setClientName] =
     useState(
@@ -172,20 +176,6 @@ export function AdminQuoteForm() {
       onSubmit={handleSubmit}
     >
       <div className="admin-form-grid">
-        <label>
-          <span>Admin Key</span>
-          <input
-            type="password"
-            required
-            value={adminKey}
-            onChange={(event) =>
-              setAdminKey(
-                event.target.value,
-              )
-            }
-          />
-        </label>
-
         <label>
           <span>Client</span>
           <input
