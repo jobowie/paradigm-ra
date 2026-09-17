@@ -3759,3 +3759,293 @@ a.service-row span {
     height: auto;
   }
 }
+
+
+/* -------------------------------------------------
+   Paradigm Ra — Client Quote
+-------------------------------------------------- */
+
+.quote-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at 82% 8%,
+      rgba(156,144,255,.12),
+      transparent 28%
+    ),
+    var(--bg);
+}
+
+.quote-header {
+  min-height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+}
+
+.quote-header-label {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: .18em;
+}
+
+.quote-shell {
+  padding-top: 82px;
+  padding-bottom: 72px;
+}
+
+.quote-heading {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 70px;
+  align-items: end;
+}
+
+.quote-heading h1 {
+  margin: 18px 0 22px;
+  font-size: clamp(54px, 7vw, 92px);
+}
+
+.quote-client {
+  color: var(--muted);
+  font-size: 18px;
+}
+
+.quote-client strong {
+  color: var(--text);
+  font-weight: 550;
+}
+
+.quote-total-card {
+  min-width: 270px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(15,17,22,.74);
+}
+
+.quote-total-card > span {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: .16em;
+}
+
+.quote-total-card > strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 38px;
+  font-weight: 520;
+}
+
+.quote-status {
+  display: inline-flex;
+  margin-top: 18px;
+  padding: 7px 10px;
+  border: 1px solid rgba(156,144,255,.3);
+  border-radius: 999px;
+  color: var(--ra-violet);
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.quote-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 70px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.quote-meta div {
+  padding: 22px 0;
+}
+
+.quote-meta div + div {
+  padding-left: 28px;
+  border-left: 1px solid var(--line);
+}
+
+.quote-meta span,
+.quote-summary span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.quote-meta strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 520;
+}
+
+.quote-section {
+  padding: 58px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.quote-lines {
+  margin-top: 24px;
+}
+
+.quote-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 24px 0;
+  border-top: 1px solid rgba(42,45,56,.7);
+}
+
+.quote-line strong {
+  font-size: 21px;
+  font-weight: 520;
+}
+
+.quote-line > span {
+  font-size: 20px;
+}
+
+.quote-copy {
+  max-width: 780px;
+  margin-top: 24px;
+  color: #d0d1d6;
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.quote-scope-copy {
+  white-space: pre-line;
+}
+
+.quote-summary {
+  width: min(100%, 460px);
+  margin: 54px 0 54px auto;
+}
+
+.quote-summary > div {
+  display: flex;
+  justify-content: space-between;
+  padding: 13px 0;
+}
+
+.quote-summary strong {
+  font-weight: 520;
+}
+
+.quote-summary-total {
+  margin-top: 8px;
+  padding-top: 20px !important;
+  border-top: 1px solid var(--line);
+}
+
+.quote-summary-total strong {
+  font-size: 30px;
+}
+
+.quote-action {
+  padding: 38px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+
+.quote-accept-button {
+  border: 0;
+  cursor: pointer;
+}
+
+.quote-accept-button:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+.quote-accept-copy {
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.quote-error {
+  margin: 14px 0 0;
+  color: #ffb4b4;
+  font-size: 13px;
+}
+
+.quote-accepted {
+  display: flex;
+  gap: 16px;
+  padding: 30px;
+  border: 1px solid rgba(86,215,197,.28);
+  border-radius: 18px;
+  background: rgba(86,215,197,.05);
+}
+
+.quote-status-dot {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  margin-top: 7px;
+  border-radius: 50%;
+  background: var(--ra-teal);
+}
+
+.quote-accepted strong {
+  font-size: 18px;
+}
+
+.quote-accepted p {
+  margin: 6px 0;
+  color: var(--muted);
+}
+
+.quote-accepted small {
+  color: #777b85;
+}
+
+.quote-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
+  margin-top: 70px;
+  padding-top: 26px;
+  border-top: 1px solid var(--line);
+  color: #6f727d;
+  font-size: 10px;
+  letter-spacing: .14em;
+}
+
+@media (max-width: 760px) {
+  .quote-heading {
+    grid-template-columns: 1fr;
+    gap: 34px;
+  }
+
+  .quote-total-card {
+    min-width: 0;
+  }
+
+  .quote-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .quote-meta div + div {
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .quote-line {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .quote-footer {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: paradigm-ra-platform-api
+    runtime: python
+    rootDir: ra-intelligence
+    plan: starter
+
+    buildCommand: pip install -r requirements.txt
+
+    startCommand: >-
+      uvicorn ra_platform.api.main:app
+      --host 0.0.0.0
+      --port $PORT
+
+    healthCheckPath: /health
+
+    envVars:
+      - key: RA_DB_PATH
+        value: /var/data/paradigm_ra.db
+
+    disk:
+      name: paradigm-ra-data
+      mountPath: /var/data
+      sizeGB: 1
