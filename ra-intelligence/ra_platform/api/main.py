@@ -1,8 +1,13 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import (
+    CORSMiddleware,
+)
 
 from ra_platform.api.routes.admin_quotes import (
     router as admin_quotes_router,
+)
+from ra_platform.api.routes.payments import (
+    router as payments_router,
 )
 from ra_platform.api.routes.quotes import (
     router as quotes_router,
@@ -33,8 +38,15 @@ app.add_middleware(
     ],
 )
 
-app.include_router(quotes_router)
-app.include_router(admin_quotes_router)
+app.include_router(
+    quotes_router
+)
+app.include_router(
+    admin_quotes_router
+)
+app.include_router(
+    payments_router
+)
 
 
 @app.get("/health")
