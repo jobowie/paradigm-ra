@@ -369,9 +369,7 @@ class SQLiteQuoteRepository:
                 else None
             ),
             expiration_date=(
-                date.fromisoformat(
-                    row["expiration_date"]
-                )
+                date.fromisoformat(row["expiration_date"])
                 if row["expiration_date"]
                 else None
             ),
@@ -405,6 +403,107 @@ class SQLiteQuoteRepository:
             ),
             created_at=row["created_at"],
             updated_at=row["updated_at"],
+        )
+
+    def update(
+        self,
+        quote: Quote,
+    ) -> None:
+        result = self.connection.execute(
+            """
+            UPDATE quotes
+            SET
+                status = ?,
+                subtotal = ?,
+                tax_amount = ?,
+                total = ?,
+                notes = ?,
+                terms = ?,
+                sent_at = ?,
+                accepted_at = ?,
+                declined_at = ?,
+                updated_at = ?
+            WHERE id = ?
+              AND client_organization_id = ?
+            """,
+            (
+                quote.status.value,
+                str(quote.subtotal),
+                str(quote.tax_amount),
+                str(quote.total),
+                quote.notes,
+                quote.terms,
+                (
+                    quote.sent_at.isoformat()
+                    if quote.sent_at
+                    else None
+                ),
+                (
+                    quote.accepted_at.isoformat()
+                    if quote.accepted_at
+                    else None
+                ),
+                (
+                    quote.declined_at.isoformat()
+                    if quote.declined_at
+                    else None
+                ),
+                quote.updated_at.isoformat(),
+                str(quote.id),
+                str(quote.client_organization_id),
+            ),
+        )
+
+        if result.rowcount == 0:
+            raise ValueError(
+                "Quote does not exist."
+            )
+
+    def assign_public_token_hash(
+        self,
+        quote_id: UUID,
+        public_token_hash: str,
+    ) -> None:
+        result = self.connection.execute(
+            """
+            UPDATE quotes
+            SET public_token_hash = ?
+            WHERE id = ?
+            """,
+            (
+                public_token_hash,
+                str(quote_id),
+            ),
+        )
+
+        if result.rowcount == 0:
+            raise ValueError(
+                "Quote does not exist."
+            )
+
+    def get_by_public_token_hash(
+        self,
+        public_token_hash: str,
+    ) -> Quote | None:
+        row = self.connection.execute(
+            """
+            SELECT
+                id,
+                client_organization_id
+            FROM quotes
+            WHERE public_token_hash = ?
+            """,
+            (public_token_hash,),
+        ).fetchone()
+
+        if row is None:
+            return None
+
+        return self.get_for_client(
+            quote_id=UUID(row["id"]),
+            client_organization_id=UUID(
+                row["client_organization_id"]
+            ),
         )
 
 
