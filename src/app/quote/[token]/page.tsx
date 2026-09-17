@@ -4,7 +4,7 @@ import { QuoteAcceptance } from "@/components/QuoteAcceptance";
 
 const PLATFORM_API =
   process.env.RA_PLATFORM_API_URL ??
-  "http://127.0.0.1:8000";
+  "https://ra-platform-api.onrender.com";
 
 interface PublicQuoteLine {
   description: string;
