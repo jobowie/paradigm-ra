@@ -1,34 +1,47 @@
 import sqlite3
 
+from datetime import date
+from decimal import Decimal
+
+from ra_platform.security.tokens import (
+    generate_public_token,
+    hash_public_token,
+)
+
 from ra_platform.organizations.models import (
     Organization,
     OrganizationType,
 )
+
 from ra_platform.engagements.models import (
     Engagement,
     EngagementSource,
     EngagementStatus,
 )
 
-from .sqlite import initialize_database
-
-from .sqlite_repositories import (
-    SQLiteEngagementRepository,
-    SQLiteOrganizationRepository,
-)
-
 from ra_platform.billing.models import (
+    BillingCadence,
+    BillingType,
+    EngagementBillingTerms,
     Quote,
     QuoteLine,
-    QuoteStatus,
+    TimeEntry,
+    TimeEntryStatus,
 )
 
 from ra_platform.billing.service import (
+    create_invoice_from_time_entries,
     refresh_quote,
 )
 
+from .sqlite import initialize_database
+
 from .sqlite_repositories import (
+    SQLiteBillingUnitOfWork,
+    SQLiteEngagementRepository,
+    SQLiteOrganizationRepository,
     SQLiteQuoteRepository,
+    SQLiteTimeEntryRepository,
 )
 
 
@@ -36,6 +49,8 @@ EXPECTED_TABLES = {
     "organizations",
     "engagements",
     "engagement_billing_terms",
+    "quotes",
+    "quote_lines",
     "invoices",
     "invoice_lines",
     "time_entries",
@@ -47,7 +62,9 @@ EXPECTED_TABLES = {
 def build_memory_database() -> sqlite3.Connection:
     connection = sqlite3.connect(":memory:")
     connection.row_factory = sqlite3.Row
-    connection.execute("PRAGMA foreign_keys = ON")
+    connection.execute(
+        "PRAGMA foreign_keys = ON"
+    )
 
     initialize_database(connection)
 
@@ -117,6 +134,7 @@ def test_brewbird_organization_and_engagement_round_trip():
     organizations = SQLiteOrganizationRepository(
         connection
     )
+
     engagements = SQLiteEngagementRepository(
         connection
     )
@@ -150,6 +168,7 @@ def test_brewbird_organization_and_engagement_round_trip():
     saved_brewbird = organizations.get(
         brewbird.id
     )
+
     saved_engagement = engagements.get(
         bookkeeping.id
     )
@@ -175,27 +194,6 @@ def test_brewbird_organization_and_engagement_round_trip():
         == EngagementSource.CONTRACT_CONVERSION
     )
 
-from datetime import date
-from decimal import Decimal
-
-from ra_platform.billing.models import (
-    BillingCadence,
-    BillingType,
-    EngagementBillingTerms,
-    TimeEntry,
-    TimeEntryStatus,
-)
-
-from ra_platform.billing.service import (
-    create_invoice_from_time_entries,
-)
-
-from .sqlite_repositories import (
-    SQLiteBillingUnitOfWork,
-    SQLiteEngagementRepository,
-    SQLiteOrganizationRepository,
-    SQLiteTimeEntryRepository,
-)
 
 def test_brewbird_invoice_transaction_round_trip():
     connection = build_memory_database()
@@ -203,9 +201,11 @@ def test_brewbird_invoice_transaction_round_trip():
     organizations = SQLiteOrganizationRepository(
         connection
     )
+
     engagements = SQLiteEngagementRepository(
         connection
     )
+
     time_entry_repository = SQLiteTimeEntryRepository(
         connection
     )
@@ -297,8 +297,10 @@ def test_brewbird_invoice_transaction_round_trip():
     )
 
     assert saved_invoice is not None
-    assert saved_invoice.total == Decimal(
-        "770.00"
+
+    assert (
+        saved_invoice.total
+        == Decimal("770.00")
     )
 
     assert len(
@@ -328,15 +330,18 @@ def test_brewbird_invoice_transaction_round_trip():
         == invoice.id
     )
 
+
 def test_strategic_quote_round_trip_and_client_isolation():
     connection = build_memory_database()
 
     organizations = SQLiteOrganizationRepository(
         connection
     )
+
     engagements = SQLiteEngagementRepository(
         connection
     )
+
     quotes = SQLiteQuoteRepository(
         connection
     )
@@ -369,7 +374,9 @@ def test_strategic_quote_round_trip_and_client_isolation():
         status=EngagementStatus.ACTIVE,
     )
 
-    engagements.add(website_engagement)
+    engagements.add(
+        website_engagement
+    )
 
     quote = Quote(
         client_organization_id=strategic.id,
@@ -408,10 +415,25 @@ def test_strategic_quote_round_trip_and_client_isolation():
 
     assert saved_quote is not None
     assert saved_quote.id == quote.id
-    assert saved_quote.total == Decimal("750.00")
-    assert saved_quote.client_organization_id == strategic.id
-    assert saved_quote.engagement_id == website_engagement.id
-    assert len(saved_quote.line_items) == 1
+
+    assert (
+        saved_quote.total
+        == Decimal("750.00")
+    )
+
+    assert (
+        saved_quote.client_organization_id
+        == strategic.id
+    )
+
+    assert (
+        saved_quote.engagement_id
+        == website_engagement.id
+    )
+
+    assert len(
+        saved_quote.line_items
+    ) == 1
 
     brewbird_attempt = quotes.get_for_client(
         quote.id,
@@ -419,3 +441,125 @@ def test_strategic_quote_round_trip_and_client_isolation():
     )
 
     assert brewbird_attempt is None
+
+
+def test_quote_public_token_resolves_only_correct_quote():
+    connection = build_memory_database()
+
+    organizations = SQLiteOrganizationRepository(
+        connection
+    )
+
+    engagements = SQLiteEngagementRepository(
+        connection
+    )
+
+    quotes = SQLiteQuoteRepository(
+        connection
+    )
+
+    paradigm_ra = Organization(
+        name="Paradigm Ra",
+        type=OrganizationType.PARADIGM_RA,
+    )
+
+    strategic = Organization(
+        name="Strategic Crime Prevention",
+        type=OrganizationType.CLIENT,
+    )
+
+    organizations.add(paradigm_ra)
+    organizations.add(strategic)
+
+    website_engagement = Engagement(
+        client_organization_id=strategic.id,
+        owner_organization_id=paradigm_ra.id,
+        name="Website Design & Development",
+        service_type="website_design_development",
+        source=EngagementSource.DIRECT,
+        status=EngagementStatus.ACTIVE,
+    )
+
+    engagements.add(
+        website_engagement
+    )
+
+    quote = Quote(
+        client_organization_id=strategic.id,
+        engagement_id=website_engagement.id,
+        quote_number="RA-Q-TOKEN-001",
+        issue_date=date(2026, 9, 16),
+        expiration_date=date(2026, 9, 30),
+        bill_to_name="Strategic Crime Prevention",
+        line_items=[
+            QuoteLine(
+                description=(
+                    "Website Design & Development"
+                ),
+                quantity=Decimal("1"),
+                unit_rate=Decimal("750.00"),
+            )
+        ],
+    )
+
+    refresh_quote(quote)
+
+    quotes.add(quote)
+
+    raw_token = generate_public_token()
+
+    token_hash = hash_public_token(
+        raw_token
+    )
+
+    quotes.assign_public_token_hash(
+        quote_id=quote.id,
+        public_token_hash=token_hash,
+    )
+
+    connection.commit()
+
+    saved_quote = (
+        quotes.get_by_public_token_hash(
+            hash_public_token(
+                raw_token
+            )
+        )
+    )
+
+    wrong_quote = (
+        quotes.get_by_public_token_hash(
+            hash_public_token(
+                "ra_q_not-the-right-token"
+            )
+        )
+    )
+
+    stored = connection.execute(
+        """
+        SELECT public_token_hash
+        FROM quotes
+        WHERE id = ?
+        """,
+        (str(quote.id),),
+    ).fetchone()
+
+    assert saved_quote is not None
+    assert saved_quote.id == quote.id
+
+    assert (
+        saved_quote.total
+        == Decimal("750.00")
+    )
+
+    assert wrong_quote is None
+
+    assert (
+        stored["public_token_hash"]
+        == token_hash
+    )
+
+    assert (
+        stored["public_token_hash"]
+        != raw_token
+    )

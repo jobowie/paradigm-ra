@@ -15,7 +15,9 @@ def create_connection(
 
     connection = sqlite3.connect(db_path)
     connection.row_factory = sqlite3.Row
-    connection.execute("PRAGMA foreign_keys = ON")
+    connection.execute(
+        "PRAGMA foreign_keys = ON"
+    )
 
     return connection
 
@@ -23,7 +25,9 @@ def create_connection(
 def initialize_database(
     connection: sqlite3.Connection,
 ) -> None:
-    connection.execute("PRAGMA foreign_keys = ON")
+    connection.execute(
+        "PRAGMA foreign_keys = ON"
+    )
 
     connection.executescript(
         """
@@ -95,6 +99,7 @@ def initialize_database(
             engagement_id TEXT NOT NULL,
 
             quote_number TEXT NOT NULL UNIQUE,
+            public_token_hash TEXT,
             status TEXT NOT NULL,
 
             issue_date TEXT,
@@ -254,6 +259,32 @@ def initialize_database(
             FOREIGN KEY (invoice_id)
                 REFERENCES invoices(id)
         );
+        """
+    )
+
+    # Compatibility migration for databases
+    # created before public_token_hash existed.
+    quote_columns = {
+        row[1]
+        for row in connection.execute(
+            "PRAGMA table_info(quotes)"
+        ).fetchall()
+    }
+
+    if "public_token_hash" not in quote_columns:
+        connection.execute(
+            """
+            ALTER TABLE quotes
+            ADD COLUMN public_token_hash TEXT
+            """
+        )
+
+    connection.execute(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS
+        idx_quotes_public_token_hash
+        ON quotes(public_token_hash)
+        WHERE public_token_hash IS NOT NULL
         """
     )
 
