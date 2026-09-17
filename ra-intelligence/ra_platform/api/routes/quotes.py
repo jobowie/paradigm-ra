@@ -1,16 +1,17 @@
-from datetime import date
-from decimal import Decimal
-from uuid import uuid4
+import sqlite3
+from uuid import UUID
 
-from fastapi import APIRouter
-
-from ra_platform.billing.models import (
-    Quote,
-    QuoteLine,
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
 )
 
-from ra_platform.billing.service import (
-    refresh_quote,
+from ra_platform.api.dependencies import (
+    get_database_connection,
+)
+from ra_platform.persistence.sqlite_repositories import (
+    SQLiteQuoteRepository,
 )
 
 
@@ -20,30 +21,27 @@ router = APIRouter(
 )
 
 
-@router.get("/demo")
-def get_demo_quote():
-    quote = Quote(
-        client_organization_id=uuid4(),
-        engagement_id=uuid4(),
-        quote_number="RA-Q-2026-001",
-        issue_date=date(2026, 9, 16),
-        expiration_date=date(2026, 9, 30),
-        bill_to_name="Strategic Crime Prevention",
-        line_items=[
-            QuoteLine(
-                description=(
-                    "Website Design & Development"
-                ),
-                quantity=Decimal("1"),
-                unit_rate=Decimal("750.00"),
-            )
-        ],
-        terms=(
-            "50% deposit on acceptance. "
-            "Remaining 50% due before launch. "
-            "Two revision rounds included. "
-            "Ongoing support is separate."
-        ),
+@router.get("/{quote_id}")
+def get_quote(
+    quote_id: UUID,
+    client_organization_id: UUID,
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    repository = SQLiteQuoteRepository(
+        connection
     )
 
-    return refresh_quote(quote)
+    quote = repository.get_for_client(
+        quote_id=quote_id,
+        client_organization_id=client_organization_id,
+    )
+
+    if quote is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Quote not found.",
+        )
+
+    return quote
