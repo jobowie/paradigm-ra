@@ -190,7 +190,7 @@ export default async function QuotePage({
 
         <section className="quote-section">
           <p className="kicker">
-            PROJECT
+            PAYMENT SCHEDULE
           </p>
 
           <div className="quote-lines">

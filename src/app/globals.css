@@ -4049,3 +4049,142 @@ a.service-row span {
     flex-direction: column;
   }
 }
+
+
+/* -------------------------------------------------
+   Paradigm Ra — Admin Quote Creator
+-------------------------------------------------- */
+
+.admin-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at 80% 10%,
+      rgba(156, 144, 255, .10),
+      transparent 30%
+    ),
+    var(--bg);
+}
+
+.admin-shell {
+  max-width: 980px;
+  padding-top: 80px;
+  padding-bottom: 100px;
+}
+
+.admin-shell h1 {
+  margin: 14px 0 12px;
+  font-size: clamp(
+    44px,
+    6vw,
+    74px
+  );
+}
+
+.admin-intro {
+  max-width: 680px;
+  margin-bottom: 50px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.admin-quote-form {
+  display: grid;
+  gap: 28px;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.admin-quote-form label {
+  display: grid;
+  gap: 9px;
+}
+
+.admin-quote-form label > span {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.admin-quote-form input,
+.admin-quote-form textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.admin-quote-form textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.admin-quote-form input:focus,
+.admin-quote-form textarea:focus {
+  outline: 1px solid
+    var(--ra-violet);
+}
+
+.admin-total-preview {
+  display: grid;
+  gap: 7px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.admin-total-preview > span {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: .14em;
+}
+
+.admin-total-preview strong {
+  font-size: 36px;
+  font-weight: 520;
+}
+
+.admin-total-preview small {
+  color: var(--muted);
+}
+
+.admin-quote-result {
+  display: grid;
+  gap: 12px;
+  padding: 28px;
+  border: 1px solid
+    rgba(86, 215, 197, .25);
+  border-radius: 14px;
+  background:
+    rgba(86, 215, 197, .05);
+}
+
+.admin-quote-result p {
+  margin: 0;
+  color: var(--ra-teal);
+}
+
+.admin-quote-result strong {
+  font-size: 22px;
+}
+
+.admin-quote-result a {
+  overflow-wrap: anywhere;
+  color: var(--ra-cyan);
+}
+
+@media (max-width: 720px) {
+  .admin-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
