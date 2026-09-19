@@ -26,6 +26,7 @@ export default function HomePage() {
             <a href="#accounting">Accounting</a>
             <a href="#approach">Technology</a>
             <a href="#products">Products</a>
+            <a href="/how-we-work">How We Work</a>
           </nav>
 
           <MobileNav />
@@ -40,7 +41,7 @@ export default function HomePage() {
             </p>
             <div className="actions">
               <a className="button button-primary" href="#solutions">Explore solutions <span>→</span></a>
-              <a className="button button-secondary" href="#approach">How we work</a>
+              <a className="button button-secondary" href="/how-we-work">How we work</a>
             </div>
           </div>
         </div>

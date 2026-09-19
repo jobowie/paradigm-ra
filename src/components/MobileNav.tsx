@@ -20,6 +20,10 @@ const links = [
     label: "Products",
     href: "/#products",
   },
+  {
+    label: "How We Work",
+    href: "/how-we-work",
+  },
 ];
 
 export function MobileNav() {
