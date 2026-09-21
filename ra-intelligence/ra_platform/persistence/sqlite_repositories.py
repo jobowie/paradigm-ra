@@ -992,10 +992,11 @@ class SQLiteUserRepository:
                 display_name,
                 password_hash,
                 status,
+                must_change_password,
                 created_at,
                 updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 str(user.id),
@@ -1003,6 +1004,7 @@ class SQLiteUserRepository:
                 user.display_name.strip(),
                 user.password_hash,
                 user.status.value,
+                int(user.must_change_password),
                 user.created_at.isoformat(),
                 user.updated_at.isoformat(),
             ),
@@ -1044,6 +1046,36 @@ class SQLiteUserRepository:
 
         return self._from_row(row)
 
+    def update_password(
+        self,
+        *,
+        user_id: UUID,
+        password_hash: str,
+        must_change_password: bool,
+    ) -> None:
+        result = self.connection.execute(
+            """
+            UPDATE users
+            SET
+                password_hash = ?,
+                must_change_password = ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (
+                password_hash,
+                int(must_change_password),
+                datetime.now().astimezone().isoformat(),
+                str(user_id),
+            ),
+        )
+
+        if result.rowcount == 0:
+            raise ValueError(
+                "User does not exist."
+            )
+
+
     @staticmethod
     def _from_row(
         row: sqlite3.Row,
@@ -1054,6 +1086,9 @@ class SQLiteUserRepository:
             display_name=row["display_name"],
             password_hash=row["password_hash"],
             status=UserStatus(row["status"]),
+            must_change_password=bool(
+                row["must_change_password"]
+            ),
             created_at=datetime.fromisoformat(
                 row["created_at"]
             ),
@@ -1232,6 +1267,26 @@ class SQLiteAuthSessionRepository:
             raise ValueError(
                 "Auth session does not exist."
             )
+
+    def revoke_all_for_user(
+        self,
+        user_id: UUID,
+        *,
+        revoked_at: datetime,
+    ) -> None:
+        self.connection.execute(
+            """
+            UPDATE auth_sessions
+            SET revoked_at = ?
+            WHERE user_id = ?
+              AND revoked_at IS NULL
+            """,
+            (
+                revoked_at.isoformat(),
+                str(user_id),
+            ),
+        )
+
 
     @staticmethod
     def _from_row(

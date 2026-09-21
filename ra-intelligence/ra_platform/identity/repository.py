@@ -22,6 +22,15 @@ class UserRepository(Protocol):
     ) -> User | None:
         ...
 
+    def update_password(
+        self,
+        *,
+        user_id: UUID,
+        password_hash: str,
+        must_change_password: bool,
+    ) -> None:
+        ...
+
 
 class MembershipRepository(Protocol):
     def list_for_user(
@@ -47,6 +56,14 @@ class AuthSessionRepository(Protocol):
     def revoke(
         self,
         session_id: UUID,
+        *,
+        revoked_at: datetime,
+    ) -> None:
+        ...
+
+    def revoke_all_for_user(
+        self,
+        user_id: UUID,
         *,
         revoked_at: datetime,
     ) -> None:

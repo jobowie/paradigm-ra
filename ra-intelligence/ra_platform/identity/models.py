@@ -30,6 +30,8 @@ class User(BaseModel):
 
     status: UserStatus = UserStatus.ACTIVE
 
+    must_change_password: bool = False
+
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(
             timezone.utc

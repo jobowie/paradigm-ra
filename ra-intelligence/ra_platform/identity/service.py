@@ -14,6 +14,7 @@ from ra_platform.identity.repository import (
 )
 from ra_platform.security.auth import (
     generate_session_token,
+    hash_password,
     hash_session_token,
     session_expiration,
     verify_password,
@@ -171,5 +172,56 @@ def revoke_authenticated_session(
             or datetime.now(
                 timezone.utc
             )
+        ),
+    )
+
+
+class PasswordChangeError(Exception):
+    pass
+
+
+def change_password(
+    *,
+    principal: AuthenticatedPrincipal,
+    current_password: str,
+    new_password: str,
+    users: UserRepository,
+    sessions: AuthSessionRepository,
+) -> None:
+    if not verify_password(
+        current_password,
+        principal.user.password_hash,
+    ):
+        raise PasswordChangeError(
+            "Current password is incorrect."
+        )
+
+    if len(new_password) < 12:
+        raise PasswordChangeError(
+            "New password must be at least "
+            "12 characters."
+        )
+
+    if verify_password(
+        new_password,
+        principal.user.password_hash,
+    ):
+        raise PasswordChangeError(
+            "New password must be different "
+            "from the current password."
+        )
+
+    users.update_password(
+        user_id=principal.user.id,
+        password_hash=hash_password(
+            new_password
+        ),
+        must_change_password=False,
+    )
+
+    sessions.revoke_all_for_user(
+        principal.user.id,
+        revoked_at=datetime.now(
+            timezone.utc
         ),
     )

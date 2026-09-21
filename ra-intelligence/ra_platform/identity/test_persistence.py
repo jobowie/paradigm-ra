@@ -55,6 +55,7 @@ def test_user_round_trip_and_email_lookup():
         password_hash=hash_password(
             "temporary-test-password"
         ),
+        must_change_password=True,
     )
 
     repository.add(user)
@@ -76,6 +77,11 @@ def test_user_round_trip_and_email_lookup():
 
     assert by_email is not None
     assert by_email.id == user.id
+
+    assert (
+        loaded.must_change_password
+        is True
+    )
 
 
 def test_membership_is_scoped_to_organization():

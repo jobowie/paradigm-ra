@@ -268,6 +268,7 @@ def initialize_database(
             password_hash TEXT NOT NULL,
 
             status TEXT NOT NULL,
+            must_change_password INTEGER NOT NULL DEFAULT 0,
 
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL
@@ -364,6 +365,25 @@ def initialize_database(
 
     connection.commit()
     
+    user_columns = {
+        row[1]
+        for row in connection.execute(
+            "PRAGMA table_info(users)"
+        ).fetchall()
+    }
+
+    if (
+        "must_change_password"
+        not in user_columns
+    ):
+        connection.execute(
+            """
+            ALTER TABLE users
+            ADD COLUMN must_change_password
+            INTEGER NOT NULL DEFAULT 0
+            """
+        )
+
     connection.execute(
         """
         CREATE UNIQUE INDEX IF NOT EXISTS

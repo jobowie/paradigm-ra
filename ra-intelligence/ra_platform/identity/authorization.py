@@ -85,6 +85,11 @@ def authorize(
     permission: Permission,
     organization_id: UUID | None = None,
 ) -> None:
+    if principal.user.must_change_password:
+        raise AuthorizationError(
+            "Password change required."
+        )
+
     for membership in principal.memberships:
         if (
             membership.role in PLATFORM_ROLES

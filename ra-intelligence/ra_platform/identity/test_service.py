@@ -39,6 +39,7 @@ from ra_platform.security.auth import (
     generate_session_token,
     hash_password,
     hash_session_token,
+    verify_password,
 )
 
 
@@ -276,6 +277,80 @@ def test_revoked_session_is_rejected():
         sessions=sessions,
     )
     connection.commit()
+
+    with pytest.raises(
+        SessionError
+    ):
+        resolve_authenticated_session(
+            raw_token=result.raw_token,
+            users=users,
+            memberships=memberships,
+            sessions=sessions,
+        )
+
+
+def test_password_change_clears_temporary_flag_and_revokes_sessions():
+    (
+        connection,
+        user,
+        _,
+        users,
+        memberships,
+        sessions,
+    ) = make_context()
+
+    connection.execute(
+        """
+        UPDATE users
+        SET must_change_password = 1
+        WHERE id = ?
+        """,
+        (str(user.id),),
+    )
+    connection.commit()
+
+    result = authenticate_and_create_session(
+        email=user.email,
+        password="correct-password",
+        users=users,
+        memberships=memberships,
+        sessions=sessions,
+    )
+    connection.commit()
+
+    principal = resolve_authenticated_session(
+        raw_token=result.raw_token,
+        users=users,
+        memberships=memberships,
+        sessions=sessions,
+    )
+
+    from ra_platform.identity.service import (
+        change_password,
+    )
+
+    change_password(
+        principal=principal,
+        current_password="correct-password",
+        new_password="new-secure-password",
+        users=users,
+        sessions=sessions,
+    )
+    connection.commit()
+
+    updated = users.get(user.id)
+
+    assert updated is not None
+
+    assert (
+        updated.must_change_password
+        is False
+    )
+
+    assert verify_password(
+        "new-secure-password",
+        updated.password_hash,
+    )
 
     with pytest.raises(
         SessionError

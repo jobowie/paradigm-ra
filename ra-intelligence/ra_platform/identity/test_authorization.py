@@ -229,3 +229,26 @@ def test_partner_admin_gets_no_brewbird_permissions():
             permission=Permission.VIEW_BILLING,
             organization_id=organization_id,
         )
+
+
+def test_temporary_password_blocks_business_access():
+    principal, organization_id = (
+        make_principal(
+            role=(
+                MembershipRole
+                .PARADIGM_RA_EXECUTIVE
+            )
+        )
+    )
+
+    principal.user.must_change_password = True
+
+    with pytest.raises(
+        AuthorizationError,
+        match="Password change required",
+    ):
+        authorize(
+            principal=principal,
+            permission=Permission.CREATE_INVOICE,
+            organization_id=organization_id,
+        )

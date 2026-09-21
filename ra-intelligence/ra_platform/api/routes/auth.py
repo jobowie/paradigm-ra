@@ -53,6 +53,7 @@ class UserResponse(BaseModel):
     email: str
     display_name: str
     status: str
+    must_change_password: bool
 
 
 class MembershipResponse(BaseModel):
@@ -81,6 +82,9 @@ def build_user_response(
         email=user.email,
         display_name=user.display_name,
         status=user.status.value,
+        must_change_password=(
+            user.must_change_password
+        ),
     )
 
 
@@ -236,4 +240,77 @@ def logout(
 
     return {
         "logged_out": True,
+    }
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(
+        min_length=1
+    )
+    new_password: str = Field(
+        min_length=12
+    )
+
+
+@router.post("/change-password")
+def change_current_password(
+    request: ChangePasswordRequest,
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    from ra_platform.identity.service import (
+        PasswordChangeError,
+        change_password,
+    )
+
+    users = SQLiteUserRepository(
+        connection
+    )
+
+    sessions = SQLiteAuthSessionRepository(
+        connection
+    )
+
+    audit = SQLiteAuditEventRepository(
+        connection
+    )
+
+    try:
+        change_password(
+            principal=principal,
+            current_password=(
+                request.current_password
+            ),
+            new_password=(
+                request.new_password
+            ),
+            users=users,
+            sessions=sessions,
+        )
+
+    except PasswordChangeError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc),
+        ) from exc
+
+    audit.add(
+        AuditEvent(
+            actor_user_id=principal.user.id,
+            organization_id=None,
+            action="identity.password_changed",
+            resource_type="user",
+            resource_id=principal.user.id,
+        )
+    )
+
+    connection.commit()
+
+    return {
+        "password_changed": True,
+        "session_revoked": True,
     }
