@@ -102,3 +102,74 @@ def test_time_entry_before_billing_terms_raises_error():
             bill_to_name="BrewBird Coffee",
             issue_date=date(2026, 9, 30),
         )
+
+
+def test_draft_time_entry_can_be_approved():
+    from datetime import date
+
+    from ra_platform.billing.models import (
+        TimeEntry,
+        TimeEntryStatus,
+    )
+    from ra_platform.billing.service import (
+        approve_time_entry,
+    )
+    from uuid import uuid4
+
+    entry = TimeEntry(
+        engagement_id=uuid4(),
+        work_date=date(
+            2026,
+            9,
+            20,
+        ),
+        description="Weekly bookkeeping",
+        hours=Decimal("2.5"),
+    )
+
+    approved = approve_time_entry(
+        entry
+    )
+
+    assert (
+        approved.status
+        == TimeEntryStatus.APPROVED
+    )
+
+
+def test_invoiced_time_entry_cannot_be_reapproved():
+    from datetime import date
+    from uuid import uuid4
+
+    import pytest
+
+    from ra_platform.billing.models import (
+        TimeEntry,
+        TimeEntryStatus,
+    )
+    from ra_platform.billing.service import (
+        approve_time_entry,
+    )
+
+    entry = TimeEntry(
+        engagement_id=uuid4(),
+        work_date=date(
+            2026,
+            9,
+            20,
+        ),
+        description="Weekly bookkeeping",
+        hours=Decimal("2.5"),
+        status=(
+            TimeEntryStatus.INVOICED
+        ),
+        invoice_id=uuid4(),
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="cannot be approved",
+    ):
+        approve_time_entry(
+            entry
+        )

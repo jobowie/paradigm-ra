@@ -14,8 +14,19 @@ from fastapi import (
 )
 from pydantic import BaseModel, Field
 
+from ra_platform.api.auth import (
+    get_current_principal,
+)
 from ra_platform.api.dependencies import (
     get_database_connection,
+)
+from ra_platform.identity.authorization import (
+    AuthorizationError,
+    Permission,
+    authorize,
+)
+from ra_platform.identity.service import (
+    AuthenticatedPrincipal,
 )
 from ra_platform.billing.models import (
     Quote,
@@ -270,16 +281,27 @@ def next_quote_number(
     response_model=(
         AdminQuoteCreateResponse
     ),
-    dependencies=[
-        Depends(require_admin_key)
-    ],
 )
 def create_admin_quote(
     request: AdminQuoteCreateRequest,
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
     connection: sqlite3.Connection = Depends(
         get_database_connection
     ),
 ):
+    try:
+        authorize(
+            principal=principal,
+            permission=Permission.CREATE_QUOTE,
+        )
+    except AuthorizationError as exc:
+        raise HTTPException(
+            status_code=403,
+            detail=str(exc),
+        ) from exc
+
     try:
         paradigm_ra = (
             get_or_create_organization(

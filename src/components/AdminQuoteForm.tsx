@@ -5,16 +5,7 @@ import {
   useState,
 } from "react";
 
-const DEFAULT_SCOPE = [
-  "Production website based on the approved HTML/design concept",
-  "Responsive desktop and mobile implementation",
-  "Domain setup and configuration",
-  "Website inquiries routed to the connected Outlook email",
-  "Client-provided or approved imagery matching the existing brochure",
-  "Basic SEO and metadata setup",
-  "Deployment and launch",
-  "Two revision rounds",
-].join("\n");
+const DEFAULT_SCOPE = "";
 
 function defaultExpiration() {
   const date = new Date();
@@ -28,18 +19,10 @@ function defaultExpiration() {
     .slice(0, 10);
 }
 
-interface AdminQuoteFormProps {
-  adminKey: string;
-}
-
-export function AdminQuoteForm({
-  adminKey,
-}: AdminQuoteFormProps) {
+export function AdminQuoteForm() {
 
   const [clientName, setClientName] =
-    useState(
-      "Strategic Crime Prevention",
-    );
+    useState("");
 
   const [
     clientEmail,
@@ -49,20 +32,23 @@ export function AdminQuoteForm({
   const [
     projectName,
     setProjectName,
-  ] = useState(
-    "Website Design & Development",
-  );
+  ] = useState("");
+
+  const [
+    serviceType,
+    setServiceType,
+  ] = useState("");
 
   const [scope, setScope] =
     useState(DEFAULT_SCOPE);
 
   const [deposit, setDeposit] =
-    useState("375.00");
+    useState("");
 
   const [
     deployment,
     setDeployment,
-  ] = useState("375.00");
+  ] = useState("");
 
   const [terms, setTerms] =
     useState(
@@ -100,14 +86,12 @@ export function AdminQuoteForm({
 
     try {
       const response = await fetch(
-        "https://ra-platform-api.onrender.com/admin/quotes",
+        "/api/admin/quotes",
         {
           method: "POST",
           headers: {
             "Content-Type":
               "application/json",
-            "X-RA-Admin-Key":
-              adminKey,
           },
           body: JSON.stringify({
             client_name:
@@ -118,7 +102,7 @@ export function AdminQuoteForm({
             project_name:
               projectName,
             service_type:
-              "web_software_solutions",
+              serviceType,
             scope_items:
               scope
                 .split("\n")
@@ -215,6 +199,49 @@ export function AdminQuoteForm({
               )
             }
           />
+        </label>
+
+        <label>
+          <span>
+            Service Type
+          </span>
+
+          <select
+            required
+            value={serviceType}
+            onChange={(event) =>
+              setServiceType(
+                event.target.value
+              )
+            }
+          >
+            <option
+              value=""
+              disabled
+            >
+              Select service
+            </option>
+
+            <option value="web_software_solutions">
+              Web & Software Solutions
+            </option>
+
+            <option value="bookkeeping">
+              Bookkeeping
+            </option>
+
+            <option value="business_automation">
+              Business Automation
+            </option>
+
+            <option value="business_systems_technical_consulting">
+              Business Systems & Technical Consulting
+            </option>
+
+            <option value="other">
+              Other
+            </option>
+          </select>
         </label>
 
         <label>

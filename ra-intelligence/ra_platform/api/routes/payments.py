@@ -32,6 +32,9 @@ from ra_platform.billing.service import (
     create_invoice_from_accepted_quote,
     refresh_invoice,
 )
+from ra_platform.billing.numbering import (
+    next_invoice_number,
+)
 from ra_platform.payments.persistence import (
     SQLitePaymentPersistence,
 )
@@ -83,26 +86,6 @@ def get_deposit_line(quote):
         None,
     )
 
-
-def next_invoice_number(
-    connection: sqlite3.Connection,
-) -> str:
-    row = connection.execute(
-        """
-        SELECT COUNT(*) AS invoice_count
-        FROM invoices
-        """
-    ).fetchone()
-
-    count = int(
-        row["invoice_count"]
-    ) + 1
-
-    return (
-        f"RA-INV-"
-        f"{date.today().year}-"
-        f"{count:03d}"
-    )
 
 
 def ensure_deposit_invoice(

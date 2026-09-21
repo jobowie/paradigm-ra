@@ -42,7 +42,7 @@ export async function POST(
     await request.json();
 
   const response = await fetch(
-    `${PLATFORM_API}/admin/quotes`,
+    `${PLATFORM_API}/auth/change-password`,
     {
       method: "POST",
       headers: {
@@ -67,7 +67,10 @@ export async function POST(
       },
     );
 
-  if (response.status === 401) {
+  if (
+    response.ok
+    || response.status === 401
+  ) {
     nextResponse.cookies.delete(
       SESSION_COOKIE
     );
