@@ -3,6 +3,9 @@ from fastapi.middleware.cors import (
     CORSMiddleware,
 )
 
+from ra_platform.api.routes.auth import (
+    router as auth_router,
+)
 from ra_platform.api.routes.admin_quotes import (
     router as admin_quotes_router,
 )
@@ -38,6 +41,9 @@ app.add_middleware(
     ],
 )
 
+app.include_router(
+    auth_router
+)
 app.include_router(
     quotes_router
 )
