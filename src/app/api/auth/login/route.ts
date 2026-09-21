@@ -9,27 +9,72 @@ const PLATFORM_API =
 const SESSION_COOKIE =
   "paradigm_ra_session";
 
-
 export async function POST(
   request: Request,
 ) {
-  const body = await request.json();
+  let body: unknown;
 
-  const response = await fetch(
-    `${PLATFORM_API}/auth/login`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type":
-          "application/json",
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      {
+        detail:
+          "Invalid login request.",
       },
-      body: JSON.stringify(body),
-      cache: "no-store",
-    },
-  );
+      {
+        status: 400,
+      },
+    );
+  }
 
-  const data =
-    await response.json();
+  let response: Response;
+
+  try {
+    response = await fetch(
+      `${PLATFORM_API}/auth/login`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      },
+    );
+  } catch {
+    return NextResponse.json(
+      {
+        detail:
+          "Authentication service is unavailable.",
+      },
+      {
+        status: 502,
+      },
+    );
+  }
+
+  const responseText =
+    await response.text();
+
+  let data: Record<string, unknown>;
+
+  try {
+    data = responseText
+      ? JSON.parse(responseText)
+      : {};
+  } catch {
+    return NextResponse.json(
+      {
+        detail:
+          "Authentication service returned an invalid response.",
+      },
+      {
+        status: 502,
+      },
+    );
+  }
 
   if (!response.ok) {
     return NextResponse.json(
@@ -84,7 +129,7 @@ export async function POST(
     sameSite: "lax",
     path: "/",
     expires: new Date(
-      expiresAt
+      expiresAt,
     ),
   });
 
