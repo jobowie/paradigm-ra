@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import (
     CORSMiddleware,
@@ -15,7 +17,13 @@ from ra_platform.api.routes.payments import (
 from ra_platform.api.routes.quotes import (
     router as quotes_router,
 )
+from ra_platform.api.routes.admin_platform import (
+    router as admin_platform_router,
+)
 
+
+
+load_dotenv()
 
 app = FastAPI(
     title="Paradigm Ra Platform API",
@@ -43,6 +51,10 @@ app.add_middleware(
 
 app.include_router(
     auth_router
+)
+
+app.include_router(
+    admin_platform_router
 )
 app.include_router(
     quotes_router

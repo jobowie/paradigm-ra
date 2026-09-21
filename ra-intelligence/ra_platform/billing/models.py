@@ -162,6 +162,8 @@ class Invoice(BaseModel):
     notes: str | None = None
     terms: str | None = None
 
+    sent_at: datetime | None = None
+
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)
     )

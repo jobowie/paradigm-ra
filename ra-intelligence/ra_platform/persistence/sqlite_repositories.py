@@ -26,6 +26,9 @@ from ra_platform.identity.models import (
 )
 
 from ra_platform.billing.models import (
+    BillingCadence,
+    BillingType,
+    EngagementBillingTerms,
     Invoice,
     InvoiceLine,
     InvoiceStatus,
@@ -94,6 +97,35 @@ class SQLiteOrganizationRepository:
             created_at=row["created_at"],
             updated_at=row["updated_at"],
         )
+
+
+
+    def list_all(
+        self,
+    ) -> list[Organization]:
+        rows = self.connection.execute(
+            """
+            SELECT *
+            FROM organizations
+            ORDER BY lower(name)
+            """
+        ).fetchall()
+
+        return [
+            Organization(
+                id=UUID(row["id"]),
+                name=row["name"],
+                type=OrganizationType(
+                    row["type"]
+                ),
+                status=OrganizationStatus(
+                    row["status"]
+                ),
+                created_at=row["created_at"],
+                updated_at=row["updated_at"],
+            )
+            for row in rows
+        ]
 
 
 class SQLiteEngagementRepository:
@@ -188,6 +220,77 @@ class SQLiteEngagementRepository:
             created_at=row["created_at"],
             updated_at=row["updated_at"],
         )
+
+
+
+    def list_for_client(
+        self,
+        client_organization_id: UUID,
+    ) -> list[Engagement]:
+        rows = self.connection.execute(
+            """
+            SELECT *
+            FROM engagements
+            WHERE client_organization_id = ?
+            ORDER BY created_at
+            """,
+            (
+                str(
+                    client_organization_id
+                ),
+            ),
+        ).fetchall()
+
+        return [
+            Engagement(
+                id=UUID(row["id"]),
+                client_organization_id=UUID(
+                    row[
+                        "client_organization_id"
+                    ]
+                ),
+                owner_organization_id=UUID(
+                    row[
+                        "owner_organization_id"
+                    ]
+                ),
+                name=row["name"],
+                service_type=row[
+                    "service_type"
+                ],
+                source=EngagementSource(
+                    row["source"]
+                ),
+                status=EngagementStatus(
+                    row["status"]
+                ),
+                source_opportunity_id=(
+                    UUID(
+                        row[
+                            "source_opportunity_id"
+                        ]
+                    )
+                    if row[
+                        "source_opportunity_id"
+                    ]
+                    else None
+                ),
+                discovery_session_id=(
+                    UUID(
+                        row[
+                            "discovery_session_id"
+                        ]
+                    )
+                    if row[
+                        "discovery_session_id"
+                    ]
+                    else None
+                ),
+                created_at=row["created_at"],
+                updated_at=row["updated_at"],
+            )
+            for row in rows
+        ]
 
 
 class SQLiteQuoteRepository:
@@ -547,13 +650,14 @@ class SQLiteInvoiceRepository:
                 balance_due,
                 notes,
                 terms,
+                sent_at,
                 created_at,
                 updated_at
             )
             VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                ?, ?, ?, ?, ?, ?, ?, ?, ?
-            )
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        )
             """,
             (
                 str(invoice.id),
@@ -585,6 +689,11 @@ class SQLiteInvoiceRepository:
                 str(invoice.balance_due),
                 invoice.notes,
                 invoice.terms,
+                (
+                    invoice.sent_at.isoformat()
+                    if invoice.sent_at
+                    else None
+                ),
                 invoice.created_at.isoformat(),
                 invoice.updated_at.isoformat(),
             ),
@@ -724,9 +833,81 @@ class SQLiteInvoiceRepository:
             balance_due=Decimal(row["balance_due"]),
             notes=row["notes"],
             terms=row["terms"],
+            sent_at=(
+                datetime.fromisoformat(
+                    row["sent_at"]
+                )
+                if row["sent_at"]
+                else None
+            ),
             created_at=row["created_at"],
             updated_at=row["updated_at"],
         )
+
+
+    def update(
+        self,
+        invoice: Invoice,
+    ) -> None:
+        result = self.connection.execute(
+            """
+            UPDATE invoices
+            SET
+                status = ?,
+                amount_paid = ?,
+                balance_due = ?,
+                sent_at = ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (
+                invoice.status.value,
+                str(invoice.amount_paid),
+                str(invoice.balance_due),
+                (
+                    invoice.sent_at.isoformat()
+                    if invoice.sent_at
+                    else None
+                ),
+                invoice.updated_at.isoformat(),
+                str(invoice.id),
+            ),
+        )
+
+        if result.rowcount == 0:
+            raise ValueError(
+                "Invoice does not exist."
+            )
+
+
+    def list_for_engagement(
+        self,
+        engagement_id: UUID,
+    ) -> list[Invoice]:
+        rows = self.connection.execute(
+            """
+            SELECT DISTINCT i.id
+            FROM invoices AS i
+            JOIN invoice_lines AS il
+              ON il.invoice_id = i.id
+            WHERE il.engagement_id = ?
+            ORDER BY i.created_at DESC
+            """,
+            (str(engagement_id),),
+        ).fetchall()
+
+        invoices: list[Invoice] = []
+
+        for row in rows:
+            invoice = self.get(
+                UUID(row["id"])
+            )
+
+            if invoice is not None:
+                invoices.append(invoice)
+
+        return invoices
+
 
 
 class SQLiteTimeEntryRepository:
@@ -833,6 +1014,220 @@ class SQLiteTimeEntryRepository:
         )
 
 
+
+    def list_for_engagement(
+        self,
+        engagement_id: UUID,
+    ) -> list[TimeEntry]:
+        rows = self.connection.execute(
+            """
+            SELECT *
+            FROM time_entries
+            WHERE engagement_id = ?
+            ORDER BY
+                work_date DESC,
+                created_at DESC
+            """,
+            (
+                str(
+                    engagement_id
+                ),
+            ),
+        ).fetchall()
+
+        return [
+            TimeEntry(
+                id=UUID(
+                    row["id"]
+                ),
+                engagement_id=UUID(
+                    row[
+                        "engagement_id"
+                    ]
+                ),
+                work_date=(
+                    date.fromisoformat(
+                        row[
+                            "work_date"
+                        ]
+                    )
+                ),
+                description=(
+                    row["description"]
+                ),
+                hours=Decimal(
+                    row["hours"]
+                ),
+                status=(
+                    TimeEntryStatus(
+                        row["status"]
+                    )
+                ),
+                invoice_id=(
+                    UUID(
+                        row[
+                            "invoice_id"
+                        ]
+                    )
+                    if row[
+                        "invoice_id"
+                    ]
+                    else None
+                ),
+                created_at=(
+                    row["created_at"]
+                ),
+            )
+            for row in rows
+        ]
+
+
+
+class SQLiteEngagementBillingTermsRepository:
+    def __init__(
+        self,
+        connection: sqlite3.Connection,
+    ) -> None:
+        self.connection = connection
+
+    def add(
+        self,
+        terms: EngagementBillingTerms,
+    ) -> None:
+        self.connection.execute(
+            """
+            INSERT INTO engagement_billing_terms (
+                id,
+                engagement_id,
+                billing_type,
+                billing_cadence,
+                hourly_rate,
+                expected_hours_min,
+                expected_hours_max,
+                payment_terms_days,
+                effective_from,
+                effective_to,
+                created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                str(terms.id),
+                str(terms.engagement_id),
+                terms.billing_type.value,
+                terms.billing_cadence.value,
+                (
+                    str(terms.hourly_rate)
+                    if terms.hourly_rate
+                    is not None
+                    else None
+                ),
+                (
+                    str(
+                        terms.expected_hours_min
+                    )
+                    if terms.expected_hours_min
+                    is not None
+                    else None
+                ),
+                (
+                    str(
+                        terms.expected_hours_max
+                    )
+                    if terms.expected_hours_max
+                    is not None
+                    else None
+                ),
+                terms.payment_terms_days,
+                terms.effective_from.isoformat(),
+                (
+                    terms.effective_to.isoformat()
+                    if terms.effective_to
+                    else None
+                ),
+                terms.created_at.isoformat(),
+            ),
+        )
+
+    def list_for_engagement(
+        self,
+        engagement_id: UUID,
+    ) -> list[EngagementBillingTerms]:
+        rows = self.connection.execute(
+            """
+            SELECT *
+            FROM engagement_billing_terms
+            WHERE engagement_id = ?
+            ORDER BY effective_from
+            """,
+            (str(engagement_id),),
+        ).fetchall()
+
+        return [
+            EngagementBillingTerms(
+                id=UUID(row["id"]),
+                engagement_id=UUID(
+                    row["engagement_id"]
+                ),
+                billing_type=BillingType(
+                    row["billing_type"]
+                ),
+                billing_cadence=BillingCadence(
+                    row["billing_cadence"]
+                ),
+                hourly_rate=(
+                    Decimal(
+                        row["hourly_rate"]
+                    )
+                    if row["hourly_rate"]
+                    is not None
+                    else None
+                ),
+                expected_hours_min=(
+                    Decimal(
+                        row[
+                            "expected_hours_min"
+                        ]
+                    )
+                    if row[
+                        "expected_hours_min"
+                    ]
+                    is not None
+                    else None
+                ),
+                expected_hours_max=(
+                    Decimal(
+                        row[
+                            "expected_hours_max"
+                        ]
+                    )
+                    if row[
+                        "expected_hours_max"
+                    ]
+                    is not None
+                    else None
+                ),
+                payment_terms_days=row[
+                    "payment_terms_days"
+                ],
+                effective_from=date.fromisoformat(
+                    row["effective_from"]
+                ),
+                effective_to=(
+                    date.fromisoformat(
+                        row["effective_to"]
+                    )
+                    if row["effective_to"]
+                    else None
+                ),
+                created_at=datetime.fromisoformat(
+                    row["created_at"]
+                ),
+            )
+            for row in rows
+        ]
+
+
 class SQLiteBillingUnitOfWork:
     def __init__(
         self,
@@ -868,110 +1263,7 @@ class SQLiteBillingUnitOfWork:
     def rollback(self) -> None:
         self.connection.rollback()
 
-def assign_public_token_hash(
-    self,
-    quote_id: UUID,
-    public_token_hash: str,
-) -> None:
-    result = self.connection.execute(
-        """
-        UPDATE quotes
-        SET public_token_hash = ?
-        WHERE id = ?
-        """,
-        (
-            public_token_hash,
-            str(quote_id),
-        ),
-    )
 
-    if result.rowcount == 0:
-        raise ValueError(
-            "Quote does not exist."
-        )
-
-
-def get_by_public_token_hash(
-    self,
-    public_token_hash: str,
-) -> Quote | None:
-    row = self.connection.execute(
-        """
-        SELECT
-            id,
-            client_organization_id
-        FROM quotes
-        WHERE public_token_hash = ?
-        """,
-        (public_token_hash,),
-    ).fetchone()
-
-    if row is None:
-        return None
-
-    return self.get_for_client(
-        quote_id=UUID(row["id"]),
-        client_organization_id=UUID(
-            row["client_organization_id"]
-        ),
-    )
-
-
-def update(
-    self,
-    quote: Quote,
-) -> None:
-    result = self.connection.execute(
-        """
-        UPDATE quotes
-        SET
-            status = ?,
-            subtotal = ?,
-            tax_amount = ?,
-            total = ?,
-            notes = ?,
-            terms = ?,
-            sent_at = ?,
-            accepted_at = ?,
-            declined_at = ?,
-            updated_at = ?
-        WHERE id = ?
-          AND client_organization_id = ?
-        """,
-        (
-            quote.status.value,
-            str(quote.subtotal),
-            str(quote.tax_amount),
-            str(quote.total),
-            quote.notes,
-            quote.terms,
-            (
-                quote.sent_at.isoformat()
-                if quote.sent_at
-                else None
-            ),
-            (
-                quote.accepted_at.isoformat()
-                if quote.accepted_at
-                else None
-            ),
-            (
-                quote.declined_at.isoformat()
-                if quote.declined_at
-                else None
-            ),
-            quote.updated_at.isoformat(),
-            str(quote.id),
-            str(
-                quote.client_organization_id
-            ),
-        ),
-    )
-
-    if result.rowcount == 0:
-        raise ValueError(
-            "Quote does not exist."
-        )
 
 class SQLiteUserRepository:
     def __init__(

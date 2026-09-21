@@ -202,6 +202,44 @@ def build_invoice_lines_from_time_entries(
     return invoice_lines
 
 
+
+def approve_time_entry(
+    time_entry: TimeEntry,
+) -> TimeEntry:
+    if (
+        time_entry.status
+        == TimeEntryStatus.INVOICED
+        or time_entry.invoice_id
+        is not None
+    ):
+        raise ValueError(
+            "Invoiced time entries "
+            "cannot be approved."
+        )
+
+    if (
+        time_entry.status
+        == TimeEntryStatus.APPROVED
+    ):
+        return time_entry
+
+    if (
+        time_entry.status
+        != TimeEntryStatus.DRAFT
+    ):
+        raise ValueError(
+            "Only draft time entries "
+            "can be approved."
+        )
+
+    time_entry.status = (
+        TimeEntryStatus.APPROVED
+    )
+
+    return time_entry
+
+
+
 def mark_time_entries_invoiced(
     time_entries: list[TimeEntry],
     invoice: Invoice,
@@ -361,6 +399,36 @@ def refresh_quote(
     )
 
     return quote
+
+
+
+def send_invoice(
+    invoice: Invoice,
+    *,
+    sent_at: datetime | None = None,
+) -> Invoice:
+    if (
+        invoice.status
+        != InvoiceStatus.DRAFT
+    ):
+        raise ValueError(
+            "Only draft invoices can be sent."
+        )
+
+    timestamp = (
+        sent_at
+        or datetime.now(timezone.utc)
+    )
+
+    invoice.status = (
+        InvoiceStatus.SENT
+    )
+
+    invoice.sent_at = timestamp
+    invoice.updated_at = timestamp
+
+    return invoice
+
 
 
 def send_quote(

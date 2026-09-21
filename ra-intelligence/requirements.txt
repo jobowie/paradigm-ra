@@ -49,3 +49,5 @@ wheel==0.47.0
 fastapi==0.141.1
 uvicorn==0.52.4
 stripe==15.6.1
+reportlab==5.0.1
+resend==2.37.0

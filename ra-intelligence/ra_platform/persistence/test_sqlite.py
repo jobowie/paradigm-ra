@@ -563,3 +563,69 @@ def test_quote_public_token_resolves_only_correct_quote():
         stored["public_token_hash"]
         != raw_token
     )
+
+def test_connection_supports_fastapi_thread_handoff(
+    tmp_path,
+):
+    from concurrent.futures import (
+        ThreadPoolExecutor,
+    )
+
+    from ra_platform.persistence.sqlite import (
+        create_connection,
+    )
+
+    connection = create_connection(
+        tmp_path / "thread-test.db"
+    )
+
+    def use_connection():
+        row = connection.execute(
+            "SELECT 1 AS value"
+        ).fetchone()
+
+        return row["value"]
+
+    with ThreadPoolExecutor(
+        max_workers=1
+    ) as executor:
+        result = executor.submit(
+            use_connection
+        ).result()
+
+    assert result == 1
+
+    with ThreadPoolExecutor(
+        max_workers=1
+    ) as executor:
+        executor.submit(
+            connection.close
+        ).result()
+
+
+def test_invoices_include_sent_at_column(
+    tmp_path,
+):
+    from ra_platform.persistence.sqlite import (
+        create_connection,
+        initialize_database,
+    )
+
+    connection = create_connection(
+        tmp_path / "invoice-send.db"
+    )
+
+    initialize_database(
+        connection
+    )
+
+    columns = {
+        row[1]
+        for row in connection.execute(
+            "PRAGMA table_info(invoices)"
+        ).fetchall()
+    }
+
+    assert "sent_at" in columns
+
+    connection.close()

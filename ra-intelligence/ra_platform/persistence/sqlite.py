@@ -13,7 +13,10 @@ def create_connection(
         exist_ok=True,
     )
 
-    connection = sqlite3.connect(db_path)
+    connection = sqlite3.connect(
+        db_path,
+        check_same_thread=False,
+    )
     connection.row_factory = sqlite3.Row
     connection.execute(
         "PRAGMA foreign_keys = ON"
@@ -172,6 +175,8 @@ def initialize_database(
 
             notes TEXT,
             terms TEXT,
+
+            sent_at TEXT,
 
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
@@ -362,6 +367,24 @@ def initialize_database(
         WHERE public_token_hash IS NOT NULL
         """
     )
+
+
+    # Compatibility migration for databases
+    # created before invoice sent_at existed.
+    invoice_columns = {
+        row[1]
+        for row in connection.execute(
+            "PRAGMA table_info(invoices)"
+        ).fetchall()
+    }
+
+    if "sent_at" not in invoice_columns:
+        connection.execute(
+            """
+            ALTER TABLE invoices
+            ADD COLUMN sent_at TEXT
+            """
+        )
 
     connection.commit()
     
