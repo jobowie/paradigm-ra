@@ -16,6 +16,15 @@ from ra_platform.engagements.models import (
     EngagementStatus,
 )
 
+from ra_platform.identity.models import (
+    AuditEvent,
+    AuthSession,
+    MembershipRole,
+    OrganizationMembership,
+    User,
+    UserStatus,
+)
+
 from ra_platform.billing.models import (
     Invoice,
     InvoiceLine,
@@ -963,3 +972,385 @@ def update(
         raise ValueError(
             "Quote does not exist."
         )
+
+class SQLiteUserRepository:
+    def __init__(
+        self,
+        connection: sqlite3.Connection,
+    ) -> None:
+        self.connection = connection
+
+    def add(
+        self,
+        user: User,
+    ) -> None:
+        self.connection.execute(
+            """
+            INSERT INTO users (
+                id,
+                email,
+                display_name,
+                password_hash,
+                status,
+                created_at,
+                updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                str(user.id),
+                user.email.strip().lower(),
+                user.display_name.strip(),
+                user.password_hash,
+                user.status.value,
+                user.created_at.isoformat(),
+                user.updated_at.isoformat(),
+            ),
+        )
+
+    def get(
+        self,
+        user_id: UUID,
+    ) -> User | None:
+        row = self.connection.execute(
+            """
+            SELECT *
+            FROM users
+            WHERE id = ?
+            """,
+            (str(user_id),),
+        ).fetchone()
+
+        if row is None:
+            return None
+
+        return self._from_row(row)
+
+    def get_by_email(
+        self,
+        email: str,
+    ) -> User | None:
+        row = self.connection.execute(
+            """
+            SELECT *
+            FROM users
+            WHERE lower(email) = lower(?)
+            """,
+            (email.strip(),),
+        ).fetchone()
+
+        if row is None:
+            return None
+
+        return self._from_row(row)
+
+    @staticmethod
+    def _from_row(
+        row: sqlite3.Row,
+    ) -> User:
+        return User(
+            id=UUID(row["id"]),
+            email=row["email"],
+            display_name=row["display_name"],
+            password_hash=row["password_hash"],
+            status=UserStatus(row["status"]),
+            created_at=datetime.fromisoformat(
+                row["created_at"]
+            ),
+            updated_at=datetime.fromisoformat(
+                row["updated_at"]
+            ),
+        )
+
+
+class SQLiteOrganizationMembershipRepository:
+    def __init__(
+        self,
+        connection: sqlite3.Connection,
+    ) -> None:
+        self.connection = connection
+
+    def add(
+        self,
+        membership: OrganizationMembership,
+    ) -> None:
+        self.connection.execute(
+            """
+            INSERT INTO organization_memberships (
+                id,
+                user_id,
+                organization_id,
+                role,
+                created_at
+            )
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                str(membership.id),
+                str(membership.user_id),
+                str(membership.organization_id),
+                membership.role.value,
+                membership.created_at.isoformat(),
+            ),
+        )
+
+    def get_for_user_and_organization(
+        self,
+        *,
+        user_id: UUID,
+        organization_id: UUID,
+    ) -> OrganizationMembership | None:
+        row = self.connection.execute(
+            """
+            SELECT *
+            FROM organization_memberships
+            WHERE user_id = ?
+              AND organization_id = ?
+            """,
+            (
+                str(user_id),
+                str(organization_id),
+            ),
+        ).fetchone()
+
+        if row is None:
+            return None
+
+        return self._from_row(row)
+
+    def list_for_user(
+        self,
+        user_id: UUID,
+    ) -> list[OrganizationMembership]:
+        rows = self.connection.execute(
+            """
+            SELECT *
+            FROM organization_memberships
+            WHERE user_id = ?
+            ORDER BY created_at
+            """,
+            (str(user_id),),
+        ).fetchall()
+
+        return [
+            self._from_row(row)
+            for row in rows
+        ]
+
+    @staticmethod
+    def _from_row(
+        row: sqlite3.Row,
+    ) -> OrganizationMembership:
+        return OrganizationMembership(
+            id=UUID(row["id"]),
+            user_id=UUID(row["user_id"]),
+            organization_id=UUID(
+                row["organization_id"]
+            ),
+            role=MembershipRole(row["role"]),
+            created_at=datetime.fromisoformat(
+                row["created_at"]
+            ),
+        )
+
+
+class SQLiteAuthSessionRepository:
+    def __init__(
+        self,
+        connection: sqlite3.Connection,
+    ) -> None:
+        self.connection = connection
+
+    def add(
+        self,
+        session: AuthSession,
+    ) -> None:
+        self.connection.execute(
+            """
+            INSERT INTO auth_sessions (
+                id,
+                user_id,
+                token_hash,
+                expires_at,
+                created_at,
+                revoked_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                str(session.id),
+                str(session.user_id),
+                session.token_hash,
+                session.expires_at.isoformat(),
+                session.created_at.isoformat(),
+                (
+                    session.revoked_at.isoformat()
+                    if session.revoked_at
+                    else None
+                ),
+            ),
+        )
+
+    def get_by_token_hash(
+        self,
+        token_hash: str,
+    ) -> AuthSession | None:
+        row = self.connection.execute(
+            """
+            SELECT *
+            FROM auth_sessions
+            WHERE token_hash = ?
+            LIMIT 1
+            """,
+            (token_hash,),
+        ).fetchone()
+
+        if row is None:
+            return None
+
+        return self._from_row(row)
+
+    def revoke(
+        self,
+        session_id: UUID,
+        *,
+        revoked_at: datetime,
+    ) -> None:
+        result = self.connection.execute(
+            """
+            UPDATE auth_sessions
+            SET revoked_at = ?
+            WHERE id = ?
+            """,
+            (
+                revoked_at.isoformat(),
+                str(session_id),
+            ),
+        )
+
+        if result.rowcount == 0:
+            raise ValueError(
+                "Auth session does not exist."
+            )
+
+    @staticmethod
+    def _from_row(
+        row: sqlite3.Row,
+    ) -> AuthSession:
+        return AuthSession(
+            id=UUID(row["id"]),
+            user_id=UUID(row["user_id"]),
+            token_hash=row["token_hash"],
+            expires_at=datetime.fromisoformat(
+                row["expires_at"]
+            ),
+            created_at=datetime.fromisoformat(
+                row["created_at"]
+            ),
+            revoked_at=(
+                datetime.fromisoformat(
+                    row["revoked_at"]
+                )
+                if row["revoked_at"]
+                else None
+            ),
+        )
+
+
+class SQLiteAuditEventRepository:
+    def __init__(
+        self,
+        connection: sqlite3.Connection,
+    ) -> None:
+        self.connection = connection
+
+    def add(
+        self,
+        event: AuditEvent,
+    ) -> None:
+        self.connection.execute(
+            """
+            INSERT INTO audit_events (
+                id,
+                actor_user_id,
+                organization_id,
+                action,
+                resource_type,
+                resource_id,
+                metadata_json,
+                occurred_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                str(event.id),
+                (
+                    str(event.actor_user_id)
+                    if event.actor_user_id
+                    else None
+                ),
+                (
+                    str(event.organization_id)
+                    if event.organization_id
+                    else None
+                ),
+                event.action,
+                event.resource_type,
+                (
+                    str(event.resource_id)
+                    if event.resource_id
+                    else None
+                ),
+                event.metadata_json,
+                event.occurred_at.isoformat(),
+            ),
+        )
+
+    def list_for_organization(
+        self,
+        organization_id: UUID,
+    ) -> list[AuditEvent]:
+        rows = self.connection.execute(
+            """
+            SELECT *
+            FROM audit_events
+            WHERE organization_id = ?
+            ORDER BY occurred_at
+            """,
+            (str(organization_id),),
+        ).fetchall()
+
+        return [
+            self._from_row(row)
+            for row in rows
+        ]
+
+    @staticmethod
+    def _from_row(
+        row: sqlite3.Row,
+    ) -> AuditEvent:
+        return AuditEvent(
+            id=UUID(row["id"]),
+            actor_user_id=(
+                UUID(row["actor_user_id"])
+                if row["actor_user_id"]
+                else None
+            ),
+            organization_id=(
+                UUID(row["organization_id"])
+                if row["organization_id"]
+                else None
+            ),
+            action=row["action"],
+            resource_type=row["resource_type"],
+            resource_id=(
+                UUID(row["resource_id"])
+                if row["resource_id"]
+                else None
+            ),
+            metadata_json=row["metadata_json"],
+            occurred_at=datetime.fromisoformat(
+                row["occurred_at"]
+            ),
+        )
+

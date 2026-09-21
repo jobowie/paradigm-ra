@@ -259,6 +259,80 @@ def initialize_database(
             FOREIGN KEY (invoice_id)
                 REFERENCES invoices(id)
         );
+        
+                CREATE TABLE IF NOT EXISTS users (
+            id TEXT PRIMARY KEY,
+
+            email TEXT NOT NULL UNIQUE,
+            display_name TEXT NOT NULL,
+            password_hash TEXT NOT NULL,
+
+            status TEXT NOT NULL,
+
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
+
+
+        CREATE TABLE IF NOT EXISTS organization_memberships (
+            id TEXT PRIMARY KEY,
+
+            user_id TEXT NOT NULL,
+            organization_id TEXT NOT NULL,
+
+            role TEXT NOT NULL,
+
+            created_at TEXT NOT NULL,
+
+            UNIQUE (
+                user_id,
+                organization_id
+            ),
+
+            FOREIGN KEY (user_id)
+                REFERENCES users(id),
+
+            FOREIGN KEY (organization_id)
+                REFERENCES organizations(id)
+        );
+
+
+        CREATE TABLE IF NOT EXISTS auth_sessions (
+            id TEXT PRIMARY KEY,
+
+            user_id TEXT NOT NULL,
+            token_hash TEXT NOT NULL UNIQUE,
+
+            expires_at TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            revoked_at TEXT,
+
+            FOREIGN KEY (user_id)
+                REFERENCES users(id)
+        );
+
+
+        CREATE TABLE IF NOT EXISTS audit_events (
+            id TEXT PRIMARY KEY,
+
+            actor_user_id TEXT,
+            organization_id TEXT,
+
+            action TEXT NOT NULL,
+
+            resource_type TEXT NOT NULL,
+            resource_id TEXT,
+
+            metadata_json TEXT,
+
+            occurred_at TEXT NOT NULL,
+
+            FOREIGN KEY (actor_user_id)
+                REFERENCES users(id),
+
+            FOREIGN KEY (organization_id)
+                REFERENCES organizations(id)
+        );
         """
     )
 
@@ -289,4 +363,54 @@ def initialize_database(
     )
 
     connection.commit()
+    
+    connection.execute(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS
+        idx_users_email_normalized
+        ON users(lower(email))
+        """
+    )
+
+    connection.execute(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS
+        idx_auth_sessions_token_hash
+        ON auth_sessions(token_hash)
+        """
+    )
+
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS
+        idx_memberships_user_id
+        ON organization_memberships(user_id)
+        """
+    )
+
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS
+        idx_memberships_organization_id
+        ON organization_memberships(
+            organization_id
+        )
+        """
+    )
+
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS
+        idx_audit_events_organization_id
+        ON audit_events(organization_id)
+        """
+    )
+
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS
+        idx_audit_events_actor_user_id
+        ON audit_events(actor_user_id)
+        """
+    )
     
