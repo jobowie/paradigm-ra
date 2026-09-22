@@ -121,12 +121,40 @@ def ensure_deposit_invoice(
         )
     )
 
+    organization_row = (
+        connection.execute(
+            """
+            SELECT name
+            FROM organizations
+            WHERE id = ?
+            """,
+            (
+                str(
+                    quote.client_organization_id
+                ),
+            ),
+        ).fetchone()
+    )
+
+    if organization_row is None:
+        raise ValueError(
+            "Client organization not found."
+        )
+
+    invoice_prefix = (
+        invoice_prefix_for_organization_name(
+            organization_row["name"]
+        )
+    )
+
     invoice = (
         create_invoice_from_accepted_quote(
             quote=quote,
             invoice_number=(
                 next_invoice_number(
-                    connection
+                    connection,
+                    invoice_date=date.today(),
+                    prefix=invoice_prefix,
                 )
             ),
             invoice_amount=deposit.amount,

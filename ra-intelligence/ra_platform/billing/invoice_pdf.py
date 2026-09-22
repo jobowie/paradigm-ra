@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from io import BytesIO
 from pathlib import Path
+from xml.sax.saxutils import escape
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_RIGHT
@@ -86,6 +87,14 @@ def build_invoice_pdf(
         textColor=colors.HexColor(
             "#17181C"
         ),
+    )
+
+    line_description_style = ParagraphStyle(
+        "InvoiceLineDescription",
+        parent=body_style,
+        fontSize=9,
+        leading=12,
+        spaceAfter=0,
     )
 
     small_style = ParagraphStyle(
@@ -351,7 +360,12 @@ def build_invoice_pdf(
     for line in invoice.line_items:
         rows.append(
             [
-                line.description,
+                Paragraph(
+                    escape(
+                        line.description
+                    ),
+                    line_description_style,
+                ),
                 f"{line.quantity}",
                 _money(
                     line.unit_rate

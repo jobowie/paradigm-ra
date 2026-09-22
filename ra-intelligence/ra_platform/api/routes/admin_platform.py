@@ -1,6 +1,7 @@
+import json
 import sqlite3
 
-from datetime import date
+from datetime import date, datetime, timezone
 from decimal import Decimal
 
 from uuid import UUID
@@ -19,16 +20,26 @@ from ra_platform.api.auth import (
     get_current_principal,
 )
 from ra_platform.billing.models import (
+    BillingCadence,
+    BillingType,
+    EngagementBillingTerms,
     Invoice,
     TimeEntry,
     TimeEntryFriction,
+    TimeEntryStatus,
     TimeEntryWorkstream,
 )
 from ra_platform.billing.numbering import (
+    invoice_prefix_for_organization_name,
     next_invoice_number,
+)
+from ra_platform.billing.terms_service import (
+    BillingTermsValidationError,
+    prepare_successor_billing_terms,
 )
 from ra_platform.billing.service import (
     approve_time_entry,
+    reopen_time_entry,
     create_invoice_from_time_entries,
 )
 from ra_platform.api.dependencies import (
@@ -42,10 +53,39 @@ from ra_platform.identity.authorization import (
 from ra_platform.identity.service import (
     AuthenticatedPrincipal,
 )
+from ra_platform.engagements.models import (
+    Engagement,
+    EngagementSource,
+    EngagementStatus,
+)
+from ra_platform.organizations.company_profile import (
+    OrganizationCompanyProfile,
+    OrganizationContact,
+)
+from ra_platform.organizations.billing_profile import (
+    OrganizationBillingProfile,
+)
+from ra_platform.organizations.billing_profile_service import (
+    BillingProfileUpdateError,
+    update_organization_billing_profile,
+)
 from ra_platform.organizations.models import (
+    OrganizationStatus,
     OrganizationType,
 )
+from ra_platform.persistence.billing_profiles import (
+    SQLiteOrganizationBillingProfileRepository,
+)
+from ra_platform.persistence.organization_details import (
+    SQLiteOrganizationCompanyProfileRepository,
+    SQLiteOrganizationContactRepository,
+)
+from ra_platform.security.financial_data import (
+    FinancialDataEncryptionError,
+    masked_financial_value,
+)
 from ra_platform.persistence.sqlite_repositories import (
+    SQLiteAuditEventRepository,
     SQLiteBillingUnitOfWork,
     SQLiteEngagementBillingTermsRepository,
     SQLiteEngagementRepository,
@@ -68,6 +108,204 @@ class OrganizationResponse(BaseModel):
     status: str
 
 
+class UpdateOrganizationRequest(BaseModel):
+    name: str | None = None
+    status: OrganizationStatus | None = None
+
+
+class CompanyProfileResponse(BaseModel):
+    id: UUID | None
+    organization_id: UUID
+
+    business_type: str | None
+    industry: str | None
+    website: str | None
+    phone: str | None
+    company_size: str | None
+
+    address_line1: str | None
+    address_line2: str | None
+    city: str | None
+    state_region: str | None
+    postal_code: str | None
+    country: str
+
+
+class UpdateCompanyProfileRequest(BaseModel):
+    business_type: str | None = None
+    industry: str | None = None
+    website: str | None = None
+    phone: str | None = None
+    company_size: str | None = None
+
+    address_line1: str | None = None
+    address_line2: str | None = None
+    city: str | None = None
+    state_region: str | None = None
+    postal_code: str | None = None
+    country: str | None = None
+
+
+class ContactResponse(BaseModel):
+    id: UUID
+    organization_id: UUID
+
+    name: str
+    title: str | None
+    email: str | None
+    phone: str | None
+    contact_type: str | None
+
+    is_primary: bool
+
+
+class CreateContactRequest(BaseModel):
+    name: str = Field(min_length=1)
+
+    title: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    contact_type: str | None = None
+
+    is_primary: bool = False
+
+
+class UpdateContactRequest(BaseModel):
+    name: str | None = None
+    title: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    contact_type: str | None = None
+
+    is_primary: bool | None = None
+
+
+class BillingProfileResponse(BaseModel):
+    id: UUID | None
+    organization_id: UUID
+
+    billing_name: str | None
+    billing_email: str | None
+
+    address_line1: str | None
+    address_line2: str | None
+    city: str | None
+    state_region: str | None
+    postal_code: str | None
+    country: str
+
+    bank_name: str | None
+    account_type: str | None
+
+    has_routing_number: bool
+    routing_number_masked: str | None
+
+    has_account_number: bool
+    account_number_masked: str | None
+
+
+class UpdateBillingProfileRequest(BaseModel):
+    billing_name: str | None = None
+    billing_email: str | None = None
+
+    address_line1: str | None = None
+    address_line2: str | None = None
+    city: str | None = None
+    state_region: str | None = None
+    postal_code: str | None = None
+    country: str | None = None
+
+    bank_name: str | None = None
+    account_type: str | None = None
+
+    routing_number: str | None = None
+    account_number: str | None = None
+
+    clear_routing_number: bool = False
+    clear_account_number: bool = False
+
+
+def build_billing_profile_response(
+    *,
+    organization_id: UUID,
+    profile: OrganizationBillingProfile | None,
+) -> BillingProfileResponse:
+    if profile is None:
+        return BillingProfileResponse(
+            id=None,
+            organization_id=organization_id,
+            billing_name=None,
+            billing_email=None,
+            address_line1=None,
+            address_line2=None,
+            city=None,
+            state_region=None,
+            postal_code=None,
+            country="US",
+            bank_name=None,
+            account_type=None,
+            has_routing_number=False,
+            routing_number_masked=None,
+            has_account_number=False,
+            account_number_masked=None,
+        )
+
+    return BillingProfileResponse(
+        id=profile.id,
+        organization_id=(
+            profile.organization_id
+        ),
+        billing_name=profile.billing_name,
+        billing_email=profile.billing_email,
+        address_line1=profile.address_line1,
+        address_line2=profile.address_line2,
+        city=profile.city,
+        state_region=profile.state_region,
+        postal_code=profile.postal_code,
+        country=profile.country,
+        bank_name=profile.bank_name,
+        account_type=profile.account_type,
+        has_routing_number=(
+            profile
+            .routing_number_ciphertext
+            is not None
+        ),
+        routing_number_masked=(
+            masked_financial_value(
+                profile.routing_number_last4
+            )
+        ),
+        has_account_number=(
+            profile
+            .account_number_ciphertext
+            is not None
+        ),
+        account_number_masked=(
+            masked_financial_value(
+                profile.account_number_last4
+            )
+        ),
+    )
+
+
+class CreateEngagementRequest(BaseModel):
+    name: str = Field(
+        min_length=1
+    )
+
+    service_type: str = Field(
+        min_length=1
+    )
+
+    source: EngagementSource = (
+        EngagementSource.DIRECT
+    )
+
+    status: EngagementStatus = (
+        EngagementStatus.PROPOSED
+    )
+
+
 class EngagementResponse(BaseModel):
     id: UUID
     client_organization_id: UUID
@@ -77,6 +315,37 @@ class EngagementResponse(BaseModel):
     service_type: str
     source: str
     status: str
+
+
+class CreateBillingTermsRequest(BaseModel):
+    billing_type: BillingType
+    billing_cadence: BillingCadence
+
+    hourly_rate: Decimal | None = Field(
+        default=None,
+        gt=0,
+    )
+
+    expected_hours_min: (
+        Decimal | None
+    ) = Field(
+        default=None,
+        ge=0,
+    )
+
+    expected_hours_max: (
+        Decimal | None
+    ) = Field(
+        default=None,
+        ge=0,
+    )
+
+    payment_terms_days: int = Field(
+        default=30,
+        ge=0,
+    )
+
+    effective_from: date
 
 
 class BillingTermsResponse(BaseModel):
@@ -114,6 +383,749 @@ def require_permission(
             status_code=403,
             detail=str(exc),
         ) from exc
+
+
+def _normalize_optional_text(
+    value: str | None,
+) -> str | None:
+    if value is None:
+        return None
+
+    normalized = value.strip()
+
+    return normalized or None
+
+
+def build_company_profile_response(
+    *,
+    organization_id: UUID,
+    profile: OrganizationCompanyProfile | None,
+) -> CompanyProfileResponse:
+    if profile is None:
+        return CompanyProfileResponse(
+            id=None,
+            organization_id=organization_id,
+            business_type=None,
+            industry=None,
+            website=None,
+            phone=None,
+            company_size=None,
+            address_line1=None,
+            address_line2=None,
+            city=None,
+            state_region=None,
+            postal_code=None,
+            country="US",
+        )
+
+    return CompanyProfileResponse(
+        id=profile.id,
+        organization_id=profile.organization_id,
+        business_type=profile.business_type,
+        industry=profile.industry,
+        website=profile.website,
+        phone=profile.phone,
+        company_size=profile.company_size,
+        address_line1=profile.address_line1,
+        address_line2=profile.address_line2,
+        city=profile.city,
+        state_region=profile.state_region,
+        postal_code=profile.postal_code,
+        country=profile.country,
+    )
+
+
+def build_contact_response(
+    contact: OrganizationContact,
+) -> ContactResponse:
+    return ContactResponse(
+        id=contact.id,
+        organization_id=contact.organization_id,
+        name=contact.name,
+        title=contact.title,
+        email=contact.email,
+        phone=contact.phone,
+        contact_type=contact.contact_type,
+        is_primary=contact.is_primary,
+    )
+
+
+@router.get(
+    "/organizations/{organization_id}",
+    response_model=OrganizationResponse,
+)
+def get_organization(
+    organization_id: UUID,
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    repository = SQLiteOrganizationRepository(
+        connection
+    )
+
+    organization = repository.get(
+        organization_id
+    )
+
+    if organization is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Organization not found.",
+        )
+
+    require_permission(
+        principal=principal,
+        permission=Permission.VIEW_ORGANIZATION,
+        organization_id=organization.id,
+    )
+
+    return OrganizationResponse(
+        id=organization.id,
+        name=organization.name,
+        type=organization.type.value,
+        status=organization.status.value,
+    )
+
+
+@router.put(
+    "/organizations/{organization_id}",
+    response_model=OrganizationResponse,
+)
+def update_organization(
+    organization_id: UUID,
+    body: UpdateOrganizationRequest,
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    repository = SQLiteOrganizationRepository(
+        connection
+    )
+
+    organization = repository.get(
+        organization_id
+    )
+
+    if organization is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Organization not found.",
+        )
+
+    require_permission(
+        principal=principal,
+        permission=Permission.MANAGE_ORGANIZATION,
+        organization_id=organization.id,
+    )
+
+    changed_fields: list[str] = []
+
+    if "name" in body.model_fields_set:
+        name = (
+            body.name.strip()
+            if body.name
+            else ""
+        )
+
+        if not name:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    "Organization name "
+                    "cannot be empty."
+                ),
+            )
+
+        organization.name = name
+        changed_fields.append("name")
+
+    if "status" in body.model_fields_set:
+        if body.status is None:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    "Organization status "
+                    "cannot be empty."
+                ),
+            )
+
+        organization.status = body.status
+        changed_fields.append("status")
+
+    if changed_fields:
+        organization.updated_at = datetime.now(
+            timezone.utc
+        )
+
+        repository.update(
+            organization
+        )
+
+        SQLiteAuditEventRepository(
+            connection
+        ).add(
+            AuditEvent(
+                actor_user_id=principal.user.id,
+                organization_id=organization.id,
+                action="organization.updated",
+                resource_type="organization",
+                resource_id=organization.id,
+                metadata_json=json.dumps(
+                    {
+                        "changed_fields":
+                            sorted(changed_fields),
+                    },
+                    sort_keys=True,
+                ),
+            )
+        )
+
+        connection.commit()
+
+    return OrganizationResponse(
+        id=organization.id,
+        name=organization.name,
+        type=organization.type.value,
+        status=organization.status.value,
+    )
+
+
+@router.get(
+    "/organizations/"
+    "{organization_id}/company-profile",
+    response_model=CompanyProfileResponse,
+)
+def get_company_profile(
+    organization_id: UUID,
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    organization = SQLiteOrganizationRepository(
+        connection
+    ).get(
+        organization_id
+    )
+
+    if organization is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Organization not found.",
+        )
+
+    require_permission(
+        principal=principal,
+        permission=Permission.VIEW_ORGANIZATION,
+        organization_id=organization.id,
+    )
+
+    profile = (
+        SQLiteOrganizationCompanyProfileRepository(
+            connection
+        ).get_for_organization(
+            organization.id
+        )
+    )
+
+    return build_company_profile_response(
+        organization_id=organization.id,
+        profile=profile,
+    )
+
+
+@router.put(
+    "/organizations/"
+    "{organization_id}/company-profile",
+    response_model=CompanyProfileResponse,
+)
+def update_company_profile(
+    organization_id: UUID,
+    body: UpdateCompanyProfileRequest,
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    organization = SQLiteOrganizationRepository(
+        connection
+    ).get(
+        organization_id
+    )
+
+    if organization is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Organization not found.",
+        )
+
+    require_permission(
+        principal=principal,
+        permission=Permission.MANAGE_ORGANIZATION,
+        organization_id=organization.id,
+    )
+
+    repository = (
+        SQLiteOrganizationCompanyProfileRepository(
+            connection
+        )
+    )
+
+    profile = repository.get_for_organization(
+        organization.id
+    )
+
+    if profile is None:
+        profile = OrganizationCompanyProfile(
+            organization_id=organization.id
+        )
+
+    editable_fields = {
+        "business_type",
+        "industry",
+        "website",
+        "phone",
+        "company_size",
+        "address_line1",
+        "address_line2",
+        "city",
+        "state_region",
+        "postal_code",
+        "country",
+    }
+
+    changed_fields: list[str] = []
+
+    for field in editable_fields:
+        if field not in body.model_fields_set:
+            continue
+
+        value = getattr(
+            body,
+            field,
+        )
+
+        if field == "country":
+            value = (
+                _normalize_optional_text(value)
+                or "US"
+            )
+        else:
+            value = _normalize_optional_text(
+                value
+            )
+
+        setattr(
+            profile,
+            field,
+            value,
+        )
+
+        changed_fields.append(
+            field
+        )
+
+    if changed_fields:
+        profile.updated_at = datetime.now(
+            timezone.utc
+        )
+
+        repository.upsert(
+            profile
+        )
+
+        SQLiteAuditEventRepository(
+            connection
+        ).add(
+            AuditEvent(
+                actor_user_id=principal.user.id,
+                organization_id=organization.id,
+                action=(
+                    "organization."
+                    "company_profile_updated"
+                ),
+                resource_type=(
+                    "organization_company_profile"
+                ),
+                resource_id=profile.id,
+                metadata_json=json.dumps(
+                    {
+                        "changed_fields":
+                            sorted(changed_fields),
+                    },
+                    sort_keys=True,
+                ),
+            )
+        )
+
+        connection.commit()
+
+    return build_company_profile_response(
+        organization_id=organization.id,
+        profile=profile,
+    )
+
+
+@router.get(
+    "/organizations/"
+    "{organization_id}/contacts",
+    response_model=list[ContactResponse],
+)
+def list_organization_contacts(
+    organization_id: UUID,
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    organization = SQLiteOrganizationRepository(
+        connection
+    ).get(
+        organization_id
+    )
+
+    if organization is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Organization not found.",
+        )
+
+    require_permission(
+        principal=principal,
+        permission=Permission.VIEW_ORGANIZATION,
+        organization_id=organization.id,
+    )
+
+    contacts = (
+        SQLiteOrganizationContactRepository(
+            connection
+        ).list_for_organization(
+            organization.id
+        )
+    )
+
+    return [
+        build_contact_response(
+            contact
+        )
+        for contact in contacts
+    ]
+
+
+@router.post(
+    "/organizations/"
+    "{organization_id}/contacts",
+    response_model=ContactResponse,
+)
+def create_organization_contact(
+    organization_id: UUID,
+    body: CreateContactRequest,
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    organization = SQLiteOrganizationRepository(
+        connection
+    ).get(
+        organization_id
+    )
+
+    if organization is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Organization not found.",
+        )
+
+    require_permission(
+        principal=principal,
+        permission=Permission.MANAGE_ORGANIZATION,
+        organization_id=organization.id,
+    )
+
+    name = body.name.strip()
+
+    if not name:
+        raise HTTPException(
+            status_code=422,
+            detail="Contact name cannot be empty.",
+        )
+
+    contact = OrganizationContact(
+        organization_id=organization.id,
+        name=name,
+        title=_normalize_optional_text(
+            body.title
+        ),
+        email=_normalize_optional_text(
+            body.email
+        ),
+        phone=_normalize_optional_text(
+            body.phone
+        ),
+        contact_type=_normalize_optional_text(
+            body.contact_type
+        ),
+        is_primary=body.is_primary,
+    )
+
+    SQLiteOrganizationContactRepository(
+        connection
+    ).add(
+        contact
+    )
+
+    SQLiteAuditEventRepository(
+        connection
+    ).add(
+        AuditEvent(
+            actor_user_id=principal.user.id,
+            organization_id=organization.id,
+            action="organization.contact_created",
+            resource_type="organization_contact",
+            resource_id=contact.id,
+            metadata_json=json.dumps(
+                {
+                    "contact_type":
+                        contact.contact_type,
+                    "is_primary":
+                        contact.is_primary,
+                },
+                sort_keys=True,
+            ),
+        )
+    )
+
+    connection.commit()
+
+    return build_contact_response(
+        contact
+    )
+
+
+@router.put(
+    "/organizations/"
+    "{organization_id}/contacts/"
+    "{contact_id}",
+    response_model=ContactResponse,
+)
+def update_organization_contact(
+    organization_id: UUID,
+    contact_id: UUID,
+    body: UpdateContactRequest,
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    organization = SQLiteOrganizationRepository(
+        connection
+    ).get(
+        organization_id
+    )
+
+    if organization is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Organization not found.",
+        )
+
+    require_permission(
+        principal=principal,
+        permission=Permission.MANAGE_ORGANIZATION,
+        organization_id=organization.id,
+    )
+
+    repository = (
+        SQLiteOrganizationContactRepository(
+            connection
+        )
+    )
+
+    contact = repository.get(
+        contact_id
+    )
+
+    if (
+        contact is None
+        or contact.organization_id
+        != organization.id
+    ):
+        raise HTTPException(
+            status_code=404,
+            detail="Contact not found.",
+        )
+
+    changed_fields: list[str] = []
+
+    text_fields = {
+        "name",
+        "title",
+        "email",
+        "phone",
+        "contact_type",
+    }
+
+    for field in text_fields:
+        if field not in body.model_fields_set:
+            continue
+
+        value = getattr(
+            body,
+            field,
+        )
+
+        if field == "name":
+            value = (
+                value.strip()
+                if value
+                else ""
+            )
+
+            if not value:
+                raise HTTPException(
+                    status_code=422,
+                    detail=(
+                        "Contact name "
+                        "cannot be empty."
+                    ),
+                )
+        else:
+            value = _normalize_optional_text(
+                value
+            )
+
+        setattr(
+            contact,
+            field,
+            value,
+        )
+
+        changed_fields.append(
+            field
+        )
+
+    if "is_primary" in body.model_fields_set:
+        if body.is_primary is None:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    "Primary status "
+                    "cannot be empty."
+                ),
+            )
+
+        contact.is_primary = (
+            body.is_primary
+        )
+
+        changed_fields.append(
+            "is_primary"
+        )
+
+    if changed_fields:
+        contact.updated_at = datetime.now(
+            timezone.utc
+        )
+
+        repository.update(
+            contact
+        )
+
+        SQLiteAuditEventRepository(
+            connection
+        ).add(
+            AuditEvent(
+                actor_user_id=principal.user.id,
+                organization_id=organization.id,
+                action="organization.contact_updated",
+                resource_type="organization_contact",
+                resource_id=contact.id,
+                metadata_json=json.dumps(
+                    {
+                        "changed_fields":
+                            sorted(changed_fields),
+                    },
+                    sort_keys=True,
+                ),
+            )
+        )
+
+        connection.commit()
+
+    return build_contact_response(
+        contact
+    )
+
+
+@router.get(
+    "/platform-organization",
+    response_model=OrganizationResponse,
+)
+def get_platform_organization(
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    require_permission(
+        principal=principal,
+        permission=(
+            Permission
+            .MANAGE_BILLING_PROFILE
+        ),
+    )
+
+    organizations = (
+        SQLiteOrganizationRepository(
+            connection
+        ).list_all()
+    )
+
+    organization = next(
+        (
+            item
+            for item in organizations
+            if item.type
+            == OrganizationType.PARADIGM_RA
+        ),
+        None,
+    )
+
+    if organization is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                "Paradigm Ra organization "
+                "not found."
+            ),
+        )
+
+    return OrganizationResponse(
+        id=organization.id,
+        name=organization.name,
+        type=organization.type.value,
+        status=organization.status.value,
+    )
 
 
 @router.get(
@@ -165,6 +1177,182 @@ def list_client_organizations(
         for organization
         in organizations
     ]
+
+
+@router.get(
+    "/organizations/"
+    "{organization_id}/billing-profile",
+    response_model=BillingProfileResponse,
+)
+def get_organization_billing_profile(
+    organization_id: UUID,
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    organization = (
+        SQLiteOrganizationRepository(
+            connection
+        ).get(
+            organization_id
+        )
+    )
+
+    if organization is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Organization not found.",
+        )
+
+    require_permission(
+        principal=principal,
+        permission=(
+            Permission
+            .MANAGE_BILLING_PROFILE
+        ),
+        organization_id=(
+            organization.id
+        ),
+    )
+
+    profile = (
+        SQLiteOrganizationBillingProfileRepository(
+            connection
+        ).get_for_organization(
+            organization.id
+        )
+    )
+
+    return build_billing_profile_response(
+        organization_id=(
+            organization.id
+        ),
+        profile=profile,
+    )
+
+
+@router.put(
+    "/organizations/"
+    "{organization_id}/billing-profile",
+    response_model=BillingProfileResponse,
+)
+def update_admin_billing_profile(
+    organization_id: UUID,
+    body: UpdateBillingProfileRequest,
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    organization = (
+        SQLiteOrganizationRepository(
+            connection
+        ).get(
+            organization_id
+        )
+    )
+
+    if organization is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Organization not found.",
+        )
+
+    require_permission(
+        principal=principal,
+        permission=(
+            Permission
+            .MANAGE_BILLING_PROFILE
+        ),
+        organization_id=(
+            organization.id
+        ),
+    )
+
+    repository = (
+        SQLiteOrganizationBillingProfileRepository(
+            connection
+        )
+    )
+
+    try:
+        profile = (
+            update_organization_billing_profile(
+                repository=repository,
+                organization_id=(
+                    organization.id
+                ),
+                values=body.model_dump(),
+                fields_set=set(
+                    body.model_fields_set
+                ),
+            )
+        )
+
+    except (
+        BillingProfileUpdateError,
+        FinancialDataEncryptionError,
+    ) as exc:
+        connection.rollback()
+
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        ) from exc
+
+    changed_fields = sorted(
+        body.model_fields_set
+    )
+
+    from ra_platform.identity.models import (
+        AuditEvent,
+    )
+    from ra_platform.persistence.sqlite_repositories import (
+        SQLiteAuditEventRepository,
+    )
+    import json
+
+    SQLiteAuditEventRepository(
+        connection
+    ).add(
+        AuditEvent(
+            actor_user_id=(
+                principal.user.id
+            ),
+            organization_id=(
+                organization.id
+            ),
+            action=(
+                "organization."
+                "billing_profile_updated"
+            ),
+            resource_type=(
+                "organization_billing_profile"
+            ),
+            resource_id=profile.id,
+            metadata_json=json.dumps(
+                {
+                    "changed_fields":
+                        changed_fields,
+                },
+                sort_keys=True,
+            ),
+        )
+    )
+
+    connection.commit()
+
+    return build_billing_profile_response(
+        organization_id=(
+            organization.id
+        ),
+        profile=profile,
+    )
 
 
 @router.get(
@@ -234,6 +1422,291 @@ def list_organization_engagements(
         for engagement
         in engagements
     ]
+
+
+@router.post(
+    "/organizations/"
+    "{organization_id}/engagements",
+    response_model=EngagementResponse,
+)
+def create_organization_engagement(
+    organization_id: UUID,
+    body: CreateEngagementRequest,
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    organizations = (
+        SQLiteOrganizationRepository(
+            connection
+        )
+    )
+
+    client = organizations.get(
+        organization_id
+    )
+
+    if client is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Organization not found.",
+        )
+
+    require_permission(
+        principal=principal,
+        permission=(
+            Permission.CREATE_ENGAGEMENT
+        ),
+        organization_id=client.id,
+    )
+
+    platform = next(
+        (
+            item
+            for item
+            in organizations.list_all()
+            if item.type
+            == OrganizationType.PARADIGM_RA
+        ),
+        None,
+    )
+
+    if platform is None:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Paradigm Ra organization "
+                "is not configured."
+            ),
+        )
+
+    engagement = Engagement(
+        client_organization_id=(
+            client.id
+        ),
+        owner_organization_id=(
+            platform.id
+        ),
+        name=body.name.strip(),
+        service_type=(
+            body.service_type.strip()
+        ),
+        source=body.source,
+        status=body.status,
+    )
+
+    SQLiteEngagementRepository(
+        connection
+    ).add(
+        engagement
+    )
+
+    from ra_platform.identity.models import (
+        AuditEvent,
+    )
+    from ra_platform.persistence.sqlite_repositories import (
+        SQLiteAuditEventRepository,
+    )
+    import json
+
+    SQLiteAuditEventRepository(
+        connection
+    ).add(
+        AuditEvent(
+            actor_user_id=(
+                principal.user.id
+            ),
+            organization_id=(
+                client.id
+            ),
+            action="engagement.created",
+            resource_type="engagement",
+            resource_id=engagement.id,
+            metadata_json=json.dumps(
+                {
+                    "name":
+                        engagement.name,
+                    "service_type":
+                        engagement.service_type,
+                    "source":
+                        engagement.source.value,
+                    "status":
+                        engagement.status.value,
+                },
+                sort_keys=True,
+            ),
+        )
+    )
+
+    connection.commit()
+
+    return EngagementResponse(
+        id=engagement.id,
+        client_organization_id=(
+            engagement
+            .client_organization_id
+        ),
+        owner_organization_id=(
+            engagement
+            .owner_organization_id
+        ),
+        name=engagement.name,
+        service_type=(
+            engagement.service_type
+        ),
+        source=engagement.source.value,
+        status=engagement.status.value,
+    )
+
+
+@router.post(
+    "/engagements/"
+    "{engagement_id}/billing-terms",
+    response_model=BillingTermsResponse,
+)
+def create_engagement_billing_terms(
+    engagement_id: UUID,
+    body: CreateBillingTermsRequest,
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    engagement = (
+        SQLiteEngagementRepository(
+            connection
+        ).get(
+            engagement_id
+        )
+    )
+
+    if engagement is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Engagement not found.",
+        )
+
+    require_permission(
+        principal=principal,
+        permission=(
+            Permission.CREATE_INVOICE
+        ),
+        organization_id=(
+            engagement
+            .client_organization_id
+        ),
+    )
+
+    repository = (
+        SQLiteEngagementBillingTermsRepository(
+            connection
+        )
+    )
+
+    existing_terms = (
+        repository.list_for_engagement(
+            engagement.id
+        )
+    )
+
+    terms = EngagementBillingTerms(
+        engagement_id=engagement.id,
+        billing_type=body.billing_type,
+        billing_cadence=(
+            body.billing_cadence
+        ),
+        hourly_rate=body.hourly_rate,
+        expected_hours_min=(
+            body.expected_hours_min
+        ),
+        expected_hours_max=(
+            body.expected_hours_max
+        ),
+        payment_terms_days=(
+            body.payment_terms_days
+        ),
+        effective_from=(
+            body.effective_from
+        ),
+    )
+
+    try:
+        (
+            closed_terms,
+            terms,
+        ) = (
+            prepare_successor_billing_terms(
+                existing_terms=(
+                    existing_terms
+                ),
+                new_terms=terms,
+            )
+        )
+
+    except BillingTermsValidationError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail=str(exc),
+        ) from exc
+
+    if closed_terms is not None:
+        repository.update_effective_to(
+            closed_terms
+        )
+
+    repository.add(
+        terms
+    )
+
+    connection.commit()
+
+    return BillingTermsResponse(
+        id=terms.id,
+        engagement_id=(
+            terms.engagement_id
+        ),
+        billing_type=(
+            terms.billing_type.value
+        ),
+        billing_cadence=(
+            terms.billing_cadence.value
+        ),
+        hourly_rate=(
+            str(terms.hourly_rate)
+            if terms.hourly_rate
+            is not None
+            else None
+        ),
+        expected_hours_min=(
+            str(
+                terms.expected_hours_min
+            )
+            if terms.expected_hours_min
+            is not None
+            else None
+        ),
+        expected_hours_max=(
+            str(
+                terms.expected_hours_max
+            )
+            if terms.expected_hours_max
+            is not None
+            else None
+        ),
+        payment_terms_days=(
+            terms.payment_terms_days
+        ),
+        effective_from=(
+            terms.effective_from
+            .isoformat()
+        ),
+        effective_to=None,
+    )
 
 
 @router.get(
@@ -358,6 +1831,12 @@ class CreateTimeEntryRequest(BaseModel):
     ) = None
 
     operational_note: str | None = None
+
+
+class UpdateTimeEntryRequest(
+    CreateTimeEntryRequest
+):
+    pass
 
 
 class TimeEntryResponse(BaseModel):
@@ -650,6 +2129,171 @@ def create_time_entry(
     )
 
 
+@router.put(
+    "/time-entries/{time_entry_id}",
+    response_model=TimeEntryResponse,
+)
+def update_admin_time_entry(
+    time_entry_id: UUID,
+    body: UpdateTimeEntryRequest,
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    repository = (
+        SQLiteTimeEntryRepository(
+            connection
+        )
+    )
+
+    entry = repository.get(
+        time_entry_id
+    )
+
+    if entry is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Time entry not found.",
+        )
+
+    engagement = get_engagement_or_404(
+        engagement_id=(
+            entry.engagement_id
+        ),
+        connection=connection,
+    )
+
+    require_permission(
+        principal=principal,
+        permission=(
+            Permission.CREATE_INVOICE
+        ),
+        organization_id=(
+            engagement.client_organization_id
+        ),
+    )
+
+    if (
+        entry.status
+        != TimeEntryStatus.DRAFT
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Only draft time entries "
+                "can be edited."
+            ),
+        )
+
+    entry.work_date = body.work_date
+    entry.description = (
+        body.description.strip()
+    )
+    entry.hours = body.hours
+    entry.workstream = body.workstream
+    entry.friction = body.friction
+
+    entry.operational_note = (
+        body.operational_note.strip()
+        if (
+            body.operational_note
+            and body.operational_note.strip()
+        )
+        else None
+    )
+
+    try:
+        repository.update_draft(
+            entry
+        )
+
+    except ValueError as exc:
+        connection.rollback()
+
+        raise HTTPException(
+            status_code=409,
+            detail=str(exc),
+        ) from exc
+
+    connection.commit()
+
+    return build_time_entry_response(
+        entry
+    )
+
+
+@router.post(
+    "/time-entries/"
+    "{time_entry_id}/reopen",
+    response_model=TimeEntryResponse,
+)
+def reopen_admin_time_entry(
+    time_entry_id: UUID,
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    repository = (
+        SQLiteTimeEntryRepository(
+            connection
+        )
+    )
+
+    entry = repository.get(
+        time_entry_id
+    )
+
+    if entry is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Time entry not found.",
+        )
+
+    engagement = get_engagement_or_404(
+        engagement_id=(
+            entry.engagement_id
+        ),
+        connection=connection,
+    )
+
+    require_permission(
+        principal=principal,
+        permission=(
+            Permission.CREATE_INVOICE
+        ),
+        organization_id=(
+            engagement.client_organization_id
+        ),
+    )
+
+    try:
+        reopen_time_entry(
+            entry
+        )
+
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail=str(exc),
+        ) from exc
+
+    repository.update_many(
+        [entry]
+    )
+
+    connection.commit()
+
+    return build_time_entry_response(
+        entry
+    )
+
+
 @router.post(
     "/time-entries/"
     "{time_entry_id}/approve",
@@ -878,6 +2522,11 @@ def generate_engagement_invoice(
                         connection,
                         invoice_date=(
                             invoice_date
+                        ),
+                        prefix=(
+                            invoice_prefix_for_organization_name(
+                                organization.name
+                            )
                         ),
                     )
                 ),

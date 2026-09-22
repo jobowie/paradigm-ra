@@ -2,6 +2,7 @@
 
 import {
   FormEvent,
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -77,6 +78,64 @@ const FRICTION_OPTIONS = [
   ["follow_up_required", "Follow-up required"],
   ["other", "Other"],
 ] as const;
+
+
+interface EditableBillingTermsDraft {
+  billing_type: string;
+  billing_cadence: string;
+  hourly_rate: string;
+  expected_hours_min: string;
+  expected_hours_max: string;
+  payment_terms_days: string;
+  effective_from: string;
+}
+
+
+interface EditableTimeDraft {
+  work_date: string;
+  hours: string;
+  description: string;
+  workstream: string;
+  friction: string;
+  operational_note: string;
+}
+
+
+type TimeDraftSaveState =
+  | "idle"
+  | "saving"
+  | "saved"
+  | "error";
+
+
+function timeDraftFingerprint(
+  draft: EditableTimeDraft,
+) {
+  return JSON.stringify({
+    work_date: draft.work_date,
+    hours: draft.hours,
+    description:
+      draft.description.trim(),
+    workstream:
+      draft.workstream || null,
+    friction:
+      draft.friction || null,
+    operational_note:
+      draft.operational_note.trim()
+      || null,
+  });
+}
+
+
+function validTimeDraft(
+  draft: EditableTimeDraft,
+) {
+  return Boolean(
+    draft.work_date
+    && draft.description.trim()
+    && Number(draft.hours) > 0
+  );
+}
 
 
 interface InvoiceLine {
@@ -157,6 +216,24 @@ function formatMoney(
 }
 
 
+function addDaysToIso(
+  value: string,
+  days: number,
+) {
+  const date = new Date(
+    `${value}T00:00:00Z`,
+  );
+
+  date.setUTCDate(
+    date.getUTCDate() + days,
+  );
+
+  return date
+    .toISOString()
+    .slice(0, 10);
+}
+
+
 function formatStatus(
   value: string,
 ) {
@@ -167,6 +244,34 @@ function formatStatus(
       (character) =>
         character.toUpperCase(),
     );
+}
+
+
+function billingTermsForDate(
+  terms: BillingTerms[],
+  workDate: string,
+): BillingTerms | null {
+  return (
+    [...terms]
+      .filter(
+        (item) =>
+          item.effective_from
+            <= workDate
+          && (
+            !item.effective_to
+            || workDate
+              <= item.effective_to
+          ),
+      )
+      .sort(
+        (left, right) =>
+          right.effective_from
+            .localeCompare(
+              left.effective_from,
+            ),
+      )[0]
+    ?? null
+  );
 }
 
 
@@ -182,6 +287,7 @@ export function AdminInvoicingWorkspace() {
   ] = useState<Organization | null>(
     null,
   );
+
 
   const [
     engagements,
@@ -204,6 +310,31 @@ export function AdminInvoicingWorkspace() {
     timeEntries,
     setTimeEntries,
   ] = useState<TimeEntry[]>([]);
+
+  const [
+    editingBillingTerms,
+    setEditingBillingTerms,
+  ] = useState(false);
+
+  const [
+    billingTermsDraft,
+    setBillingTermsDraft,
+  ] = useState<
+    EditableBillingTermsDraft
+  >({
+    billing_type: "hourly",
+    billing_cadence: "weekly",
+    hourly_rate: "0",
+    expected_hours_min: "",
+    expected_hours_max: "",
+    payment_terms_days: "30",
+    effective_from:
+      new Date()
+        .toISOString()
+        .slice(0, 10),
+  });
+
+
 
   const [
     invoices,
@@ -241,6 +372,33 @@ export function AdminInvoicingWorkspace() {
   ] = useState("");
 
   const [
+    editingTimeEntryId,
+    setEditingTimeEntryId,
+  ] = useState<string | null>(
+    null,
+  );
+
+  const [
+    timeDraft,
+    setTimeDraft,
+  ] = useState<
+    EditableTimeDraft | null
+  >(null);
+
+  const [
+    timeDraftSaveState,
+    setTimeDraftSaveState,
+  ] = useState<TimeDraftSaveState>(
+    "idle",
+  );
+
+  const [
+    lastSavedTimeDraftFingerprint,
+    setLastSavedTimeDraftFingerprint,
+  ] = useState("");
+
+
+  const [
     billToEmail,
     setBillToEmail,
   ] = useState("");
@@ -258,6 +416,169 @@ export function AdminInvoicingWorkspace() {
 
   const [notice, setNotice] =
     useState("");
+
+
+  const saveEditedTimeDraft =
+    useCallback(
+      async (
+        entryId: string,
+        draft: EditableTimeDraft,
+      ): Promise<
+        TimeEntry | null
+      > => {
+        const fingerprint =
+          timeDraftFingerprint(
+            draft,
+          );
+
+        setTimeDraftSaveState(
+          "saving",
+        );
+
+        try {
+          const response =
+            await fetch(
+              `/api/admin/time-entries/${entryId}`,
+              {
+                method: "PUT",
+                headers: {
+                  "Content-Type":
+                    "application/json",
+                },
+                body: JSON.stringify({
+                  work_date:
+                    draft.work_date,
+                  description:
+                    draft.description
+                      .trim(),
+                  hours:
+                    draft.hours,
+                  workstream:
+                    draft.workstream
+                    || null,
+                  friction:
+                    draft.friction
+                    || null,
+                  operational_note:
+                    draft
+                      .operational_note
+                      .trim()
+                    || null,
+                }),
+              },
+            );
+
+          const data =
+            await readApiResponse<
+              TimeEntry
+            >(
+              response,
+              "Save time draft",
+            );
+
+          setTimeEntries(
+            (current) =>
+              current.map(
+                (item) =>
+                  item.id
+                  === data.id
+                    ? data
+                    : item,
+              ),
+          );
+
+          setLastSavedTimeDraftFingerprint(
+            fingerprint,
+          );
+
+          setTimeDraftSaveState(
+            "saved",
+          );
+
+          setError("");
+
+          return data;
+
+        } catch (err) {
+          setTimeDraftSaveState(
+            "error",
+          );
+
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Unable to save time draft.",
+          );
+
+          return null;
+        }
+      },
+      [],
+    );
+
+
+  useEffect(() => {
+    if (
+      !editingTimeEntryId
+      || !timeDraft
+    ) {
+      return;
+    }
+
+    if (
+      !validTimeDraft(
+        timeDraft,
+      )
+    ) {
+      setTimeDraftSaveState(
+        "idle",
+      );
+
+      return;
+    }
+
+    const fingerprint =
+      timeDraftFingerprint(
+        timeDraft,
+      );
+
+    if (
+      fingerprint
+      === lastSavedTimeDraftFingerprint
+    ) {
+      setTimeDraftSaveState(
+        "saved",
+      );
+
+      return;
+    }
+
+    setTimeDraftSaveState(
+      "idle",
+    );
+
+    const timeout =
+      window.setTimeout(
+        () => {
+          void saveEditedTimeDraft(
+            editingTimeEntryId,
+            timeDraft,
+          );
+        },
+        800,
+      );
+
+    return () => {
+      window.clearTimeout(
+        timeout,
+      );
+    };
+  }, [
+    editingTimeEntryId,
+    timeDraft,
+    lastSavedTimeDraftFingerprint,
+    saveEditedTimeDraft,
+  ]);
 
 
   useEffect(() => {
@@ -300,7 +621,17 @@ export function AdminInvoicingWorkspace() {
 
 
   const currentTerms =
-    billingTerms[0] ?? null;
+    useMemo(
+      () =>
+        billingTermsForDate(
+          billingTerms,
+          new Date()
+            .toISOString()
+            .slice(0, 10),
+        ),
+      [billingTerms],
+    );
+
 
   const approvedEntries =
     useMemo(
@@ -314,10 +645,115 @@ export function AdminInvoicingWorkspace() {
       [timeEntries],
     );
 
+
+  const billableEntries =
+    useMemo(
+      () =>
+        approvedEntries.flatMap(
+          (entry) => {
+            const terms =
+              billingTermsForDate(
+                billingTerms,
+                entry.work_date,
+              );
+
+            if (
+              !terms
+              || terms.billing_type
+                !== "hourly"
+              || !terms.hourly_rate
+              || Number(
+                terms.hourly_rate,
+              ) <= 0
+            ) {
+              return [];
+            }
+
+            return [
+              {
+                entry,
+                terms,
+              },
+            ];
+          },
+        ),
+      [
+        approvedEntries,
+        billingTerms,
+      ],
+    );
+
+
+  const billingMismatchEntries =
+    useMemo(
+      () =>
+        approvedEntries.filter(
+          (entry) => {
+            const terms =
+              billingTermsForDate(
+                billingTerms,
+                entry.work_date,
+              );
+
+            return (
+              !terms
+              || terms.billing_type
+                !== "hourly"
+              || !terms.hourly_rate
+              || Number(
+                terms.hourly_rate,
+              ) <= 0
+            );
+          },
+        ),
+      [
+        approvedEntries,
+        billingTerms,
+      ],
+    );
+
+
   const approvedHours =
     useMemo(
       () =>
-        approvedEntries.reduce(
+        billableEntries.reduce(
+          (total, item) =>
+            total
+            + Number(
+                item.entry.hours,
+              ),
+          0,
+        ),
+      [billableEntries],
+    );
+
+
+  const approvedValue =
+    useMemo(
+      () =>
+        billableEntries.reduce(
+          (total, item) =>
+            total
+            + (
+              Number(
+                item.entry.hours,
+              )
+              * Number(
+                  item.terms
+                    .hourly_rate
+                  ?? 0,
+                )
+            ),
+          0,
+        ),
+      [billableEntries],
+    );
+
+
+  const billingMismatchHours =
+    useMemo(
+      () =>
+        billingMismatchEntries.reduce(
           (total, entry) =>
             total
             + Number(
@@ -325,15 +761,7 @@ export function AdminInvoicingWorkspace() {
               ),
           0,
         ),
-      [approvedEntries],
-    );
-
-  const approvedValue =
-    approvedHours
-    * Number(
-      currentTerms
-        ?.hourly_rate
-      ?? 0,
+      [billingMismatchEntries],
     );
 
 
@@ -463,6 +891,415 @@ export function AdminInvoicingWorkspace() {
           : "Unable to load billing.",
       );
     }
+  }
+
+
+  function beginBillingTermsEdit() {
+    const today =
+      new Date()
+        .toISOString()
+        .slice(0, 10);
+
+    const effectiveFrom =
+      currentTerms
+        ? [
+            today,
+            addDaysToIso(
+              currentTerms
+                .effective_from,
+              1,
+            ),
+          ].sort().at(-1)!
+        : today;
+
+    setBillingTermsDraft({
+      billing_type:
+        currentTerms
+          ?.billing_type
+        ?? "hourly",
+
+      billing_cadence:
+        currentTerms
+          ?.billing_cadence
+        ?? "weekly",
+
+      hourly_rate:
+        currentTerms
+          ?.hourly_rate
+        ?? "0",
+
+      expected_hours_min:
+        currentTerms
+          ?.expected_hours_min
+        ?? "",
+
+      expected_hours_max:
+        currentTerms
+          ?.expected_hours_max
+        ?? "",
+
+      payment_terms_days:
+        String(
+          currentTerms
+            ?.payment_terms_days
+          ?? 30,
+        ),
+
+      effective_from:
+        effectiveFrom,
+    });
+
+    setEditingBillingTerms(
+      true,
+    );
+
+    setError("");
+    setNotice("");
+  }
+
+
+  function updateBillingTermsDraft(
+    field:
+      keyof EditableBillingTermsDraft,
+    value: string,
+  ) {
+    setBillingTermsDraft(
+      (current) => ({
+        ...current,
+        [field]: value,
+      }),
+    );
+  }
+
+
+  async function handleSaveBillingTerms(
+    event:
+      FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+
+    if (!selectedEngagement) {
+      return;
+    }
+
+    if (
+      billingTermsDraft.billing_type
+      === "hourly"
+      && (
+        !billingTermsDraft.hourly_rate
+        || Number(
+          billingTermsDraft.hourly_rate
+        ) <= 0
+      )
+    ) {
+      setError(
+        "Hourly billing requires a positive hourly rate."
+      );
+
+      return;
+    }
+
+    if (
+      billingTermsDraft.expected_hours_min
+      && billingTermsDraft.expected_hours_max
+      && Number(
+        billingTermsDraft.expected_hours_max
+      ) < Number(
+        billingTermsDraft.expected_hours_min
+      )
+    ) {
+      setError(
+        "Expected maximum hours cannot be below minimum hours."
+      );
+
+      return;
+    }
+
+    setActionLoading(true);
+    setError("");
+    setNotice("");
+
+    try {
+      const response =
+        await fetch(
+          `/api/admin/engagements/${selectedEngagement.id}/billing-terms`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              billing_type:
+                billingTermsDraft
+                  .billing_type,
+
+              billing_cadence:
+                billingTermsDraft
+                  .billing_cadence,
+
+              hourly_rate:
+                billingTermsDraft
+                  .hourly_rate
+                || null,
+
+              expected_hours_min:
+                billingTermsDraft
+                  .expected_hours_min
+                || null,
+
+              expected_hours_max:
+                billingTermsDraft
+                  .expected_hours_max
+                || null,
+
+              payment_terms_days:
+                Number(
+                  billingTermsDraft
+                    .payment_terms_days,
+                ),
+
+              effective_from:
+                billingTermsDraft
+                  .effective_from,
+            }),
+          },
+        );
+
+      await readApiResponse<
+        BillingTerms
+      >(
+        response,
+        "Save billing terms",
+      );
+
+      await loadEngagementBilling(
+        selectedEngagement,
+      );
+
+      setEditingBillingTerms(
+        false,
+      );
+
+      setNotice(
+        currentTerms
+          ? "New billing terms are now effective."
+          : "Billing terms added.",
+      );
+
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to save billing terms.",
+      );
+
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+
+  async function handleEditTime(
+    entry: TimeEntry,
+  ) {
+    if (
+      entry.status === "invoiced"
+    ) {
+      return;
+    }
+
+    let editableEntry = entry;
+
+    if (
+      entry.status === "approved"
+    ) {
+      setActionLoading(true);
+      setError("");
+      setNotice("");
+
+      try {
+        const response =
+          await fetch(
+            `/api/admin/time-entries/${entry.id}/reopen`,
+            {
+              method: "POST",
+            },
+          );
+
+        editableEntry =
+          await readApiResponse<
+            TimeEntry
+          >(
+            response,
+            "Reopen time entry",
+          );
+
+        setTimeEntries(
+          (current) =>
+            current.map(
+              (item) =>
+                item.id
+                === editableEntry.id
+                  ? editableEntry
+                  : item,
+            ),
+        );
+
+        setNotice(
+          "Approved time entry reopened as draft."
+        );
+
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to reopen time entry.",
+        );
+
+        return;
+
+      } finally {
+        setActionLoading(false);
+      }
+    }
+
+    if (
+      editableEntry.status
+      !== "draft"
+    ) {
+      return;
+    }
+
+    const draft: EditableTimeDraft = {
+      work_date:
+        editableEntry.work_date,
+      hours:
+        editableEntry.hours,
+      description:
+        editableEntry.description,
+      workstream:
+        editableEntry.workstream
+        ?? "",
+      friction:
+        editableEntry.friction
+        ?? "",
+      operational_note:
+        editableEntry.operational_note
+        ?? "",
+    };
+
+    setEditingTimeEntryId(
+      editableEntry.id,
+    );
+
+    setTimeDraft(
+      draft,
+    );
+
+    setLastSavedTimeDraftFingerprint(
+      timeDraftFingerprint(
+        draft,
+      ),
+    );
+
+    setTimeDraftSaveState(
+      "saved",
+    );
+
+    setError("");
+  }
+
+
+  function updateTimeDraft(
+    field: keyof EditableTimeDraft,
+    value: string,
+  ) {
+    setTimeDraft(
+      (current) =>
+        current
+          ? {
+              ...current,
+              [field]: value,
+            }
+          : current,
+    );
+  }
+
+
+  async function handleRetryTimeDraft() {
+    if (
+      !editingTimeEntryId
+      || !timeDraft
+      || !validTimeDraft(
+        timeDraft,
+      )
+    ) {
+      return;
+    }
+
+    await saveEditedTimeDraft(
+      editingTimeEntryId,
+      timeDraft,
+    );
+  }
+
+
+  async function handleDoneTimeEdit() {
+    if (
+      !editingTimeEntryId
+      || !timeDraft
+    ) {
+      return;
+    }
+
+    if (
+      !validTimeDraft(
+        timeDraft,
+      )
+    ) {
+      setError(
+        "Work date, hours, and work performed are required."
+      );
+
+      return;
+    }
+
+    const fingerprint =
+      timeDraftFingerprint(
+        timeDraft,
+      );
+
+    if (
+      fingerprint
+      !== lastSavedTimeDraftFingerprint
+    ) {
+      const saved =
+        await saveEditedTimeDraft(
+          editingTimeEntryId,
+          timeDraft,
+        );
+
+      if (!saved) {
+        return;
+      }
+    }
+
+    setEditingTimeEntryId(
+      null,
+    );
+
+    setTimeDraft(null);
+
+    setTimeDraftSaveState(
+      "idle",
+    );
+
+    setLastSavedTimeDraftFingerprint(
+      "",
+    );
+
+    setError("");
   }
 
 
@@ -845,96 +1682,368 @@ export function AdminInvoicingWorkspace() {
 
       {selectedEngagement ? (
         <>
-          <section className="admin-platform-section">
-            <p className="kicker">
-              BILLING TERMS
-            </p>
+          <section className="admin-platform-section admin-billing-terms-section">
+            <div className="admin-section-heading">
+              <div>
+                <p className="kicker">
+                  BILLING TERMS
+                </p>
 
-            <h3>
-              {selectedEngagement.name}
-            </h3>
+                <h3>
+                  {selectedEngagement.name}
+                </h3>
+              </div>
 
-            {currentTerms ? (
-              <div className="admin-billing-grid">
-                <div>
-                  <span>Billing</span>
-                  <strong>
-                    {
-                      currentTerms
-                        .billing_type
-                    }
-                  </strong>
-                </div>
+              {!editingBillingTerms ? (
+                <button
+                  type="button"
+                  className="admin-org-edit-button"
+                  onClick={
+                    beginBillingTermsEdit
+                  }
+                >
+                  {currentTerms
+                    ? "Update Terms"
+                    : "+ Add Billing Terms"}
+                </button>
+              ) : null}
+            </div>
 
-                <div>
-                  <span>Cadence</span>
-                  <strong>
-                    {
-                      currentTerms
-                        .billing_cadence
-                    }
-                  </strong>
-                </div>
-
-                <div>
-                  <span>Rate</span>
-                  <strong>
-                    {currentTerms
-                      .hourly_rate
-                      ? `${formatMoney(
-                          currentTerms
-                            .hourly_rate,
-                        )}/hr`
-                      : "—"}
-                  </strong>
-                </div>
-
-                <div>
+            {editingBillingTerms ? (
+              <form
+                className="admin-billing-terms-form"
+                onSubmit={
+                  handleSaveBillingTerms
+                }
+              >
+                <label>
                   <span>
-                    Expected Hours
+                    Billing Type
                   </span>
 
-                  <strong>
-                    {
-                      currentTerms
-                        .expected_hours_min
+                  <select
+                    value={
+                      billingTermsDraft
+                        .billing_type
                     }
-                    {" – "}
-                    {
-                      currentTerms
-                        .expected_hours_max
+                    onChange={(event) =>
+                      updateBillingTermsDraft(
+                        "billing_type",
+                        event.target.value,
+                      )
                     }
-                  </strong>
-                </div>
+                  >
+                    <option value="hourly">
+                      Hourly
+                    </option>
 
-                <div>
+                    <option value="fixed">
+                      Fixed
+                    </option>
+
+                    <option value="retainer">
+                      Retainer
+                    </option>
+                  </select>
+                </label>
+
+                <label>
+                  <span>
+                    Cadence
+                  </span>
+
+                  <select
+                    value={
+                      billingTermsDraft
+                        .billing_cadence
+                    }
+                    onChange={(event) =>
+                      updateBillingTermsDraft(
+                        "billing_cadence",
+                        event.target.value,
+                      )
+                    }
+                  >
+                    <option value="weekly">
+                      Weekly
+                    </option>
+
+                    <option value="biweekly">
+                      Biweekly
+                    </option>
+
+                    <option value="monthly">
+                      Monthly
+                    </option>
+
+                    <option value="milestone">
+                      Milestone
+                    </option>
+                  </select>
+                </label>
+
+                <label>
+                  <span>
+                    Hourly Rate
+                  </span>
+
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={
+                      billingTermsDraft
+                        .hourly_rate
+                    }
+                    onChange={(event) =>
+                      updateBillingTermsDraft(
+                        "hourly_rate",
+                        event.target.value,
+                      )
+                    }
+                    placeholder="0.00"
+                  />
+                </label>
+
+                <label>
                   <span>
                     Payment Terms
                   </span>
 
-                  <strong>
-                    Net{" "}
-                    {
-                      currentTerms
+                  <select
+                    value={
+                      billingTermsDraft
                         .payment_terms_days
                     }
-                  </strong>
-                </div>
+                    onChange={(event) =>
+                      updateBillingTermsDraft(
+                        "payment_terms_days",
+                        event.target.value,
+                      )
+                    }
+                  >
+                    <option value="0">
+                      Due on receipt
+                    </option>
 
-                <div>
-                  <span>Effective</span>
-                  <strong>
-                    {
-                      currentTerms
+                    <option value="7">
+                      Net 7
+                    </option>
+
+                    <option value="15">
+                      Net 15
+                    </option>
+
+                    <option value="30">
+                      Net 30
+                    </option>
+
+                    <option value="45">
+                      Net 45
+                    </option>
+
+                    <option value="60">
+                      Net 60
+                    </option>
+                  </select>
+                </label>
+
+                <label>
+                  <span>
+                    Expected Hours Min
+                  </span>
+
+                  <input
+                    type="number"
+                    step="0.25"
+                    min="0"
+                    value={
+                      billingTermsDraft
+                        .expected_hours_min
+                    }
+                    onChange={(event) =>
+                      updateBillingTermsDraft(
+                        "expected_hours_min",
+                        event.target.value,
+                      )
+                    }
+                    placeholder="Enter minimum hours"
+                  />
+                </label>
+
+                <label>
+                  <span>
+                    Expected Hours Max
+                  </span>
+
+                  <input
+                    type="number"
+                    step="0.25"
+                    min="0"
+                    value={
+                      billingTermsDraft
+                        .expected_hours_max
+                    }
+                    onChange={(event) =>
+                      updateBillingTermsDraft(
+                        "expected_hours_max",
+                        event.target.value,
+                      )
+                    }
+                    placeholder="Enter maximum hours"
+                  />
+                </label>
+
+                <label>
+                  <span>
+                    Effective From
+                  </span>
+
+                  <input
+                    type="date"
+                    required
+                    value={
+                      billingTermsDraft
                         .effective_from
                     }
-                  </strong>
+                    onChange={(event) =>
+                      updateBillingTermsDraft(
+                        "effective_from",
+                        event.target.value,
+                      )
+                    }
+                  />
+                </label>
+
+                <div className="admin-billing-terms-actions">
+                  <button
+                    type="button"
+                    className="admin-cancel-button"
+                    disabled={
+                      actionLoading
+                    }
+                    onClick={() =>
+                      setEditingBillingTerms(
+                        false,
+                      )
+                    }
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="button button-primary"
+                    disabled={
+                      actionLoading
+                    }
+                  >
+                    {actionLoading
+                      ? "Saving…"
+                      : "Save Billing Terms"}
+                  </button>
                 </div>
-              </div>
+              </form>
+            ) : currentTerms ? (
+              <>
+                <div className="admin-billing-grid">
+                  <div>
+                    <span>Billing</span>
+                    <strong>
+                      {formatStatus(
+                        currentTerms
+                          .billing_type,
+                      )}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>Cadence</span>
+                    <strong>
+                      {formatStatus(
+                        currentTerms
+                          .billing_cadence,
+                      )}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>Rate</span>
+                    <strong>
+                      {currentTerms
+                        .hourly_rate
+                        ? `${formatMoney(
+                            currentTerms
+                              .hourly_rate,
+                          )}/hr`
+                        : "—"}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>
+                      Expected Hours
+                    </span>
+
+                    <strong>
+                      {currentTerms
+                        .expected_hours_min
+                        ?? "—"}
+                      {" – "}
+                      {currentTerms
+                        .expected_hours_max
+                        ?? "—"}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>
+                      Payment Terms
+                    </span>
+
+                    <strong>
+                      {currentTerms
+                        .payment_terms_days
+                      === 0
+                        ? "Due on receipt"
+                        : `Net ${currentTerms.payment_terms_days}`}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>Effective</span>
+                    <strong>
+                      {
+                        currentTerms
+                          .effective_from
+                      }
+                    </strong>
+                  </div>
+                </div>
+
+                {billingTerms.length > 1 ? (
+                  <p className="admin-billing-terms-history">
+                    {billingTerms.length - 1}
+                    {" "}
+                    prior billing terms
+                    {billingTerms.length - 1 === 1
+                      ? " version"
+                      : " versions"}
+                    {" "}preserved.
+                  </p>
+                ) : null}
+              </>
             ) : (
-              <p className="admin-platform-empty">
-                No billing terms recorded.
-              </p>
+              <div className="admin-billing-terms-empty">
+                <p className="admin-platform-empty">
+                  No billing terms recorded.
+                </p>
+
+                <small>
+                  Add billing terms before
+                  generating an invoice.
+                </small>
+              </div>
             )}
           </section>
 
@@ -952,7 +2061,7 @@ export function AdminInvoicingWorkspace() {
 
               <div className="admin-billable-summary">
                 <span>
-                  Approved / Uninvoiced
+                  Ready to Bill
                 </span>
 
                 <strong>
@@ -967,6 +2076,17 @@ export function AdminInvoicingWorkspace() {
                     approvedValue,
                   )}
                 </small>
+
+                {billingMismatchEntries
+                  .length > 0 ? (
+                  <small className="admin-billing-mismatch">
+                    {billingMismatchHours.toFixed(
+                      2,
+                    )}
+                    {" "}
+                    hrs require billing terms
+                  </small>
+                ) : null}
               </div>
             </div>
 
@@ -1113,7 +2233,7 @@ export function AdminInvoicingWorkspace() {
                   actionLoading
                 }
               >
-                Add Time
+                Save Draft
               </button>
             </form>
 
@@ -1123,92 +2243,383 @@ export function AdminInvoicingWorkspace() {
                   (entry) => (
                     <article
                       key={entry.id}
-                      className="admin-time-row"
+                      className={
+                        editingTimeEntryId
+                        === entry.id
+                          ? "admin-time-row is-editing"
+                          : "admin-time-row"
+                      }
                     >
-                      <div>
-                        <span>
-                          {entry.work_date}
-                        </span>
+                      {(
+                        editingTimeEntryId
+                        === entry.id
+                        && timeDraft
+                      ) ? (
+                        <div className="admin-time-edit-panel">
+                          <div className="admin-time-edit-heading">
+                            <div>
+                              <span>
+                                Editing Draft
+                              </span>
 
-                        <strong>
-                          {
-                            entry.description
-                          }
-                        </strong>
+                              <strong>
+                                {
+                                  entry.description
+                                }
+                              </strong>
+                            </div>
 
-                        <div className="admin-time-signal-meta">
-                          <span>
-                            {
-                              entry.workstream
-                                ? formatStatus(
-                                    entry.workstream,
-                                  )
-                                : "Not classified"
-                            }
-                          </span>
+                            <span
+                              className={
+                                `admin-time-save-state is-${timeDraftSaveState}`
+                              }
+                            >
+                              {
+                                !validTimeDraft(
+                                  timeDraft,
+                                )
+                                  ? "Complete required fields"
+                                  : timeDraftSaveState
+                                    === "saving"
+                                    ? "Saving…"
+                                    : timeDraftSaveState
+                                      === "saved"
+                                      ? "Saved ✓"
+                                      : timeDraftSaveState
+                                        === "error"
+                                        ? "Save failed"
+                                        : "Unsaved changes"
+                              }
+                            </span>
+                          </div>
 
-                          <span
-                            className="admin-time-signal-separator"
-                            aria-hidden="true"
-                          >
-                            ·
-                          </span>
+                          <div className="admin-time-edit-grid">
+                            <label>
+                              <span>
+                                Work Date
+                              </span>
 
-                          <span>
-                            {
-                              entry.friction
-                                ? formatStatus(
-                                    entry.friction,
-                                  )
-                                : "Not recorded"
-                            }
-                          </span>
+                              <input
+                                type="date"
+                                value={
+                                  timeDraft
+                                    .work_date
+                                }
+                                onChange={
+                                  (event) =>
+                                    updateTimeDraft(
+                                      "work_date",
+                                      event
+                                        .target
+                                        .value,
+                                    )
+                                }
+                              />
+                            </label>
+
+                            <label>
+                              <span>
+                                Hours
+                              </span>
+
+                              <input
+                                type="number"
+                                step="0.25"
+                                min="0.25"
+                                value={
+                                  timeDraft
+                                    .hours
+                                }
+                                onChange={
+                                  (event) =>
+                                    updateTimeDraft(
+                                      "hours",
+                                      event
+                                        .target
+                                        .value,
+                                    )
+                                }
+                              />
+                            </label>
+
+                            <label className="admin-time-edit-wide">
+                              <span>
+                                Work Performed
+                              </span>
+
+                              <input
+                                value={
+                                  timeDraft
+                                    .description
+                                }
+                                onChange={
+                                  (event) =>
+                                    updateTimeDraft(
+                                      "description",
+                                      event
+                                        .target
+                                        .value,
+                                    )
+                                }
+                              />
+                            </label>
+
+                            <label>
+                              <span>
+                                Workstream
+                              </span>
+
+                              <select
+                                value={
+                                  timeDraft
+                                    .workstream
+                                }
+                                onChange={
+                                  (event) =>
+                                    updateTimeDraft(
+                                      "workstream",
+                                      event
+                                        .target
+                                        .value,
+                                    )
+                                }
+                              >
+                                <option value="">
+                                  Not classified
+                                </option>
+
+                                {WORKSTREAM_OPTIONS.map(
+                                  ([value, label]) => (
+                                    <option
+                                      key={value}
+                                      value={value}
+                                    >
+                                      {label}
+                                    </option>
+                                  ),
+                                )}
+                              </select>
+                            </label>
+
+                            <label>
+                              <span>
+                                Friction
+                              </span>
+
+                              <select
+                                value={
+                                  timeDraft
+                                    .friction
+                                }
+                                onChange={
+                                  (event) =>
+                                    updateTimeDraft(
+                                      "friction",
+                                      event
+                                        .target
+                                        .value,
+                                    )
+                                }
+                              >
+                                <option value="">
+                                  Not recorded
+                                </option>
+
+                                {FRICTION_OPTIONS.map(
+                                  ([value, label]) => (
+                                    <option
+                                      key={value}
+                                      value={value}
+                                    >
+                                      {label}
+                                    </option>
+                                  ),
+                                )}
+                              </select>
+                            </label>
+
+                            <label className="admin-time-edit-wide">
+                              <span>
+                                Operational Note
+                              </span>
+
+                              <input
+                                value={
+                                  timeDraft
+                                    .operational_note
+                                }
+                                onChange={
+                                  (event) =>
+                                    updateTimeDraft(
+                                      "operational_note",
+                                      event
+                                        .target
+                                        .value,
+                                    )
+                                }
+                              />
+                            </label>
+                          </div>
+
+                          <div className="admin-time-edit-actions">
+                            {timeDraftSaveState
+                            === "error" ? (
+                              <button
+                                type="button"
+                                className="admin-time-edit-action"
+                                onClick={
+                                  handleRetryTimeDraft
+                                }
+                              >
+                                Retry Save
+                              </button>
+                            ) : null}
+
+                            <button
+                              type="button"
+                              className="admin-time-edit-action"
+                              disabled={
+                                timeDraftSaveState
+                                === "saving"
+                                || !validTimeDraft(
+                                  timeDraft,
+                                )
+                              }
+                              onClick={
+                                handleDoneTimeEdit
+                              }
+                            >
+                              Done
+                            </button>
+                          </div>
                         </div>
-
-                        {entry.operational_note ? (
-                          <p className="admin-time-operational-note">
-                            {
-                              entry.operational_note
-                            }
-                          </p>
-                        ) : null}
-                      </div>
-
-                      <strong>
-                        {Number(
-                          entry.hours,
-                        ).toFixed(2)}
-                        {" "}hrs
-                      </strong>
-
-                      <span
-                        className={
-                          `admin-status-pill admin-status-${entry.status}`
-                        }
-                      >
-                        {formatStatus(
-                          entry.status,
-                        )}
-                      </span>
-
-                      {entry.status
-                        === "draft" ? (
-                        <button
-                          type="button"
-                          className="admin-inline-action"
-                          disabled={
-                            actionLoading
-                          }
-                          onClick={() =>
-                            handleApprove(
-                              entry,
-                            )
-                          }
-                        >
-                          Approve
-                        </button>
                       ) : (
-                        <span />
+                        <>
+                          <div>
+                            <span>
+                              {
+                                entry.work_date
+                              }
+                            </span>
+
+                            <strong>
+                              {
+                                entry.description
+                              }
+                            </strong>
+
+                            <div className="admin-time-signal-meta">
+                              <span>
+                                {
+                                  entry.workstream
+                                    ? formatStatus(
+                                        entry.workstream,
+                                      )
+                                    : "Not classified"
+                                }
+                              </span>
+
+                              <span
+                                className="admin-time-signal-separator"
+                                aria-hidden="true"
+                              >
+                                ·
+                              </span>
+
+                              <span>
+                                {
+                                  entry.friction
+                                    ? formatStatus(
+                                        entry.friction,
+                                      )
+                                    : "Not recorded"
+                                }
+                              </span>
+                            </div>
+
+                            {entry.operational_note ? (
+                              <p className="admin-time-operational-note">
+                                {
+                                  entry.operational_note
+                                }
+                              </p>
+                            ) : null}
+                          </div>
+
+                          <strong>
+                            {Number(
+                              entry.hours,
+                            ).toFixed(2)}
+                            {" "}hrs
+                          </strong>
+
+                          <div className="admin-time-status-stack">
+                            <span
+                              className={
+                                `admin-status-pill admin-status-${entry.status}`
+                              }
+                            >
+                              {formatStatus(
+                                entry.status,
+                              )}
+                            </span>
+
+                            {entry.status
+                            === "approved" ? (
+                              <button
+                                type="button"
+                                className="admin-time-approved-edit"
+                                disabled={
+                                  actionLoading
+                                }
+                                onClick={() =>
+                                  handleEditTime(
+                                    entry,
+                                  )
+                                }
+                              >
+                                Edit
+                              </button>
+                            ) : null}
+                          </div>
+
+                          {entry.status
+                          === "draft" ? (
+                            <div className="admin-time-row-actions">
+                              <button
+                                type="button"
+                                className="admin-time-edit-action"
+                                disabled={
+                                  actionLoading
+                                }
+                                onClick={() =>
+                                  handleEditTime(
+                                    entry,
+                                  )
+                                }
+                              >
+                                Edit
+                              </button>
+
+                              <button
+                                type="button"
+                                className="admin-inline-action"
+                                disabled={
+                                  actionLoading
+                                }
+                                onClick={() =>
+                                  handleApprove(
+                                    entry,
+                                  )
+                                }
+                              >
+                                Approve
+                              </button>
+                            </div>
+                          ) : (
+                            <span />
+                          )}
+                        </>
                       )}
                     </article>
                   ),
@@ -1278,8 +2689,10 @@ export function AdminInvoicingWorkspace() {
                 className="button button-primary"
                 disabled={
                   actionLoading
-                  || approvedEntries
+                  || billableEntries
                     .length === 0
+                  || billingMismatchEntries
+                    .length > 0
                 }
                 onClick={
                   handleGenerateInvoice

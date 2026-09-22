@@ -44,6 +44,53 @@ def initialize_database(
         );
 
 
+        CREATE TABLE IF NOT EXISTS organization_company_profiles (
+            id TEXT PRIMARY KEY,
+            organization_id TEXT NOT NULL UNIQUE,
+
+            business_type TEXT,
+            industry TEXT,
+            website TEXT,
+            phone TEXT,
+            company_size TEXT,
+
+            address_line1 TEXT,
+            address_line2 TEXT,
+            city TEXT,
+            state_region TEXT,
+            postal_code TEXT,
+            country TEXT NOT NULL DEFAULT 'US',
+
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+
+            FOREIGN KEY (organization_id)
+                REFERENCES organizations(id)
+                ON DELETE CASCADE
+        );
+
+
+        CREATE TABLE IF NOT EXISTS organization_contacts (
+            id TEXT PRIMARY KEY,
+            organization_id TEXT NOT NULL,
+
+            name TEXT NOT NULL,
+            title TEXT,
+            email TEXT,
+            phone TEXT,
+            contact_type TEXT,
+
+            is_primary INTEGER NOT NULL DEFAULT 0,
+
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+
+            FOREIGN KEY (organization_id)
+                REFERENCES organizations(id)
+                ON DELETE CASCADE
+        );
+
+
         CREATE TABLE IF NOT EXISTS engagements (
             id TEXT PRIMARY KEY,
 
@@ -423,6 +470,44 @@ def initialize_database(
             ADD COLUMN operational_note TEXT
             """
         )
+
+
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS organization_billing_profiles (
+            id TEXT PRIMARY KEY,
+            organization_id TEXT NOT NULL UNIQUE,
+
+            billing_name TEXT,
+            billing_email TEXT,
+
+            address_line1 TEXT,
+            address_line2 TEXT,
+            city TEXT,
+            state_region TEXT,
+            postal_code TEXT,
+            country TEXT NOT NULL DEFAULT 'US',
+
+            bank_name TEXT,
+            account_type TEXT,
+
+            routing_number_ciphertext TEXT,
+            routing_number_last4 TEXT,
+
+            account_number_ciphertext TEXT,
+            account_number_last4 TEXT,
+
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+
+            FOREIGN KEY (
+                organization_id
+            )
+            REFERENCES organizations(id)
+            ON DELETE CASCADE
+        )
+        """
+    )
 
     connection.commit()
     

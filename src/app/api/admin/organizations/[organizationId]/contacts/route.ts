@@ -15,7 +15,7 @@ export async function GET(
   } = await context.params;
 
   return platformAdminFetch(
-    `/admin/organizations/${organizationId}/engagements`,
+    `/admin/organizations/${organizationId}/contacts`,
   );
 }
 
@@ -31,18 +31,15 @@ export async function POST(
     organizationId,
   } = await context.params;
 
-  const body =
-    await request.text();
-
   return platformAdminFetch(
-    `/admin/organizations/${organizationId}/engagements`,
+    `/admin/organizations/${organizationId}/contacts`,
     {
       method: "POST",
       headers: {
         "Content-Type":
           "application/json",
       },
-      body,
+      body: await request.text(),
     },
   );
 }

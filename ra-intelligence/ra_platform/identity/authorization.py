@@ -23,7 +23,16 @@ class Permission(str, Enum):
     CREATE_INVOICE = "create_invoice"
     SEND_INVOICE = "send_invoice"
 
+    CREATE_ENGAGEMENT = "create_engagement"
     RECORD_PAYMENT = "record_payment"
+
+    MANAGE_BILLING_PROFILE = (
+        "manage_billing_profile"
+    )
+
+    MANAGE_ORGANIZATION = (
+        "manage_organization"
+    )
 
     MANAGE_USERS = "manage_users"
     MANAGE_MEMBERSHIPS = "manage_memberships"
@@ -41,6 +50,9 @@ BUSINESS_OPERATIONS = {
     Permission.CREATE_INVOICE,
     Permission.SEND_INVOICE,
     Permission.RECORD_PAYMENT,
+    Permission.MANAGE_BILLING_PROFILE,
+    Permission.CREATE_ENGAGEMENT,
+    Permission.MANAGE_ORGANIZATION,
 }
 
 

@@ -15,6 +15,11 @@ import {
 } from "@/components/AdminInvoicingWorkspace";
 
 
+import {
+  OrganizationManagementWorkspace,
+} from "@/components/OrganizationManagementWorkspace";
+
+
 interface Membership {
   organization_id: string;
   role: string;
@@ -122,7 +127,10 @@ export function AdminWorkspace() {
     activePlatform,
     setActivePlatform,
   ] = useState<
-    "quotes" | "invoicing" | null
+    "organizations"
+    | "quotes"
+    | "invoicing"
+    | null
   >(null);
 
 
@@ -659,15 +667,54 @@ export function AdminWorkspace() {
               </h2>
 
               <p>
-                Quotes and invoicing
-                remain separate business
-                states while sharing the
-                same organization and
-                engagement context.
+                Organizations establish
+                operating context. Quotes
+                and invoicing remain
+                separate business states
+                while sharing the same
+                organization and
+                engagement foundation.
               </p>
             </div>
 
             <div className="admin-platform-grid">
+              <button
+                type="button"
+                className="admin-platform-card admin-platform-card-organizations"
+                onClick={() =>
+                  setActivePlatform(
+                    "organizations"
+                  )
+                }
+              >
+                <span className="admin-platform-number">
+                  01
+                </span>
+
+                <div>
+                  <p className="kicker">
+                    ORGANIZATIONS
+                  </p>
+
+                  <h3>
+                    Know. Engage.
+                    Operate.
+                  </h3>
+
+                  <p>
+                    Manage company identity,
+                    secure billing profiles,
+                    engagements, and the
+                    operating context behind
+                    every client relationship.
+                  </p>
+                </div>
+
+                <strong>
+                  Enter Organizations →
+                </strong>
+              </button>
+
               <button
                 type="button"
                 className="admin-platform-card admin-platform-card-quotes"
@@ -678,7 +725,7 @@ export function AdminWorkspace() {
                 }
               >
                 <span className="admin-platform-number">
-                  01
+                  02
                 </span>
 
                 <div>
@@ -715,7 +762,7 @@ export function AdminWorkspace() {
                 }
               >
                 <span className="admin-platform-number">
-                  02
+                  03
                 </span>
 
                 <div>
@@ -742,6 +789,41 @@ export function AdminWorkspace() {
                 </strong>
               </button>
             </div>
+          </section>
+        ) : null}
+
+        {activePlatform === "organizations" ? (
+          <section className="admin-tool-panel">
+            <button
+              type="button"
+              className="admin-workspace-back"
+              onClick={() =>
+                setActivePlatform(null)
+              }
+            >
+              ← Administration
+            </button>
+
+            <div className="admin-tool-heading">
+              <div>
+                <p className="kicker">
+                  ORGANIZATIONS
+                </p>
+
+                <h2>
+                  Operating context
+                </h2>
+              </div>
+
+              <p>
+                Organization identity,
+                billing profile, secure
+                account information, and
+                engagements live here.
+              </p>
+            </div>
+
+            <OrganizationManagementWorkspace />
           </section>
         ) : null}
 

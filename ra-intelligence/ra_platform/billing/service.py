@@ -240,6 +240,38 @@ def approve_time_entry(
 
 
 
+
+def reopen_time_entry(
+    time_entry: TimeEntry,
+) -> TimeEntry:
+    if (
+        time_entry.status
+        == TimeEntryStatus.INVOICED
+        or time_entry.invoice_id
+        is not None
+    ):
+        raise ValueError(
+            "Invoiced time entries "
+            "cannot be reopened."
+        )
+
+    if (
+        time_entry.status
+        != TimeEntryStatus.APPROVED
+    ):
+        raise ValueError(
+            "Only approved time entries "
+            "can be reopened."
+        )
+
+    time_entry.status = (
+        TimeEntryStatus.DRAFT
+    )
+
+    return time_entry
+
+
+
 def mark_time_entries_invoiced(
     time_entries: list[TimeEntry],
     invoice: Invoice,

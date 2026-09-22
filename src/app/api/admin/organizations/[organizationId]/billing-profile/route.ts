@@ -15,11 +15,11 @@ export async function GET(
   } = await context.params;
 
   return platformAdminFetch(
-    `/admin/organizations/${organizationId}/engagements`,
+    `/admin/organizations/${organizationId}/billing-profile`,
   );
 }
 
-export async function POST(
+export async function PUT(
   request: Request,
   context: {
     params: Promise<{
@@ -35,9 +35,9 @@ export async function POST(
     await request.text();
 
   return platformAdminFetch(
-    `/admin/organizations/${organizationId}/engagements`,
+    `/admin/organizations/${organizationId}/billing-profile`,
     {
-      method: "POST",
+      method: "PUT",
       headers: {
         "Content-Type":
           "application/json",

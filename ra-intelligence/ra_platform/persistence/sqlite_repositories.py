@@ -75,6 +75,29 @@ class SQLiteOrganizationRepository:
             ),
         )
 
+    def update(
+        self,
+        organization: Organization,
+    ) -> None:
+        self.connection.execute(
+            """
+            UPDATE organizations
+            SET
+                name = ?,
+                type = ?,
+                status = ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (
+                organization.name,
+                organization.type.value,
+                organization.status.value,
+                organization.updated_at.isoformat(),
+                str(organization.id),
+            ),
+        )
+
     def get(
         self,
         organization_id: UUID,
@@ -971,6 +994,58 @@ class SQLiteTimeEntryRepository:
                 ),
             )
 
+    def update_draft(
+        self,
+        entry: TimeEntry,
+    ) -> None:
+        if (
+            entry.status
+            != TimeEntryStatus.DRAFT
+        ):
+            raise ValueError(
+                "Only draft time entries "
+                "can be edited."
+            )
+
+        cursor = self.connection.execute(
+            """
+            UPDATE time_entries
+            SET
+                work_date = ?,
+                description = ?,
+                hours = ?,
+                workstream = ?,
+                friction = ?,
+                operational_note = ?
+            WHERE id = ?
+              AND status = ?
+            """,
+            (
+                entry.work_date.isoformat(),
+                entry.description,
+                str(entry.hours),
+                (
+                    entry.workstream.value
+                    if entry.workstream
+                    else None
+                ),
+                (
+                    entry.friction.value
+                    if entry.friction
+                    else None
+                ),
+                entry.operational_note,
+                str(entry.id),
+                TimeEntryStatus.DRAFT.value,
+            ),
+        )
+
+        if cursor.rowcount != 1:
+            raise ValueError(
+                "Only draft time entries "
+                "can be edited."
+            )
+
     def update_many(
         self,
         time_entries: list[TimeEntry],
@@ -1201,6 +1276,28 @@ class SQLiteEngagementBillingTermsRepository:
                 terms.created_at.isoformat(),
             ),
         )
+
+    def update_effective_to(
+        self,
+        terms: EngagementBillingTerms,
+    ) -> None:
+        self.connection.execute(
+            """
+            UPDATE engagement_billing_terms
+            SET effective_to = ?
+            WHERE id = ?
+            """,
+            (
+                (
+                    terms.effective_to
+                    .isoformat()
+                    if terms.effective_to
+                    else None
+                ),
+                str(terms.id),
+            ),
+        )
+
 
     def list_for_engagement(
         self,
