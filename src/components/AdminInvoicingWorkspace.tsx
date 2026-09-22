@@ -47,9 +47,36 @@ interface TimeEntry {
   work_date: string;
   description: string;
   hours: string;
+  workstream: string | null;
+  friction: string | null;
+  operational_note: string | null;
   status: string;
   invoice_id: string | null;
 }
+
+
+const WORKSTREAM_OPTIONS = [
+  ["accounts_payable", "Accounts Payable"],
+  ["accounts_receivable", "Accounts Receivable"],
+  ["reconciliation", "Reconciliation"],
+  ["expenses", "Expenses"],
+  ["reporting", "Reporting"],
+  ["payroll", "Payroll"],
+  ["bookkeeping", "Bookkeeping"],
+  ["other", "Other"],
+] as const;
+
+
+const FRICTION_OPTIONS = [
+  ["none_observed", "None observed"],
+  ["manual_entry", "Manual entry"],
+  ["missing_information", "Missing information"],
+  ["duplicate_work", "Duplicate work"],
+  ["approval_delay", "Approval delay"],
+  ["system_issue", "System issue"],
+  ["follow_up_required", "Follow-up required"],
+  ["other", "Other"],
+] as const;
 
 
 interface InvoiceLine {
@@ -196,6 +223,21 @@ export function AdminInvoicingWorkspace() {
   const [
     description,
     setDescription,
+  ] = useState("");
+
+  const [
+    workstream,
+    setWorkstream,
+  ] = useState("");
+
+  const [
+    friction,
+    setFriction,
+  ] = useState("");
+
+  const [
+    operationalNote,
+    setOperationalNote,
   ] = useState("");
 
   const [
@@ -451,6 +493,13 @@ export function AdminInvoicingWorkspace() {
               workDate,
             description,
             hours,
+            workstream:
+              workstream || null,
+            friction:
+              friction || null,
+            operational_note:
+              operationalNote.trim()
+              || null,
           }),
         },
       );
@@ -474,6 +523,9 @@ export function AdminInvoicingWorkspace() {
 
       setHours("");
       setDescription("");
+      setWorkstream("");
+      setFriction("");
+      setOperationalNote("");
 
       setNotice(
         "Time entry added as draft.",
@@ -978,6 +1030,82 @@ export function AdminInvoicingWorkspace() {
                 />
               </label>
 
+              <label>
+                <span>
+                  Workstream
+                </span>
+
+                <select
+                  value={workstream}
+                  onChange={(event) =>
+                    setWorkstream(
+                      event.target.value,
+                    )
+                  }
+                >
+                  <option value="">
+                    Not classified
+                  </option>
+
+                  {WORKSTREAM_OPTIONS.map(
+                    ([value, label]) => (
+                      <option
+                        key={value}
+                        value={value}
+                      >
+                        {label}
+                      </option>
+                    ),
+                  )}
+                </select>
+              </label>
+
+              <label>
+                <span>
+                  Friction
+                </span>
+
+                <select
+                  value={friction}
+                  onChange={(event) =>
+                    setFriction(
+                      event.target.value,
+                    )
+                  }
+                >
+                  <option value="">
+                    Not recorded
+                  </option>
+
+                  {FRICTION_OPTIONS.map(
+                    ([value, label]) => (
+                      <option
+                        key={value}
+                        value={value}
+                      >
+                        {label}
+                      </option>
+                    ),
+                  )}
+                </select>
+              </label>
+
+              <label className="admin-time-description">
+                <span>
+                  Operational Note
+                </span>
+
+                <input
+                  value={operationalNote}
+                  onChange={(event) =>
+                    setOperationalNote(
+                      event.target.value,
+                    )
+                  }
+                  placeholder="Optional context about delay, rework, handoff, or system friction…"
+                />
+              </label>
+
               <button
                 type="submit"
                 className="button button-primary"
@@ -1007,6 +1135,43 @@ export function AdminInvoicingWorkspace() {
                             entry.description
                           }
                         </strong>
+
+                        <div className="admin-time-signal-meta">
+                          <span>
+                            {
+                              entry.workstream
+                                ? formatStatus(
+                                    entry.workstream,
+                                  )
+                                : "Not classified"
+                            }
+                          </span>
+
+                          <span
+                            className="admin-time-signal-separator"
+                            aria-hidden="true"
+                          >
+                            ·
+                          </span>
+
+                          <span>
+                            {
+                              entry.friction
+                                ? formatStatus(
+                                    entry.friction,
+                                  )
+                                : "Not recorded"
+                            }
+                          </span>
+                        </div>
+
+                        {entry.operational_note ? (
+                          <p className="admin-time-operational-note">
+                            {
+                              entry.operational_note
+                            }
+                          </p>
+                        ) : null}
                       </div>
 
                       <strong>

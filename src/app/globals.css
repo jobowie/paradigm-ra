@@ -6019,3 +6019,26 @@ div > strong {
     flex-direction: column;
   }
 }
+
+.admin-time-signal-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
+  color: var(--muted, #9b9ba7);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.admin-time-signal-separator {
+  opacity: 0.45;
+}
+
+.admin-time-operational-note {
+  margin: 0.35rem 0 0;
+  max-width: 44rem;
+  color: var(--muted, #9b9ba7);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}

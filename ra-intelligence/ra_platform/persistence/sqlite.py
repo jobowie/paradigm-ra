@@ -218,6 +218,10 @@ def initialize_database(
             description TEXT NOT NULL,
             hours TEXT NOT NULL,
 
+            workstream TEXT,
+            friction TEXT,
+            operational_note TEXT,
+
             status TEXT NOT NULL,
             invoice_id TEXT,
 
@@ -383,6 +387,40 @@ def initialize_database(
             """
             ALTER TABLE invoices
             ADD COLUMN sent_at TEXT
+            """
+        )
+
+
+    # Compatibility migration for time-entry
+    # operational signal fields.
+    time_entry_columns = {
+        row[1]
+        for row in connection.execute(
+            "PRAGMA table_info(time_entries)"
+        ).fetchall()
+    }
+
+    if "workstream" not in time_entry_columns:
+        connection.execute(
+            """
+            ALTER TABLE time_entries
+            ADD COLUMN workstream TEXT
+            """
+        )
+
+    if "friction" not in time_entry_columns:
+        connection.execute(
+            """
+            ALTER TABLE time_entries
+            ADD COLUMN friction TEXT
+            """
+        )
+
+    if "operational_note" not in time_entry_columns:
+        connection.execute(
+            """
+            ALTER TABLE time_entries
+            ADD COLUMN operational_note TEXT
             """
         )
 

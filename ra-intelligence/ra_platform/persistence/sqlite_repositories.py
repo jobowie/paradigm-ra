@@ -36,7 +36,9 @@ from ra_platform.billing.models import (
     QuoteLine,
     QuoteStatus,
     TimeEntry,
+    TimeEntryFriction,
     TimeEntryStatus,
+    TimeEntryWorkstream,
 )
 
 
@@ -930,11 +932,17 @@ class SQLiteTimeEntryRepository:
                     work_date,
                     description,
                     hours,
+                    workstream,
+                    friction,
+                    operational_note,
                     status,
                     invoice_id,
                     created_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (
+                    ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?
+                )
                 """,
                 (
                     str(entry.id),
@@ -942,6 +950,17 @@ class SQLiteTimeEntryRepository:
                     entry.work_date.isoformat(),
                     entry.description,
                     str(entry.hours),
+                    (
+                        entry.workstream.value
+                        if entry.workstream
+                        else None
+                    ),
+                    (
+                        entry.friction.value
+                        if entry.friction
+                        else None
+                    ),
+                    entry.operational_note,
                     entry.status.value,
                     (
                         str(entry.invoice_id)
@@ -1002,6 +1021,23 @@ class SQLiteTimeEntryRepository:
             ),
             description=row["description"],
             hours=Decimal(row["hours"]),
+            workstream=(
+                TimeEntryWorkstream(
+                    row["workstream"]
+                )
+                if row["workstream"]
+                else None
+            ),
+            friction=(
+                TimeEntryFriction(
+                    row["friction"]
+                )
+                if row["friction"]
+                else None
+            ),
+            operational_note=(
+                row["operational_note"]
+            ),
             status=TimeEntryStatus(
                 row["status"]
             ),
@@ -1057,6 +1093,23 @@ class SQLiteTimeEntryRepository:
                 ),
                 hours=Decimal(
                     row["hours"]
+                ),
+                workstream=(
+                    TimeEntryWorkstream(
+                        row["workstream"]
+                    )
+                    if row["workstream"]
+                    else None
+                ),
+                friction=(
+                    TimeEntryFriction(
+                        row["friction"]
+                    )
+                    if row["friction"]
+                    else None
+                ),
+                operational_note=(
+                    row["operational_note"]
                 ),
                 status=(
                     TimeEntryStatus(

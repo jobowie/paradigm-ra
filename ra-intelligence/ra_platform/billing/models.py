@@ -56,6 +56,28 @@ class TimeEntryStatus(str, Enum):
     INVOICED = "invoiced"
 
 
+class TimeEntryWorkstream(str, Enum):
+    ACCOUNTS_PAYABLE = "accounts_payable"
+    ACCOUNTS_RECEIVABLE = "accounts_receivable"
+    RECONCILIATION = "reconciliation"
+    EXPENSES = "expenses"
+    REPORTING = "reporting"
+    PAYROLL = "payroll"
+    BOOKKEEPING = "bookkeeping"
+    OTHER = "other"
+
+
+class TimeEntryFriction(str, Enum):
+    NONE_OBSERVED = "none_observed"
+    MANUAL_ENTRY = "manual_entry"
+    MISSING_INFORMATION = "missing_information"
+    DUPLICATE_WORK = "duplicate_work"
+    APPROVAL_DELAY = "approval_delay"
+    SYSTEM_ISSUE = "system_issue"
+    FOLLOW_UP_REQUIRED = "follow_up_required"
+    OTHER = "other"
+
+
 class QuoteLine(BaseModel):
     id: UUID = Field(default_factory=uuid4)
 
@@ -226,6 +248,10 @@ class TimeEntry(BaseModel):
     description: str = Field(min_length=1)
 
     hours: Decimal = Field(gt=0)
+
+    workstream: TimeEntryWorkstream | None = None
+    friction: TimeEntryFriction | None = None
+    operational_note: str | None = None
 
     status: TimeEntryStatus = TimeEntryStatus.DRAFT
 

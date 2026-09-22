@@ -21,6 +21,8 @@ from ra_platform.api.auth import (
 from ra_platform.billing.models import (
     Invoice,
     TimeEntry,
+    TimeEntryFriction,
+    TimeEntryWorkstream,
 )
 from ra_platform.billing.numbering import (
     next_invoice_number,
@@ -345,6 +347,18 @@ class CreateTimeEntryRequest(BaseModel):
         gt=0
     )
 
+    workstream: (
+        TimeEntryWorkstream
+        | None
+    ) = None
+
+    friction: (
+        TimeEntryFriction
+        | None
+    ) = None
+
+    operational_note: str | None = None
+
 
 class TimeEntryResponse(BaseModel):
     id: UUID
@@ -353,6 +367,10 @@ class TimeEntryResponse(BaseModel):
     work_date: str
     description: str
     hours: str
+
+    workstream: str | None
+    friction: str | None
+    operational_note: str | None
 
     status: str
 
@@ -415,6 +433,19 @@ def build_time_entry_response(
         ),
         description=entry.description,
         hours=str(entry.hours),
+        workstream=(
+            entry.workstream.value
+            if entry.workstream
+            else None
+        ),
+        friction=(
+            entry.friction.value
+            if entry.friction
+            else None
+        ),
+        operational_note=(
+            entry.operational_note
+        ),
         status=entry.status.value,
         invoice_id=entry.invoice_id,
     )
@@ -590,6 +621,16 @@ def create_time_entry(
             body.description.strip()
         ),
         hours=body.hours,
+        workstream=body.workstream,
+        friction=body.friction,
+        operational_note=(
+            body.operational_note.strip()
+            if (
+                body.operational_note
+                and body.operational_note.strip()
+            )
+            else None
+        ),
     )
 
     repository = (
