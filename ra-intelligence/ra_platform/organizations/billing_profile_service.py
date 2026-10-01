@@ -11,6 +11,7 @@ from ra_platform.persistence.billing_profiles import (
     SQLiteOrganizationBillingProfileRepository,
 )
 from ra_platform.security.financial_data import (
+    decrypt_financial_value,
     encrypt_financial_value,
     financial_last_four,
 )
@@ -56,6 +57,40 @@ def _financial_context(
         f"organization:"
         f"{organization_id}:"
         f"{field_name}"
+    )
+
+
+def decrypt_organization_financial_value(
+    *,
+    profile: OrganizationBillingProfile,
+    field_name: str,
+    key: bytes | None = None,
+) -> str | None:
+    if field_name not in {
+        "routing_number",
+        "account_number",
+    }:
+        raise BillingProfileUpdateError(
+            "Unsupported financial field."
+        )
+
+    encrypted_value = getattr(
+        profile,
+        f"{field_name}_ciphertext",
+    )
+
+    if encrypted_value is None:
+        return None
+
+    return decrypt_financial_value(
+        encrypted_value,
+        context=_financial_context(
+            organization_id=(
+                profile.organization_id
+            ),
+            field_name=field_name,
+        ),
+        key=key,
     )
 
 

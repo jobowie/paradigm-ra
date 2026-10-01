@@ -157,6 +157,11 @@ interface Invoice {
   sent_at: string | null;
   bill_to_name: string;
   bill_to_email: string | null;
+  bill_to_address: string | null;
+
+  notes: string | null;
+  terms: string | null;
+
   subtotal: string;
   tax_amount: string;
   total: string;
@@ -164,6 +169,26 @@ interface Invoice {
   balance_due: string;
   line_items: InvoiceLine[];
 }
+
+
+
+interface EditableInvoiceDraft {
+  issue_date: string;
+  due_date: string;
+  bill_to_name: string;
+  bill_to_email: string;
+  bill_to_address: string;
+  notes: string;
+  terms: string;
+}
+
+
+type InvoiceFlowStep =
+  | "edit"
+  | "review"
+  | "confirm"
+  | "delete"
+  | null;
 
 
 async function readApiResponse<T>(
@@ -231,6 +256,32 @@ function addDaysToIso(
   return date
     .toISOString()
     .slice(0, 10);
+}
+
+
+function localIsoDate(
+  date = new Date(),
+) {
+  const year =
+    date.getFullYear();
+
+  const month =
+    String(
+      date.getMonth() + 1
+    ).padStart(
+      2,
+      "0",
+    );
+
+  const day =
+    String(
+      date.getDate()
+    ).padStart(
+      2,
+      "0",
+    );
+
+  return `${year}-${month}-${day}`;
 }
 
 
@@ -329,9 +380,7 @@ export function AdminInvoicingWorkspace() {
     expected_hours_max: "",
     payment_terms_days: "30",
     effective_from:
-      new Date()
-        .toISOString()
-        .slice(0, 10),
+      localIsoDate(),
   });
 
 
@@ -341,11 +390,35 @@ export function AdminInvoicingWorkspace() {
     setInvoices,
   ] = useState<Invoice[]>([]);
 
+  const [
+    activeInvoice,
+    setActiveInvoice,
+  ] = useState<Invoice | null>(
+    null,
+  );
+
+  const [
+    invoiceFlowStep,
+    setInvoiceFlowStep,
+  ] = useState<InvoiceFlowStep>(
+    null,
+  );
+
+  const [
+    invoiceDraft,
+    setInvoiceDraft,
+  ] = useState<EditableInvoiceDraft | null>(
+    null,
+  );
+
+  const [
+    invoiceDraftSaving,
+    setInvoiceDraftSaving,
+  ] = useState(false);
+
   const [workDate, setWorkDate] =
     useState(
-      new Date()
-        .toISOString()
-        .slice(0, 10),
+      localIsoDate(),
     );
 
   const [hours, setHours] =
@@ -620,14 +693,19 @@ export function AdminInvoicingWorkspace() {
   }, []);
 
 
-  const currentTerms =
+
+const [
+  selectedInvoiceEntryIds,
+  setSelectedInvoiceEntryIds,
+] = useState<string[]>([]);
+
+
+const currentTerms =
     useMemo(
       () =>
         billingTermsForDate(
           billingTerms,
-          new Date()
-            .toISOString()
-            .slice(0, 10),
+          localIsoDate(),
         ),
       [billingTerms],
     );
@@ -684,7 +762,107 @@ export function AdminInvoicingWorkspace() {
     );
 
 
-  const billingMismatchEntries =
+
+const selectedInvoiceEntries =
+  useMemo(
+    () =>
+      approvedEntries.filter(
+        (entry) =>
+          selectedInvoiceEntryIds
+            .includes(
+              entry.id
+            ),
+      ),
+    [
+      approvedEntries,
+      selectedInvoiceEntryIds,
+    ],
+  );
+
+
+const selectedInvoiceHours =
+  useMemo(
+    () =>
+      selectedInvoiceEntries.reduce(
+        (total, entry) =>
+          total
+          + Number(
+              entry.hours
+            ),
+        0,
+      ),
+    [selectedInvoiceEntries],
+  );
+
+
+const selectedInvoiceValue =
+  useMemo(
+    () =>
+      selectedInvoiceEntries.reduce(
+        (total, entry) => {
+          const terms =
+            billingTermsForDate(
+              billingTerms,
+              entry.work_date,
+            );
+
+          if (
+            !terms
+            || terms.billing_type
+              !== "hourly"
+            || !terms.hourly_rate
+          ) {
+            return total;
+          }
+
+          return (
+            total
+            + Number(entry.hours)
+            * Number(
+                terms.hourly_rate
+              )
+          );
+        },
+        0,
+      ),
+    [
+      selectedInvoiceEntries,
+      billingTerms,
+    ],
+  );
+
+
+function toggleInvoiceEntry(
+  entryId: string,
+) {
+  setSelectedInvoiceEntryIds(
+    (current) =>
+      current.includes(
+        entryId
+      )
+        ? current.filter(
+            (id) =>
+              id !== entryId
+          )
+        : [
+            ...current,
+            entryId,
+          ],
+  );
+}
+
+
+function selectAllBillableEntries() {
+  setSelectedInvoiceEntryIds(
+    billableEntries.map(
+      (item) =>
+        item.entry.id
+    ),
+  );
+}
+
+
+const billingMismatchEntries =
     useMemo(
       () =>
         approvedEntries.filter(
@@ -827,6 +1005,10 @@ export function AdminInvoicingWorkspace() {
       timeData,
     );
 
+    setSelectedInvoiceEntryIds(
+      [],
+    );
+
     setInvoices(
       invoiceData,
     );
@@ -896,9 +1078,7 @@ export function AdminInvoicingWorkspace() {
 
   function beginBillingTermsEdit() {
     const today =
-      new Date()
-        .toISOString()
-        .slice(0, 10);
+      localIsoDate();
 
     const effectiveFrom =
       currentTerms
@@ -1433,6 +1613,323 @@ export function AdminInvoicingWorkspace() {
   }
 
 
+
+  function buildInvoiceDraft(
+    invoice: Invoice,
+  ): EditableInvoiceDraft {
+    return {
+      issue_date:
+        invoice.issue_date
+        ?? localIsoDate(),
+      due_date:
+        invoice.due_date
+        ?? invoice.issue_date
+        ?? localIsoDate(),
+      bill_to_name:
+        invoice.bill_to_name,
+      bill_to_email:
+        invoice.bill_to_email
+        ?? "",
+      bill_to_address:
+        invoice.bill_to_address
+        ?? "",
+      notes:
+        invoice.notes
+        ?? "",
+      terms:
+        invoice.terms
+        ?? "",
+    };
+  }
+
+
+  function beginInvoiceEdit(
+    invoice: Invoice,
+  ) {
+    if (invoice.status !== "draft") {
+      return;
+    }
+
+    setActiveInvoice(
+      invoice
+    );
+
+    setInvoiceDraft(
+      buildInvoiceDraft(
+        invoice
+      )
+    );
+
+    setInvoiceFlowStep(
+      "edit"
+    );
+
+    setError("");
+  }
+
+
+  function beginInvoiceReview(
+    invoice: Invoice,
+  ) {
+    if (invoice.status !== "draft") {
+      return;
+    }
+
+    setActiveInvoice(
+      invoice
+    );
+
+    setInvoiceDraft(
+      buildInvoiceDraft(
+        invoice
+      )
+    );
+
+    setInvoiceFlowStep(
+      "review"
+    );
+
+    setError("");
+  }
+
+
+  function closeInvoiceFlow() {
+    if (
+      actionLoading
+      || invoiceDraftSaving
+    ) {
+      return;
+    }
+
+    setInvoiceFlowStep(
+      null
+    );
+
+    setActiveInvoice(
+      null
+    );
+
+    setInvoiceDraft(
+      null
+    );
+  }
+
+
+  function updateInvoiceDraft(
+    field: keyof EditableInvoiceDraft,
+    value: string,
+  ) {
+    setInvoiceDraft(
+      (current) =>
+        current
+          ? {
+              ...current,
+              [field]: value,
+            }
+          : current
+    );
+  }
+
+
+  async function saveInvoiceDraft(
+    nextStep: InvoiceFlowStep = "review",
+  ) {
+    if (
+      !activeInvoice
+      || !invoiceDraft
+      || activeInvoice.status !== "draft"
+    ) {
+      return;
+    }
+
+    if (
+      !invoiceDraft.bill_to_name.trim()
+      || !invoiceDraft.bill_to_email.trim()
+      || !invoiceDraft.issue_date
+      || !invoiceDraft.due_date
+    ) {
+      setError(
+        "Bill To, billing email, issue date, and due date are required."
+      );
+      return;
+    }
+
+    setInvoiceDraftSaving(true);
+    setError("");
+    setNotice("");
+
+    try {
+      const response = await fetch(
+        `/api/admin/invoices/${activeInvoice.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            issue_date:
+              invoiceDraft.issue_date,
+            due_date:
+              invoiceDraft.due_date,
+            bill_to_name:
+              invoiceDraft
+                .bill_to_name
+                .trim(),
+            bill_to_email:
+              invoiceDraft
+                .bill_to_email
+                .trim(),
+            bill_to_address:
+              invoiceDraft
+                .bill_to_address
+                .trim()
+              || null,
+            notes:
+              invoiceDraft
+                .notes
+                .trim()
+              || null,
+            terms:
+              invoiceDraft
+                .terms
+                .trim()
+              || null,
+          }),
+        },
+      );
+
+      const updated =
+        await readApiResponse<Invoice>(
+          response,
+          "Update invoice",
+        );
+
+      setInvoices(
+        (current) =>
+          current.map(
+            (item) =>
+              item.id === updated.id
+                ? updated
+                : item,
+          ),
+      );
+
+      setActiveInvoice(
+        updated
+      );
+
+      setInvoiceDraft(
+        buildInvoiceDraft(
+          updated
+        )
+      );
+
+      setInvoiceFlowStep(
+        nextStep
+      );
+
+      setNotice(
+        `${updated.invoice_number} draft saved.`
+      );
+
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to update invoice.",
+      );
+
+    } finally {
+      setInvoiceDraftSaving(false);
+    }
+  }
+
+
+  async function handleDeleteInvoiceDraft() {
+    if (
+      !activeInvoice
+      || activeInvoice.status !== "draft"
+    ) {
+      return;
+    }
+
+    setActionLoading(true);
+    setError("");
+    setNotice("");
+
+    try {
+      const response = await fetch(
+        `/api/admin/invoices/${activeInvoice.id}`,
+        {
+          method: "DELETE",
+        },
+      );
+
+      const data =
+        await readApiResponse<{
+          invoice_number: string;
+          released_time_entries: number;
+        }>(
+          response,
+          "Delete invoice draft",
+        );
+
+      const deletedInvoiceId =
+        activeInvoice.id;
+
+      setInvoices(
+        (current) =>
+          current.filter(
+            (invoice) =>
+              invoice.id
+              !== deletedInvoiceId,
+          ),
+      );
+
+      setTimeEntries(
+        (current) =>
+          current.map(
+            (entry) =>
+              entry.invoice_id
+              === deletedInvoiceId
+                ? {
+                    ...entry,
+                    status: "approved",
+                    invoice_id: null,
+                  }
+                : entry,
+          ),
+      );
+
+      setInvoiceFlowStep(null);
+      setActiveInvoice(null);
+      setInvoiceDraft(null);
+
+      setNotice(
+        `${data.invoice_number} draft deleted. `
+        + `${data.released_time_entries} `
+        + (
+          data.released_time_entries === 1
+            ? "source entry returned"
+            : "source entries returned"
+        )
+        + " to Ready to Bill."
+      );
+
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to delete invoice draft.",
+      );
+
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+
   async function handleSendInvoice(
     invoice: Invoice,
   ) {
@@ -1485,6 +1982,18 @@ export function AdminInvoicingWorkspace() {
         `${data.invoice.invoice_number} sent to ${data.invoice.bill_to_email}.`,
       );
 
+      setInvoiceFlowStep(
+        null
+      );
+
+      setActiveInvoice(
+        null
+      );
+
+      setInvoiceDraft(
+        null
+      );
+
     } catch (err) {
       setError(
         err instanceof Error
@@ -1503,6 +2012,16 @@ export function AdminInvoicingWorkspace() {
       return;
     }
 
+    if (
+      selectedInvoiceEntryIds.length
+      === 0
+    ) {
+      setError(
+        "Select at least one Ready to Bill entry."
+      );
+      return;
+    }
+
     setActionLoading(true);
     setError("");
     setNotice("");
@@ -1518,9 +2037,9 @@ export function AdminInvoicingWorkspace() {
           },
           body: JSON.stringify({
             issue_date:
-              new Date()
-                .toISOString()
-                .slice(0, 10),
+              localIsoDate(),
+            time_entry_ids:
+              selectedInvoiceEntryIds,
             bill_to_email:
               billToEmail || null,
           }),
@@ -2665,6 +3184,179 @@ export function AdminInvoicingWorkspace() {
             </div>
 
             <div className="admin-generate-invoice">
+              <div className="admin-invoice-selection">
+                <div className="admin-invoice-selection-head">
+                  <div>
+                    <span>
+                      SELECT WORK
+                    </span>
+
+                    <strong>
+                      {selectedInvoiceEntryIds.length}
+                      {" "}
+                      selected
+                    </strong>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="admin-invoice-selection-link"
+                    onClick={
+                      selectedInvoiceEntryIds.length
+                      === billableEntries.length
+                        ? () =>
+                            setSelectedInvoiceEntryIds(
+                              []
+                            )
+                        : selectAllBillableEntries
+                    }
+                    disabled={
+                      billableEntries.length === 0
+                    }
+                  >
+                    {selectedInvoiceEntryIds.length
+                    === billableEntries.length
+                    && billableEntries.length > 0
+                      ? "Clear"
+                      : "Select All"}
+                  </button>
+                </div>
+
+                <div className="admin-invoice-selection-list">
+                  {approvedEntries.map(
+                    (entry) => {
+                      const terms =
+                        billingTermsForDate(
+                          billingTerms,
+                          entry.work_date,
+                        );
+
+                      const eligible =
+                        Boolean(
+                          terms
+                          && terms.billing_type
+                            === "hourly"
+                          && terms.hourly_rate
+                          && Number(
+                            terms.hourly_rate
+                          ) > 0
+                        );
+
+                      const amount =
+                        eligible
+                          ? Number(
+                              entry.hours
+                            )
+                            * Number(
+                                terms!
+                                  .hourly_rate
+                              )
+                          : 0;
+
+                      const selected =
+                        selectedInvoiceEntryIds
+                          .includes(
+                            entry.id
+                          );
+
+                      return (
+                        <label
+                          key={entry.id}
+                          className={
+                            `admin-invoice-selection-row ${
+                              selected
+                                ? "is-selected"
+                                : ""
+                            } ${
+                              !eligible
+                                ? "is-disabled"
+                                : ""
+                            }`
+                          }
+                        >
+                          <input
+                            type="checkbox"
+                            checked={
+                              selected
+                            }
+                            disabled={
+                              !eligible
+                              || actionLoading
+                            }
+                            onChange={() =>
+                              toggleInvoiceEntry(
+                                entry.id
+                              )
+                            }
+                          />
+
+                          <div className="admin-invoice-selection-copy">
+                            <strong>
+                              {entry.description}
+                            </strong>
+
+                            <span>
+                              {entry.work_date}
+                              {" · "}
+                              {Number(
+                                entry.hours
+                              ).toFixed(2)}
+                              {" hrs"}
+
+                              {eligible ? (
+                                <>
+                                  {" · "}
+                                  {formatMoney(
+                                    Number(
+                                      terms!
+                                        .hourly_rate
+                                    )
+                                  )}
+                                  /hr
+                                </>
+                              ) : null}
+                            </span>
+
+                            {!eligible ? (
+                              <small className="admin-billing-mismatch">
+                                Billing terms required
+                              </small>
+                            ) : null}
+                          </div>
+
+                          <strong>
+                            {eligible
+                              ? formatMoney(
+                                  amount
+                                )
+                              : "—"}
+                          </strong>
+                        </label>
+                      );
+                    },
+                  )}
+                </div>
+
+                <div className="admin-invoice-selection-summary">
+                  <span>
+                    Selected for Invoice
+                  </span>
+
+                  <strong>
+                    {formatMoney(
+                      selectedInvoiceValue
+                    )}
+                  </strong>
+
+                  <small>
+                    {selectedInvoiceHours
+                      .toFixed(2)}
+                    {" "}
+                    hours
+                  </small>
+                </div>
+              </div>
+
               <label>
                 <span>
                   Bill-To Email
@@ -2689,10 +3381,8 @@ export function AdminInvoicingWorkspace() {
                 className="button button-primary"
                 disabled={
                   actionLoading
-                  || billableEntries
+                  || selectedInvoiceEntryIds
                     .length === 0
-                  || billingMismatchEntries
-                    .length > 0
                 }
                 onClick={
                   handleGenerateInvoice
@@ -2836,23 +3526,38 @@ export function AdminInvoicingWorkspace() {
                         </div>
 
                         {invoice.status === "draft" ? (
-                          <button
-                            type="button"
-                            className="button button-primary"
-                            disabled={
-                              actionLoading
-                              || !invoice.bill_to_email
-                            }
-                            onClick={() =>
-                              handleSendInvoice(
-                                invoice,
-                              )
-                            }
-                          >
-                            {actionLoading
-                              ? "Sending…"
-                              : "Send Invoice"}
-                          </button>
+                          <div className="admin-invoice-draft-actions">
+                            <button
+                              type="button"
+                              className="admin-cancel-button"
+                              disabled={
+                                actionLoading
+                              }
+                              onClick={() =>
+                                beginInvoiceEdit(
+                                  invoice
+                                )
+                              }
+                            >
+                              Edit Draft
+                            </button>
+
+                            <button
+                              type="button"
+                              className="button button-primary"
+                              disabled={
+                                actionLoading
+                                || !invoice.bill_to_email
+                              }
+                              onClick={() =>
+                                beginInvoiceReview(
+                                  invoice
+                                )
+                              }
+                            >
+                              Review & Send
+                            </button>
+                          </div>
                         ) : null}
                       </div>
                     </article>
@@ -2867,6 +3572,517 @@ export function AdminInvoicingWorkspace() {
           </section>
         </>
       ) : null}
+
+      {activeInvoice
+      && invoiceDraft
+      && invoiceFlowStep ? (
+        <div
+          className="admin-invoice-modal-backdrop"
+          role="presentation"
+        >
+          <section
+            className="admin-invoice-glass"
+            role="dialog"
+            aria-modal="true"
+            aria-label={
+              invoiceFlowStep === "edit"
+                ? "Edit invoice draft"
+                : invoiceFlowStep === "review"
+                  ? "Review invoice"
+                  : "Confirm invoice send"
+            }
+          >
+            <div className="admin-invoice-glass-spectrum" />
+
+            <header className="admin-invoice-modal-header">
+              <div>
+                <p className="kicker">
+                  {invoiceFlowStep === "edit"
+                    ? "EDIT DRAFT"
+                    : invoiceFlowStep === "review"
+                      ? "REVIEW INVOICE"
+                      : "FINAL CONFIRMATION"}
+                </p>
+
+                <h3>
+                  {activeInvoice.invoice_number}
+                </h3>
+
+                <p>
+                  {activeInvoice.bill_to_name}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="admin-invoice-modal-close"
+                onClick={
+                  closeInvoiceFlow
+                }
+                disabled={
+                  actionLoading
+                  || invoiceDraftSaving
+                }
+                aria-label="Close invoice dialog"
+              >
+                ×
+              </button>
+            </header>
+
+            {invoiceFlowStep === "edit" ? (
+              <>
+                <div className="admin-invoice-edit-grid">
+                  <label>
+                    <span>
+                      Bill To
+                    </span>
+
+                    <input
+                      value={
+                        invoiceDraft.bill_to_name
+                      }
+                      onChange={(event) =>
+                        updateInvoiceDraft(
+                          "bill_to_name",
+                          event.target.value,
+                        )
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    <span>
+                      Billing Email
+                    </span>
+
+                    <input
+                      type="email"
+                      value={
+                        invoiceDraft.bill_to_email
+                      }
+                      onChange={(event) =>
+                        updateInvoiceDraft(
+                          "bill_to_email",
+                          event.target.value,
+                        )
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    <span>
+                      Issue Date
+                    </span>
+
+                    <input
+                      type="date"
+                      value={
+                        invoiceDraft.issue_date
+                      }
+                      onChange={(event) =>
+                        updateInvoiceDraft(
+                          "issue_date",
+                          event.target.value,
+                        )
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    <span>
+                      Due Date
+                    </span>
+
+                    <input
+                      type="date"
+                      value={
+                        invoiceDraft.due_date
+                      }
+                      onChange={(event) =>
+                        updateInvoiceDraft(
+                          "due_date",
+                          event.target.value,
+                        )
+                      }
+                    />
+                  </label>
+
+                  <label className="admin-invoice-modal-span">
+                    <span>
+                      Bill To Address
+                    </span>
+
+                    <textarea
+                      rows={3}
+                      value={
+                        invoiceDraft.bill_to_address
+                      }
+                      onChange={(event) =>
+                        updateInvoiceDraft(
+                          "bill_to_address",
+                          event.target.value,
+                        )
+                      }
+                    />
+                  </label>
+
+                  <label className="admin-invoice-modal-span">
+                    <span>
+                      Terms
+                    </span>
+
+                    <input
+                      value={
+                        invoiceDraft.terms
+                      }
+                      onChange={(event) =>
+                        updateInvoiceDraft(
+                          "terms",
+                          event.target.value,
+                        )
+                      }
+                      placeholder="Net 15"
+                    />
+                  </label>
+
+                  <label className="admin-invoice-modal-span">
+                    <span>
+                      Notes
+                    </span>
+
+                    <textarea
+                      rows={3}
+                      value={
+                        invoiceDraft.notes
+                      }
+                      onChange={(event) =>
+                        updateInvoiceDraft(
+                          "notes",
+                          event.target.value,
+                        )
+                      }
+                    />
+                  </label>
+                </div>
+
+                <div className="admin-invoice-modal-actions">
+                  <button
+                    type="button"
+                    className="admin-invoice-delete-button"
+                    onClick={() =>
+                      setInvoiceFlowStep(
+                        "delete"
+                      )
+                    }
+                    disabled={
+                      invoiceDraftSaving
+                    }
+                  >
+                    Delete Draft
+                  </button>
+
+                  <button
+                    type="button"
+                    className="admin-cancel-button"
+                    onClick={
+                      closeInvoiceFlow
+                    }
+                    disabled={
+                      invoiceDraftSaving
+                    }
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    className="button button-primary"
+                    onClick={() =>
+                      saveInvoiceDraft(
+                        "review"
+                      )
+                    }
+                    disabled={
+                      invoiceDraftSaving
+                    }
+                  >
+                    {invoiceDraftSaving
+                      ? "Saving…"
+                      : "Save & Review"}
+                  </button>
+                </div>
+              </>
+            ) : null}
+
+            {invoiceFlowStep === "review" ? (
+              <>
+                <div className="admin-invoice-review-grid">
+                  <div className="admin-invoice-review-panel">
+                    <span>
+                      BILL TO
+                    </span>
+
+                    <strong>
+                      {activeInvoice.bill_to_name}
+                    </strong>
+
+                    <p>
+                      {activeInvoice.bill_to_email}
+                    </p>
+
+                    {activeInvoice.bill_to_address ? (
+                      <p className="admin-invoice-review-pre">
+                        {activeInvoice.bill_to_address}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="admin-invoice-review-panel">
+                    <span>
+                      INVOICE
+                    </span>
+
+                    <strong>
+                      {activeInvoice.invoice_number}
+                    </strong>
+
+                    <p>
+                      Issue{" "}
+                      {activeInvoice.issue_date
+                        ?? "—"}
+                    </p>
+
+                    <p>
+                      Due{" "}
+                      {activeInvoice.due_date
+                        ?? "—"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="admin-invoice-review-lines">
+                  {activeInvoice.line_items.map(
+                    (line) => (
+                      <div
+                        key={line.id}
+                        className="admin-invoice-review-line"
+                      >
+                        <div>
+                          <strong>
+                            {line.description}
+                          </strong>
+
+                          <span>
+                            {line.quantity}
+                            {" × "}
+                            {formatMoney(
+                              line.unit_rate
+                            )}
+                          </span>
+                        </div>
+
+                        <strong>
+                          {formatMoney(
+                            line.amount
+                          )}
+                        </strong>
+                      </div>
+                    ),
+                  )}
+                </div>
+
+                <div className="admin-invoice-review-total">
+                  <span>
+                    TOTAL
+                  </span>
+
+                  <strong>
+                    {formatMoney(
+                      activeInvoice.total
+                    )}
+                  </strong>
+                </div>
+
+                {activeInvoice.terms ? (
+                  <div className="admin-invoice-review-note">
+                    <span>
+                      TERMS
+                    </span>
+
+                    <p>
+                      {activeInvoice.terms}
+                    </p>
+                  </div>
+                ) : null}
+
+                {activeInvoice.notes ? (
+                  <div className="admin-invoice-review-note">
+                    <span>
+                      NOTES
+                    </span>
+
+                    <p>
+                      {activeInvoice.notes}
+                    </p>
+                  </div>
+                ) : null}
+
+                <div className="admin-invoice-modal-actions">
+                  <button
+                    type="button"
+                    className="admin-cancel-button"
+                    onClick={() =>
+                      setInvoiceFlowStep(
+                        "edit"
+                      )
+                    }
+                  >
+                    Back to Edit
+                  </button>
+
+                  <button
+                    type="button"
+                    className="button button-primary"
+                    onClick={() =>
+                      setInvoiceFlowStep(
+                        "confirm"
+                      )
+                    }
+                  >
+                    Continue to Send
+                  </button>
+                </div>
+              </>
+            ) : null}
+
+            {invoiceFlowStep === "delete" ? (
+              <>
+                <div className="admin-invoice-confirm admin-invoice-confirm-danger">
+                  <span className="admin-invoice-confirm-label">
+                    DELETE DRAFT
+                  </span>
+
+                  <strong>
+                    {activeInvoice.invoice_number}
+                  </strong>
+
+                  <p>
+                    Delete this draft invoice?
+                  </p>
+
+                  <small>
+                    Its source time entries
+                    will return to Approved /
+                    Ready to Bill. The invoice
+                    number remains reserved
+                    and will not be reused.
+                  </small>
+                </div>
+
+                <div className="admin-invoice-modal-actions">
+                  <button
+                    type="button"
+                    className="admin-cancel-button"
+                    onClick={() =>
+                      setInvoiceFlowStep(
+                        "edit"
+                      )
+                    }
+                    disabled={
+                      actionLoading
+                    }
+                  >
+                    Keep Draft
+                  </button>
+
+                  <button
+                    type="button"
+                    className="admin-invoice-delete-confirm"
+                    onClick={
+                      handleDeleteInvoiceDraft
+                    }
+                    disabled={
+                      actionLoading
+                    }
+                  >
+                    {actionLoading
+                      ? "Deleting…"
+                      : "Delete Draft"}
+                  </button>
+                </div>
+              </>
+            ) : null}
+
+            {invoiceFlowStep === "confirm" ? (
+              <>
+                <div className="admin-invoice-confirm">
+                  <span className="admin-invoice-confirm-label">
+                    READY TO SEND
+                  </span>
+
+                  <strong>
+                    {formatMoney(
+                      activeInvoice.total
+                    )}
+                  </strong>
+
+                  <p>
+                    Send{" "}
+                    {activeInvoice.invoice_number}
+                    {" to "}
+                    <b>
+                      {activeInvoice.bill_to_email}
+                    </b>
+                    ?
+                  </p>
+
+                  <small>
+                    Once delivery succeeds,
+                    this invoice becomes part
+                    of billing history and is
+                    no longer editable.
+                  </small>
+                </div>
+
+                <div className="admin-invoice-modal-actions">
+                  <button
+                    type="button"
+                    className="admin-cancel-button"
+                    onClick={() =>
+                      setInvoiceFlowStep(
+                        "review"
+                      )
+                    }
+                    disabled={
+                      actionLoading
+                    }
+                  >
+                    Back
+                  </button>
+
+                  <button
+                    type="button"
+                    className="button button-primary"
+                    disabled={
+                      actionLoading
+                    }
+                    onClick={() =>
+                      handleSendInvoice(
+                        activeInvoice
+                      )
+                    }
+                  >
+                    {actionLoading
+                      ? "Sending…"
+                      : "Yes, Send Invoice"}
+                  </button>
+                </div>
+              </>
+            ) : null}
+          </section>
+        </div>
+      ) : null}
+
     </div>
   );
 }

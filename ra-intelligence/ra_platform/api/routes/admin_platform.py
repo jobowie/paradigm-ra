@@ -67,6 +67,7 @@ from ra_platform.organizations.billing_profile import (
 )
 from ra_platform.organizations.billing_profile_service import (
     BillingProfileUpdateError,
+    decrypt_organization_financial_value,
     update_organization_billing_profile,
 )
 from ra_platform.organizations.models import (
@@ -394,6 +395,43 @@ def _normalize_optional_text(
     normalized = value.strip()
 
     return normalized or None
+
+
+def _format_billing_profile_address(
+    profile: OrganizationBillingProfile | None,
+) -> str | None:
+    if profile is None:
+        return None
+
+    locality = ", ".join(
+        part
+        for part in [
+            profile.city,
+            profile.state_region,
+        ]
+        if part
+    )
+
+    if profile.postal_code:
+        locality = (
+            f"{locality} "
+            f"{profile.postal_code}"
+        ).strip()
+
+    lines = [
+        profile.address_line1,
+        profile.address_line2,
+        locality or None,
+        profile.country,
+    ]
+
+    rendered = "\n".join(
+        line.strip()
+        for line in lines
+        if line and line.strip()
+    )
+
+    return rendered or None
 
 
 def build_company_profile_response(
@@ -1424,6 +1462,86 @@ def list_organization_engagements(
     ]
 
 
+
+@router.get(
+    "/platform-engagements",
+    response_model=list[
+        EngagementResponse
+    ],
+)
+def list_platform_engagements(
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    organizations = (
+        SQLiteOrganizationRepository(
+            connection
+        )
+    )
+
+    platform = next(
+        (
+            organization
+            for organization
+            in organizations.list_all()
+            if (
+                organization.type
+                == OrganizationType.PARADIGM_RA
+            )
+        ),
+        None,
+    )
+
+    if platform is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                "Paradigm Ra organization "
+                "not found."
+            ),
+        )
+
+    require_permission(
+        principal=principal,
+        permission=(
+            Permission.VIEW_ENGAGEMENT
+        ),
+        organization_id=platform.id,
+    )
+
+    engagements = (
+        SQLiteEngagementRepository(
+            connection
+        ).list_for_owner(
+            platform.id
+        )
+    )
+
+    return [
+        EngagementResponse(
+            id=engagement.id,
+            client_organization_id=(
+                engagement.client_organization_id
+            ),
+            owner_organization_id=(
+                engagement.owner_organization_id
+            ),
+            name=engagement.name,
+            service_type=(
+                engagement.service_type
+            ),
+            source=engagement.source.value,
+            status=engagement.status.value,
+        )
+        for engagement
+        in engagements
+    ]
+
+
 @router.post(
     "/organizations/"
     "{organization_id}/engagements",
@@ -1859,8 +1977,23 @@ class TimeEntryResponse(BaseModel):
 class GenerateInvoiceRequest(BaseModel):
     issue_date: date | None = None
 
+    time_entry_ids: list[UUID]
+
     bill_to_email: str | None = None
     notes: str | None = None
+
+
+
+class UpdateInvoiceDraftRequest(BaseModel):
+    issue_date: date
+    due_date: date
+
+    bill_to_name: str
+    bill_to_email: str
+    bill_to_address: str | None = None
+
+    notes: str | None = None
+    terms: str | None = None
 
 
 class InvoiceLineResponse(BaseModel):
@@ -1886,6 +2019,10 @@ class InvoiceResponse(BaseModel):
 
     bill_to_name: str
     bill_to_email: str | None
+    bill_to_address: str | None
+
+    notes: str | None
+    terms: str | None
 
     subtotal: str
     tax_amount: str
@@ -1960,6 +2097,11 @@ def build_invoice_response(
         bill_to_email=(
             invoice.bill_to_email
         ),
+        bill_to_address=(
+            invoice.bill_to_address
+        ),
+        notes=invoice.notes,
+        terms=invoice.terms,
         subtotal=str(invoice.subtotal),
         tax_amount=str(
             invoice.tax_amount
@@ -2457,13 +2599,116 @@ def generate_engagement_invoice(
             ),
         )
 
-    time_entries = (
+    billing_profiles = (
+        SQLiteOrganizationBillingProfileRepository(
+            connection
+        )
+    )
+
+    client_billing_profile = (
+        billing_profiles
+        .get_for_organization(
+            organization.id
+        )
+    )
+
+    bill_to_name = (
+        client_billing_profile.billing_name
+        if (
+            client_billing_profile
+            and client_billing_profile.billing_name
+        )
+        else organization.name
+    )
+
+    bill_to_email = (
+        body.bill_to_email
+        or (
+            client_billing_profile.billing_email
+            if client_billing_profile
+            else None
+        )
+    )
+
+    bill_to_address = (
+        _format_billing_profile_address(
+            client_billing_profile
+        )
+    )
+
+    time_entry_repository = (
         SQLiteTimeEntryRepository(
             connection
-        ).list_for_engagement(
+        )
+    )
+
+    engagement_time_entries = (
+        time_entry_repository
+        .list_for_engagement(
             engagement.id
         )
     )
+
+    if not body.time_entry_ids:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Select at least one "
+                "time entry to invoice."
+            ),
+        )
+
+    if (
+        len(set(body.time_entry_ids))
+        != len(body.time_entry_ids)
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Duplicate time entry IDs "
+                "are not allowed."
+            ),
+        )
+
+    entries_by_id = {
+        entry.id: entry
+        for entry
+        in engagement_time_entries
+    }
+
+    time_entries = []
+
+    for time_entry_id in body.time_entry_ids:
+        entry = entries_by_id.get(
+            time_entry_id
+        )
+
+        if entry is None:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    "A selected time entry "
+                    "does not belong to this "
+                    "engagement."
+                ),
+            )
+
+        if (
+            entry.status.value
+            != "approved"
+            or entry.invoice_id is not None
+        ):
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "A selected time entry "
+                    "is no longer Ready to Bill."
+                ),
+            )
+
+        time_entries.append(
+            entry
+        )
 
     billing_terms = (
         SQLiteEngagementBillingTermsRepository(
@@ -2535,10 +2780,13 @@ def generate_engagement_invoice(
                     billing_terms
                 ),
                 bill_to_name=(
-                    organization.name
+                    bill_to_name
                 ),
                 bill_to_email=(
-                    body.bill_to_email
+                    bill_to_email
+                ),
+                bill_to_address=(
+                    bill_to_address
                 ),
                 issue_date=invoice_date,
                 payment_terms_days=(
@@ -2568,6 +2816,8 @@ import json
 import os
 
 from ra_platform.billing.invoice_pdf import (
+    InvoiceBillTo,
+    InvoiceRemittance,
     build_invoice_pdf,
 )
 from ra_platform.billing.models import (
@@ -2587,6 +2837,229 @@ from ra_platform.persistence.sqlite_repositories import (
     SQLiteAuditEventRepository,
     SQLiteUserRepository,
 )
+
+
+
+@router.put(
+    "/invoices/{invoice_id}",
+    response_model=InvoiceResponse,
+)
+def update_admin_invoice_draft(
+    invoice_id: UUID,
+    body: UpdateInvoiceDraftRequest,
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    invoices = SQLiteInvoiceRepository(
+        connection
+    )
+
+    invoice = invoices.get(
+        invoice_id
+    )
+
+    if invoice is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Invoice not found.",
+        )
+
+    require_permission(
+        principal=principal,
+        permission=Permission.CREATE_INVOICE,
+        organization_id=(
+            invoice.client_organization_id
+        ),
+    )
+
+    if (
+        invoice.status
+        != InvoiceStatus.DRAFT
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Only draft invoices "
+                "can be edited."
+            ),
+        )
+
+    bill_to_name = (
+        body.bill_to_name.strip()
+    )
+
+    bill_to_email = (
+        body.bill_to_email.strip()
+    )
+
+    if not bill_to_name:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Bill To name is required."
+            ),
+        )
+
+    if not bill_to_email:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Billing email is required."
+            ),
+        )
+
+    if body.due_date < body.issue_date:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Due date cannot be before "
+                "the issue date."
+            ),
+        )
+
+    invoice.issue_date = body.issue_date
+    invoice.due_date = body.due_date
+
+    invoice.bill_to_name = bill_to_name
+    invoice.bill_to_email = bill_to_email
+
+    invoice.bill_to_address = (
+        body.bill_to_address.strip()
+        if (
+            body.bill_to_address
+            and body.bill_to_address.strip()
+        )
+        else None
+    )
+
+    invoice.notes = (
+        body.notes.strip()
+        if (
+            body.notes
+            and body.notes.strip()
+        )
+        else None
+    )
+
+    invoice.terms = (
+        body.terms.strip()
+        if (
+            body.terms
+            and body.terms.strip()
+        )
+        else None
+    )
+
+    invoice.updated_at = datetime.now(
+        timezone.utc
+    )
+
+    try:
+        invoices.update_draft_details(
+            invoice
+        )
+        connection.commit()
+
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail=str(exc),
+        ) from exc
+
+    return build_invoice_response(
+        invoice
+    )
+
+
+
+class DeleteInvoiceDraftResponse(BaseModel):
+    invoice_number: str
+    released_time_entries: int
+
+
+@router.delete(
+    "/invoices/{invoice_id}",
+    response_model=DeleteInvoiceDraftResponse,
+)
+def delete_admin_invoice_draft(
+    invoice_id: UUID,
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    invoices = SQLiteInvoiceRepository(
+        connection
+    )
+
+    invoice = invoices.get(
+        invoice_id
+    )
+
+    if invoice is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Invoice not found.",
+        )
+
+    require_permission(
+        principal=principal,
+        permission=Permission.CREATE_INVOICE,
+        organization_id=(
+            invoice.client_organization_id
+        ),
+    )
+
+    if (
+        invoice.status
+        != InvoiceStatus.DRAFT
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Only draft invoices "
+                "can be deleted."
+            ),
+        )
+
+    invoice_number = (
+        invoice.invoice_number
+    )
+
+    try:
+        (
+            _deleted_invoice,
+            released_count,
+        ) = invoices.delete_draft(
+            invoice_id
+        )
+
+        connection.commit()
+
+    except ValueError as exc:
+        connection.rollback()
+
+        raise HTTPException(
+            status_code=409,
+            detail=str(exc),
+        ) from exc
+
+    except Exception:
+        connection.rollback()
+        raise
+
+    return DeleteInvoiceDraftResponse(
+        invoice_number=invoice_number,
+        released_time_entries=(
+            released_count
+        ),
+    )
 
 
 class SendInvoiceResponse(BaseModel):
@@ -2650,6 +3123,182 @@ def send_admin_invoice(
                 "a billing email."
             ),
         )
+
+    billing_profiles = (
+        SQLiteOrganizationBillingProfileRepository(
+            connection
+        )
+    )
+
+    client_billing_profile = (
+        billing_profiles
+        .get_for_organization(
+            invoice.client_organization_id
+        )
+    )
+
+    client_contacts = (
+        SQLiteOrganizationContactRepository(
+            connection
+        ).list_for_organization(
+            invoice.client_organization_id
+        )
+    )
+
+    billing_contact = next(
+        (
+            contact
+            for contact in client_contacts
+            if (
+                "billing"
+                in (
+                    contact.contact_type
+                    or ""
+                ).casefold()
+            )
+        ),
+        None,
+    )
+
+    if billing_contact is None:
+        billing_contact = next(
+            (
+                contact
+                for contact in client_contacts
+                if contact.is_primary
+            ),
+            None,
+        )
+
+    source_engagement = None
+
+    if invoice.line_items:
+        source_engagement = (
+            SQLiteEngagementRepository(
+                connection
+            ).get(
+                invoice
+                .line_items[0]
+                .engagement_id
+            )
+        )
+
+    owner_organization = None
+
+    if source_engagement is not None:
+        owner_organization = (
+            SQLiteOrganizationRepository(
+                connection
+            ).get(
+                source_engagement
+                .owner_organization_id
+            )
+        )
+
+    if owner_organization is None:
+        owner_organization = next(
+            (
+                organization
+                for organization
+                in SQLiteOrganizationRepository(
+                    connection
+                ).list_all()
+                if (
+                    organization.type
+                    == OrganizationType.PARADIGM_RA
+                )
+            ),
+            None,
+        )
+
+    if owner_organization is None:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Paradigm Ra organization "
+                "could not be resolved."
+            ),
+        )
+
+    remittance_profile = (
+        billing_profiles
+        .get_for_organization(
+            owner_organization.id
+        )
+    )
+
+    if remittance_profile is None:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Paradigm Ra Pay To / "
+                "Remittance profile is "
+                "not configured."
+            ),
+        )
+
+    try:
+        routing_number = (
+            decrypt_organization_financial_value(
+                profile=remittance_profile,
+                field_name="routing_number",
+            )
+        )
+
+        account_number = (
+            decrypt_organization_financial_value(
+                profile=remittance_profile,
+                field_name="account_number",
+            )
+        )
+
+    except FinancialDataEncryptionError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Paradigm Ra remittance "
+                "data could not be decrypted."
+            ),
+        ) from exc
+
+    bill_to_render = InvoiceBillTo(
+        name=invoice.bill_to_name,
+        contact_name=(
+            billing_contact.name
+            if billing_contact
+            else None
+        ),
+        email=invoice.bill_to_email,
+        address=(
+            invoice.bill_to_address
+            or _format_billing_profile_address(
+                client_billing_profile
+            )
+        ),
+    )
+
+    remittance_render = InvoiceRemittance(
+        payee_name=(
+            remittance_profile.billing_name
+            or owner_organization.name
+        ),
+        remittance_email=(
+            remittance_profile.billing_email
+        ),
+        address=(
+            _format_billing_profile_address(
+                remittance_profile
+            )
+        ),
+        bank_name=(
+            remittance_profile.bank_name
+        ),
+        account_type=(
+            remittance_profile.account_type
+        ),
+        routing_number=routing_number,
+        account_number=account_number,
+    )
 
     api_key = os.environ.get(
         "RESEND_API_KEY",
@@ -2723,6 +3372,10 @@ def send_admin_invoice(
                 issuer.display_name
             ),
             issuer_title=issuer_title,
+            bill_to=bill_to_render,
+            remittance=(
+                remittance_render
+            ),
         )
 
     except Exception as exc:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 from xml.sax.saxutils import escape
@@ -34,6 +35,111 @@ DEFAULT_LOGO_PATH = (
 )
 
 
+@dataclass(frozen=True)
+class InvoiceBillTo:
+    name: str
+    contact_name: str | None = None
+    email: str | None = None
+    address: str | None = None
+
+
+@dataclass(frozen=True)
+class InvoiceRemittance:
+    payee_name: str
+    remittance_email: str | None = None
+    address: str | None = None
+    bank_name: str | None = None
+    account_type: str | None = None
+    routing_number: str | None = None
+    account_number: str | None = None
+
+
+def _html_lines(
+    value: str,
+) -> str:
+    return "<br/>".join(
+        escape(line.strip())
+        for line in value.splitlines()
+        if line.strip()
+    )
+
+
+def _labeled_table(
+    rows,
+    *,
+    col_widths,
+    label_style,
+    body_style,
+):
+    rendered_rows = []
+
+    for label, value in rows:
+        if value is None:
+            continue
+
+        value_text = str(value).strip()
+
+        if not value_text:
+            continue
+
+        rendered_rows.append(
+            [
+                Paragraph(
+                    escape(label.upper()),
+                    label_style,
+                ),
+                Paragraph(
+                    _html_lines(value_text),
+                    body_style,
+                ),
+            ]
+        )
+
+    table = Table(
+        rendered_rows,
+        colWidths=col_widths,
+    )
+
+    table.setStyle(
+        TableStyle(
+            [
+                (
+                    "VALIGN",
+                    (0, 0),
+                    (-1, -1),
+                    "TOP",
+                ),
+                (
+                    "LEFTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    0,
+                ),
+                (
+                    "RIGHTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    4,
+                ),
+                (
+                    "TOPPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    2,
+                ),
+                (
+                    "BOTTOMPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    4,
+                ),
+            ]
+        )
+    )
+
+    return table
+
+
 def _money(value) -> str:
     return f"${value:,.2f}"
 
@@ -43,6 +149,8 @@ def build_invoice_pdf(
     invoice: Invoice,
     issuer_name: str,
     issuer_title: str = "Chief Executive Officer",
+    bill_to: InvoiceBillTo | None = None,
+    remittance: InvoiceRemittance | None = None,
     logo_path: Path = DEFAULT_LOGO_PATH,
 ) -> bytes:
     if not issuer_name.strip():
@@ -259,68 +367,139 @@ def build_invoice_pdf(
         else "Not specified"
     )
 
-    bill_to = (
-        f"<b>{invoice.bill_to_name}</b>"
+    bill_to_details = (
+        bill_to
+        or InvoiceBillTo(
+            name=invoice.bill_to_name,
+            email=invoice.bill_to_email,
+            address=invoice.bill_to_address,
+        )
     )
 
-    if invoice.bill_to_email:
-        bill_to += (
-            f"<br/>{invoice.bill_to_email}"
+    remittance_details = (
+        remittance
+        or InvoiceRemittance(
+            payee_name="Paradigm Ra",
         )
+    )
 
-    if invoice.bill_to_address:
-        bill_to += (
-            "<br/>"
-            + invoice.bill_to_address
-        )
+    bill_to_table = _labeled_table(
+        [
+            (
+                "Client",
+                bill_to_details.name,
+            ),
+            (
+                "Billing Contact",
+                bill_to_details.contact_name,
+            ),
+            (
+                "Billing Address",
+                bill_to_details.address,
+            ),
+            (
+                "Billing Email",
+                bill_to_details.email,
+            ),
+        ],
+        col_widths=[
+            0.85 * inch,
+            1.50 * inch,
+        ],
+        label_style=label_style,
+        body_style=body_style,
+    )
 
-    issuer = (
-        f"<b>{issuer_name}</b>"
-        f"<br/>{issuer_title}"
-        "<br/>Paradigm Ra"
+    remittance_table = _labeled_table(
+        [
+            (
+                "Payee",
+                remittance_details.payee_name,
+            ),
+            (
+                "Remit Address",
+                remittance_details.address,
+            ),
+            (
+                "Bank Name",
+                remittance_details.bank_name,
+            ),
+            (
+                "Account Type",
+                remittance_details.account_type,
+            ),
+            (
+                "Routing Number",
+                remittance_details.routing_number,
+            ),
+            (
+                "Account Number",
+                remittance_details.account_number,
+            ),
+            (
+                "Remit Email",
+                remittance_details.remittance_email,
+            ),
+        ],
+        col_widths=[
+            0.95 * inch,
+            1.80 * inch,
+        ],
+        label_style=label_style,
+        body_style=body_style,
+    )
+
+    invoice_details_table = _labeled_table(
+        [
+            (
+                "Issue",
+                issue_date,
+            ),
+            (
+                "Due",
+                due_date,
+            ),
+            (
+                "Balance",
+                _money(
+                    invoice.balance_due
+                ),
+            ),
+        ],
+        col_widths=[
+            0.52 * inch,
+            0.88 * inch,
+        ],
+        label_style=label_style,
+        body_style=body_style,
     )
 
     details = Table(
         [
             [
                 Paragraph(
-                    "FROM",
+                    "<b>BILL TO</b>",
                     label_style,
                 ),
                 Paragraph(
-                    "BILL TO",
+                    "<b>PAY TO / REMIT TO</b>",
                     label_style,
                 ),
                 Paragraph(
-                    "INVOICE DETAILS",
+                    "<b>INVOICE DETAILS</b>",
                     label_style,
                 ),
             ],
             [
-                Paragraph(
-                    issuer,
-                    body_style,
-                ),
-                Paragraph(
-                    bill_to,
-                    body_style,
-                ),
-                Paragraph(
-                    (
-                        f"<b>Issue:</b> "
-                        f"{issue_date}"
-                        "<br/>"
-                        f"<b>Due:</b> "
-                        f"{due_date}"
-                    ),
-                    body_style,
-                ),
+                bill_to_table,
+                remittance_table,
+                invoice_details_table,
             ],
         ],
         colWidths=[
-            2.2 * inch,
-            2.65 * inch,
-            1.95 * inch,
+            2.45 * inch,
+            2.85 * inch,
+            1.50 * inch,
         ],
     )
 
@@ -334,10 +513,40 @@ def build_invoice_pdf(
                     "TOP",
                 ),
                 (
+                    "LEFTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    0,
+                ),
+                (
+                    "RIGHTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    8,
+                ),
+                (
                     "BOTTOMPADDING",
                     (0, 0),
                     (-1, 0),
-                    5,
+                    7,
+                ),
+                (
+                    "LINEAFTER",
+                    (0, 0),
+                    (0, -1),
+                    0.35,
+                    colors.HexColor(
+                        "#D9DBE1"
+                    ),
+                ),
+                (
+                    "LINEAFTER",
+                    (1, 0),
+                    (1, -1),
+                    0.35,
+                    colors.HexColor(
+                        "#D9DBE1"
+                    ),
                 ),
             ]
         )

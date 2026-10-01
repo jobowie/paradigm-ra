@@ -35,6 +35,7 @@ interface BillingProfile {
 interface Props {
   organizationId: string;
   organizationName: string;
+  organizationType: string;
   title?: string;
 }
 
@@ -42,8 +43,38 @@ interface Props {
 export function OrganizationBillingProfileEditor({
   organizationId,
   organizationName,
+  organizationType,
   title,
 }: Props) {
+  const isPlatformOrganization =
+    organizationType === "paradigm_ra";
+
+  const financialSectionLabel =
+    isPlatformOrganization
+      ? "Pay To / Remittance"
+      : "Payment / Disbursement";
+
+  const financialSectionHeading =
+    isPlatformOrganization
+      ? "Where customers pay us"
+      : "How this client pays vendors";
+
+  const financialSectionDescription =
+    isPlatformOrganization
+      ? (
+          "Secure remittance instructions "
+          + "used when customers pay "
+          + "Paradigm Ra."
+        )
+      : (
+          "Secure client payment-source "
+          + "information for bookkeeping "
+          + "and vendor payments. "
+          + "Never shown on Paradigm Ra "
+          + "invoices."
+        );
+
+
   const [
     profile,
     setProfile,
@@ -326,7 +357,9 @@ export function OrganizationBillingProfileEditor({
       setEditing(false);
 
       setNotice(
-        "Billing profile saved."
+        isPlatformOrganization
+          ? "Billing profile and remittance saved."
+          : "Billing profile and disbursement saved."
       );
 
     } catch (err) {
@@ -385,7 +418,9 @@ export function OrganizationBillingProfileEditor({
               setEditing(true)
             }
           >
-            Edit Billing Profile
+            {isPlatformOrganization
+              ? "Edit Billing & Pay To"
+              : "Edit Billing & Disbursement"}
           </button>
         </div>
 
@@ -436,7 +471,7 @@ export function OrganizationBillingProfileEditor({
 
           <div>
             <span>
-              Secure Account Information
+              {financialSectionLabel}
             </span>
 
             <strong>
@@ -614,6 +649,22 @@ export function OrganizationBillingProfileEditor({
           />
         </label>
 
+        <div className="admin-billing-remittance-heading">
+          <p className="kicker">
+            {financialSectionLabel.toUpperCase()}
+          </p>
+
+          <h4>
+            {financialSectionHeading}
+          </h4>
+
+          <small>
+            {financialSectionDescription}
+            {" "}
+            Sensitive account values remain encrypted and masked.
+          </small>
+        </div>
+
         <label>
           <span>Bank Name</span>
 
@@ -739,7 +790,11 @@ export function OrganizationBillingProfileEditor({
           >
             {saving
               ? "Saving…"
-              : "Save Billing Profile"}
+              : (
+                  isPlatformOrganization
+                    ? "Save Billing & Pay To"
+                    : "Save Billing & Disbursement"
+                )}
           </button>
         </div>
       </form>

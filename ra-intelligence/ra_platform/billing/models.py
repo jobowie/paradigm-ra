@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 class InvoiceStatus(str, Enum):
     DRAFT = "draft"
+    DELETED = "deleted"
     SENT = "sent"
     PAID = "paid"
     OVERDUE = "overdue"

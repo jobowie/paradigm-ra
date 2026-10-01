@@ -1,6 +1,6 @@
 import sqlite3
 
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from uuid import UUID
 
@@ -262,6 +262,75 @@ class SQLiteEngagementRepository:
             (
                 str(
                     client_organization_id
+                ),
+            ),
+        ).fetchall()
+
+        return [
+            Engagement(
+                id=UUID(row["id"]),
+                client_organization_id=UUID(
+                    row[
+                        "client_organization_id"
+                    ]
+                ),
+                owner_organization_id=UUID(
+                    row[
+                        "owner_organization_id"
+                    ]
+                ),
+                name=row["name"],
+                service_type=row[
+                    "service_type"
+                ],
+                source=EngagementSource(
+                    row["source"]
+                ),
+                status=EngagementStatus(
+                    row["status"]
+                ),
+                source_opportunity_id=(
+                    UUID(
+                        row[
+                            "source_opportunity_id"
+                        ]
+                    )
+                    if row[
+                        "source_opportunity_id"
+                    ]
+                    else None
+                ),
+                discovery_session_id=(
+                    UUID(
+                        row[
+                            "discovery_session_id"
+                        ]
+                    )
+                    if row[
+                        "discovery_session_id"
+                    ]
+                    else None
+                ),
+                created_at=row["created_at"],
+                updated_at=row["updated_at"],
+            )
+            for row in rows
+        ]
+
+    def list_for_owner(
+        self,
+        owner_organization_id: UUID,
+    ) -> list[Engagement]:
+        rows = self.connection.execute(
+            """
+            SELECT *
+            FROM engagements
+            WHERE owner_organization_id = ?
+            ORDER BY created_at
+            """,
+            (
+                str(
+                    owner_organization_id
                 ),
             ),
         ).fetchall()
@@ -870,6 +939,54 @@ class SQLiteInvoiceRepository:
         )
 
 
+    def update_draft_details(
+        self,
+        invoice: Invoice,
+    ) -> None:
+        result = self.connection.execute(
+            """
+            UPDATE invoices
+            SET
+                issue_date = ?,
+                due_date = ?,
+                bill_to_name = ?,
+                bill_to_email = ?,
+                bill_to_address = ?,
+                notes = ?,
+                terms = ?,
+                updated_at = ?
+            WHERE id = ?
+              AND status = ?
+            """,
+            (
+                (
+                    invoice.issue_date.isoformat()
+                    if invoice.issue_date
+                    else None
+                ),
+                (
+                    invoice.due_date.isoformat()
+                    if invoice.due_date
+                    else None
+                ),
+                invoice.bill_to_name,
+                invoice.bill_to_email,
+                invoice.bill_to_address,
+                invoice.notes,
+                invoice.terms,
+                invoice.updated_at.isoformat(),
+                str(invoice.id),
+                InvoiceStatus.DRAFT.value,
+            ),
+        )
+
+        if result.rowcount == 0:
+            raise ValueError(
+                "Draft invoice does not exist "
+                "or is no longer editable."
+            )
+
+
     def update(
         self,
         invoice: Invoice,
@@ -905,6 +1022,158 @@ class SQLiteInvoiceRepository:
             )
 
 
+    def delete_draft(
+        self,
+        invoice_id: UUID,
+    ) -> tuple[Invoice, int]:
+        invoice = self.get(
+            invoice_id
+        )
+
+        if invoice is None:
+            raise ValueError(
+                "Invoice does not exist."
+            )
+
+        if (
+            invoice.status
+            != InvoiceStatus.DRAFT
+        ):
+            raise ValueError(
+                "Only draft invoices "
+                "can be deleted."
+            )
+
+        source_time_entry_ids = {
+            str(time_entry_id)
+            for line in invoice.line_items
+            for time_entry_id
+            in line.source_time_entry_ids
+        }
+
+        linked_rows = (
+            self.connection.execute(
+                """
+                SELECT
+                    id,
+                    status
+                FROM time_entries
+                WHERE invoice_id = ?
+                """,
+                (
+                    str(invoice.id),
+                ),
+            )
+            .fetchall()
+        )
+
+        linked_time_entry_ids = {
+            str(row["id"])
+            for row in linked_rows
+        }
+
+        if (
+            linked_time_entry_ids
+            != source_time_entry_ids
+        ):
+            raise ValueError(
+                "Invoice source linkage "
+                "does not match its time "
+                "entry evidence."
+            )
+
+        if any(
+            row["status"]
+            != TimeEntryStatus.INVOICED.value
+            for row in linked_rows
+        ):
+            raise ValueError(
+                "Invoice contains source "
+                "time entries that are not "
+                "invoiced."
+            )
+
+        now = datetime.now(
+            timezone.utc
+        )
+
+        invoice_result = (
+            self.connection.execute(
+                """
+                UPDATE invoices
+                SET
+                    status = ?,
+                    updated_at = ?
+                WHERE id = ?
+                  AND status = ?
+                """,
+                (
+                    InvoiceStatus.DELETED.value,
+                    now.isoformat(),
+                    str(invoice.id),
+                    InvoiceStatus.DRAFT.value,
+                ),
+            )
+        )
+
+        if invoice_result.rowcount != 1:
+            raise ValueError(
+                "Draft invoice is no longer "
+                "available for deletion."
+            )
+
+        released_count = 0
+
+        if source_time_entry_ids:
+            time_result = (
+                self.connection.execute(
+                    """
+                    UPDATE time_entries
+                    SET
+                        status = ?,
+                        invoice_id = NULL
+                    WHERE invoice_id = ?
+                      AND status = ?
+                    """,
+                    (
+                        TimeEntryStatus
+                        .APPROVED
+                        .value,
+                        str(invoice.id),
+                        TimeEntryStatus
+                        .INVOICED
+                        .value,
+                    ),
+                )
+            )
+
+            released_count = (
+                time_result.rowcount
+            )
+
+            if (
+                released_count
+                != len(
+                    source_time_entry_ids
+                )
+            ):
+                raise ValueError(
+                    "Unable to release all "
+                    "invoice source entries."
+                )
+
+        invoice.status = (
+            InvoiceStatus.DELETED
+        )
+
+        invoice.updated_at = now
+
+        return (
+            invoice,
+            released_count,
+        )
+
+
     def list_for_engagement(
         self,
         engagement_id: UUID,
@@ -916,9 +1185,13 @@ class SQLiteInvoiceRepository:
             JOIN invoice_lines AS il
               ON il.invoice_id = i.id
             WHERE il.engagement_id = ?
+              AND i.status != ?
             ORDER BY i.created_at DESC
             """,
-            (str(engagement_id),),
+            (
+                str(engagement_id),
+                InvoiceStatus.DELETED.value,
+            ),
         ).fetchall()
 
         invoices: list[Invoice] = []

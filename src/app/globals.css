@@ -7272,3 +7272,512 @@ button.button.admin-org-edit-button:hover {
   color: #f3a38f !important;
   -webkit-text-fill-color: #f3a38f !important;
 }
+
+.admin-billing-remittance-heading {
+  grid-column: 1 / -1;
+  margin-top: 0.7rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-billing-remittance-heading .kicker {
+  margin: 0 0 0.45rem;
+}
+
+.admin-billing-remittance-heading h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.admin-billing-remittance-heading small {
+  display: block;
+  max-width: 42rem;
+  margin-top: 0.45rem;
+  color: rgba(255, 255, 255, 0.52);
+  line-height: 1.5;
+}
+
+
+/* =====================================================
+   ADMIN — INVOICE REVIEW / CONFIRM GLASS
+===================================================== */
+
+.admin-invoice-draft-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-invoice-modal-backdrop {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background:
+    radial-gradient(
+      circle at 50% 25%,
+      rgba(88, 105, 180, 0.12),
+      transparent 38%
+    ),
+    rgba(2, 4, 8, 0.72);
+  backdrop-filter:
+    blur(18px)
+    saturate(1.08);
+}
+
+.admin-invoice-glass {
+  position: relative;
+  width: min(760px, 100%);
+  max-height: calc(100vh - 56px);
+  overflow: auto;
+  padding: 30px;
+  border:
+    1px solid
+    rgba(172, 196, 235, 0.17);
+  border-radius: 24px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(11, 16, 27, 0.94),
+      rgba(9, 10, 20, 0.91)
+    );
+  box-shadow:
+    0 40px 120px
+    rgba(0, 0, 0, 0.56),
+    inset 0 1px 0
+    rgba(255, 255, 255, 0.04);
+  backdrop-filter:
+    blur(34px)
+    saturate(1.12);
+}
+
+.admin-invoice-glass-spectrum {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  border-radius: 24px 24px 0 0;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(118, 107, 255, 0),
+      rgba(118, 107, 255, 0.8),
+      rgba(56, 207, 242, 0.78),
+      rgba(243, 155, 61, 0.42),
+      rgba(243, 155, 61, 0)
+    );
+  pointer-events: none;
+}
+
+.admin-invoice-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 26px;
+}
+
+.admin-invoice-modal-header h3 {
+  margin: 7px 0 4px;
+  font-size: 1.45rem;
+  letter-spacing: -0.03em;
+}
+
+.admin-invoice-modal-header p {
+  margin: 0;
+}
+
+.admin-invoice-modal-close {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  color: rgba(240, 244, 255, 0.7);
+  background:
+    rgba(255, 255, 255, 0.025);
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.admin-invoice-edit-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.admin-invoice-edit-grid label {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-invoice-edit-grid label > span,
+.admin-invoice-review-panel > span,
+.admin-invoice-review-note > span,
+.admin-invoice-confirm-label {
+  color:
+    rgba(190, 205, 234, 0.52);
+  font-size: 0.61rem;
+  font-weight: 750;
+  letter-spacing: 0.17em;
+}
+
+.admin-invoice-edit-grid input,
+.admin-invoice-edit-grid textarea {
+  width: 100%;
+  border:
+    1px solid
+    rgba(157, 180, 222, 0.13);
+  border-radius: 13px;
+  outline: none;
+  color: rgba(244, 247, 255, 0.94);
+  background:
+    rgba(255, 255, 255, 0.025);
+}
+
+.admin-invoice-edit-grid input {
+  min-height: 46px;
+  padding: 0 13px;
+}
+
+.admin-invoice-edit-grid textarea {
+  padding: 12px 13px;
+  resize: vertical;
+}
+
+.admin-invoice-edit-grid input:focus,
+.admin-invoice-edit-grid textarea:focus {
+  border-color:
+    rgba(92, 207, 241, 0.35);
+  box-shadow:
+    0 0 0 3px
+    rgba(92, 207, 241, 0.055);
+}
+
+.admin-invoice-modal-span {
+  grid-column: 1 / -1;
+}
+
+.admin-invoice-review-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.admin-invoice-review-panel,
+.admin-invoice-review-note {
+  padding: 18px;
+  border:
+    1px solid
+    rgba(164, 187, 228, 0.1);
+  border-radius: 16px;
+  background:
+    rgba(255, 255, 255, 0.018);
+}
+
+.admin-invoice-review-panel strong {
+  display: block;
+  margin-top: 9px;
+}
+
+.admin-invoice-review-panel p,
+.admin-invoice-review-note p {
+  margin: 6px 0 0;
+  color:
+    rgba(218, 225, 241, 0.64);
+}
+
+.admin-invoice-review-pre {
+  white-space: pre-line;
+}
+
+.admin-invoice-review-lines {
+  overflow: hidden;
+  border:
+    1px solid
+    rgba(164, 187, 228, 0.1);
+  border-radius: 16px;
+}
+
+.admin-invoice-review-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 18px;
+  border-bottom:
+    1px solid
+    rgba(164, 187, 228, 0.075);
+}
+
+.admin-invoice-review-line:last-child {
+  border-bottom: 0;
+}
+
+.admin-invoice-review-line > div {
+  display: grid;
+  gap: 5px;
+}
+
+.admin-invoice-review-line span {
+  color:
+    rgba(211, 220, 239, 0.5);
+  font-size: 0.77rem;
+}
+
+.admin-invoice-review-total {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 18px;
+  padding: 20px 4px;
+}
+
+.admin-invoice-review-total span {
+  color:
+    rgba(192, 205, 233, 0.48);
+  font-size: 0.64rem;
+  font-weight: 760;
+  letter-spacing: 0.17em;
+}
+
+.admin-invoice-review-total strong {
+  font-size: 1.7rem;
+}
+
+.admin-invoice-review-note {
+  margin-top: 12px;
+}
+
+.admin-invoice-confirm {
+  padding: 30px 12px 24px;
+  text-align: center;
+}
+
+.admin-invoice-confirm > strong {
+  display: block;
+  margin: 14px 0 10px;
+  font-size:
+    clamp(2rem, 6vw, 3.1rem);
+  letter-spacing: -0.05em;
+}
+
+.admin-invoice-confirm p {
+  margin: 0 auto;
+  max-width: 520px;
+  color:
+    rgba(229, 234, 246, 0.8);
+  line-height: 1.55;
+}
+
+.admin-invoice-confirm small {
+  display: block;
+  max-width: 480px;
+  margin: 14px auto 0;
+  color:
+    rgba(199, 208, 228, 0.47);
+  line-height: 1.5;
+}
+
+.admin-invoice-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top:
+    1px solid
+    rgba(164, 187, 228, 0.09);
+}
+
+@media (max-width: 680px) {
+  .admin-invoice-modal-backdrop {
+    padding: 14px;
+  }
+
+  .admin-invoice-glass {
+    padding: 22px;
+    border-radius: 19px;
+  }
+
+  .admin-invoice-edit-grid,
+  .admin-invoice-review-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-invoice-modal-actions,
+  .admin-invoice-draft-actions {
+    flex-wrap: wrap;
+  }
+}
+
+
+.admin-invoice-delete-button {
+  margin-right: auto;
+  border: 0;
+  padding: 10px 4px;
+  color: rgba(239, 153, 160, 0.78);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+}
+
+.admin-invoice-delete-button:hover {
+  color: rgba(255, 179, 185, 0.96);
+}
+
+.admin-invoice-confirm-danger > strong {
+  color: rgba(255, 220, 223, 0.94);
+}
+
+.admin-invoice-delete-confirm {
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid rgba(239, 111, 123, 0.28);
+  border-radius: 12px;
+  color: rgba(255, 226, 229, 0.94);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(166, 48, 62, 0.23),
+      rgba(113, 31, 43, 0.19)
+    );
+  cursor: pointer;
+  font: inherit;
+  font-weight: 650;
+}
+
+.admin-invoice-delete-confirm:hover {
+  border-color: rgba(239, 111, 123, 0.46);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(183, 54, 69, 0.29),
+      rgba(126, 34, 47, 0.24)
+    );
+}
+
+.admin-invoice-delete-confirm:disabled,
+.admin-invoice-delete-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+
+/* =====================================================
+   ADMIN — INVOICE ENTRY SELECTION
+===================================================== */
+
+.admin-invoice-selection {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+
+.admin-invoice-selection-head,
+.admin-invoice-selection-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.admin-invoice-selection-head > div {
+  display: grid;
+  gap: 3px;
+}
+
+.admin-invoice-selection-head span,
+.admin-invoice-selection-summary > span {
+  color: rgba(190, 205, 234, 0.5);
+  font-size: 0.62rem;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+}
+
+.admin-invoice-selection-link {
+  border: 0;
+  padding: 6px 0;
+  color: rgba(142, 214, 239, 0.78);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.76rem;
+}
+
+.admin-invoice-selection-list {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-invoice-selection-row {
+  display: grid;
+  grid-template-columns:
+    auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border:
+    1px solid
+    rgba(157, 180, 222, 0.1);
+  border-radius: 14px;
+  background:
+    rgba(255, 255, 255, 0.018);
+  cursor: pointer;
+}
+
+.admin-invoice-selection-row.is-selected {
+  border-color:
+    rgba(78, 198, 229, 0.26);
+  background:
+    linear-gradient(
+      100deg,
+      rgba(84, 111, 216, 0.07),
+      rgba(56, 207, 242, 0.035)
+    );
+}
+
+.admin-invoice-selection-row.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+.admin-invoice-selection-row input {
+  width: 16px;
+  height: 16px;
+}
+
+.admin-invoice-selection-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-invoice-selection-copy span {
+  color:
+    rgba(209, 219, 238, 0.52);
+  font-size: 0.76rem;
+}
+
+.admin-invoice-selection-summary {
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.admin-invoice-selection-summary strong {
+  font-size: 1.1rem;
+}
+
+.admin-invoice-selection-summary small {
+  color:
+    rgba(204, 215, 235, 0.52);
+}

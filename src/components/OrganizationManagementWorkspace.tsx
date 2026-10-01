@@ -71,6 +71,13 @@ export function OrganizationManagementWorkspace() {
   ] = useState<Engagement[]>([]);
 
   const [
+    engagementLane,
+    setEngagementLane,
+  ] = useState<
+    "clients" | "partners"
+  >("clients");
+
+  const [
     addingEngagement,
     setAddingEngagement,
   ] = useState(false);
@@ -207,11 +214,20 @@ export function OrganizationManagementWorkspace() {
     setEditingOrganization(false);
     setAddingEngagement(false);
     setEngagements([]);
+    setEngagementLane("clients");
     setError("");
     setNotice("");
 
+    const engagementEndpoint =
+      organization.type === "paradigm_ra"
+        ? "/api/admin/platform-engagements"
+        : (
+            `/api/admin/organizations/`
+            + `${organization.id}/engagements`
+          );
+
     const response = await fetch(
-      `/api/admin/organizations/${organization.id}/engagements`,
+      engagementEndpoint,
       {
         cache: "no-store",
       },
@@ -388,6 +404,23 @@ export function OrganizationManagementWorkspace() {
   }
 
 
+  const platformOrganization =
+    organizations.find(
+      (organization) =>
+        organization.type === "paradigm_ra"
+    ) ?? null;
+
+  const clientOrganizations =
+    organizations.filter(
+      (organization) =>
+        organization.type === "client"
+    );
+
+  const isSelectedPlatformOrganization =
+    selectedOrganization?.type
+    === "paradigm_ra";
+
+
   if (loading) {
     return (
       <p className="admin-platform-empty">
@@ -406,57 +439,109 @@ export function OrganizationManagementWorkspace() {
           </p>
         ) : null}
 
+        {platformOrganization ? (
+          <section className="admin-platform-section">
+            <div className="admin-section-heading">
+              <div>
+                <p className="kicker">
+                  PLATFORM ORGANIZATION
+                </p>
+
+                <h3>
+                  Paradigm Ra
+                </h3>
+              </div>
+            </div>
+
+            <div className="admin-org-list">
+              <button
+                type="button"
+                className="admin-org-card"
+                onClick={() =>
+                  openOrganization(
+                    platformOrganization
+                  )
+                }
+              >
+                <div>
+                  <span>
+                    Platform Organization
+                  </span>
+
+                  <strong>
+                    {platformOrganization.name}
+                  </strong>
+                </div>
+
+                <small>
+                  {formatValue(
+                    platformOrganization.status
+                  )}
+                </small>
+
+                <b>
+                  Manage Platform →
+                </b>
+              </button>
+            </div>
+          </section>
+        ) : null}
+
         <section className="admin-platform-section">
           <div className="admin-section-heading">
             <div>
               <p className="kicker">
-                ORGANIZATIONS
+                CLIENT ORGANIZATIONS
               </p>
 
               <h3>
-                Operating entities
+                Client operating entities
               </h3>
             </div>
           </div>
 
-          <div className="admin-org-list">
-            {organizations.map(
-              (organization) => (
-                <button
-                  key={organization.id}
-                  type="button"
-                  className="admin-org-card"
-                  onClick={() =>
-                    openOrganization(
-                      organization
-                    )
-                  }
-                >
-                  <div>
-                    <span>
+          {clientOrganizations.length ? (
+            <div className="admin-org-list">
+              {clientOrganizations.map(
+                (organization) => (
+                  <button
+                    key={organization.id}
+                    type="button"
+                    className="admin-org-card"
+                    onClick={() =>
+                      openOrganization(
+                        organization
+                      )
+                    }
+                  >
+                    <div>
+                      <span>
+                        Client Organization
+                      </span>
+
+                      <strong>
+                        {organization.name}
+                      </strong>
+                    </div>
+
+                    <small>
                       {formatValue(
-                        organization.type
+                        organization.status
                       )}
-                    </span>
+                    </small>
 
-                    <strong>
-                      {organization.name}
-                    </strong>
-                  </div>
-
-                  <small>
-                    {formatValue(
-                      organization.status
-                    )}
-                  </small>
-
-                  <b>
-                    Manage →
-                  </b>
-                </button>
-              ),
-            )}
-          </div>
+                    <b>
+                      Manage Client →
+                    </b>
+                  </button>
+                ),
+              )}
+            </div>
+          ) : (
+            <p className="admin-platform-empty">
+              No client organizations.
+            </p>
+          )}
         </section>
       </div>
     );
@@ -483,9 +568,9 @@ export function OrganizationManagementWorkspace() {
       <section className="admin-org-hero">
         <div>
           <p className="kicker">
-            {formatValue(
-              selectedOrganization.type
-            )}
+            {isSelectedPlatformOrganization
+              ? "PLATFORM ORGANIZATION"
+              : "CLIENT ORGANIZATION"}
           </p>
 
           <h2>
@@ -517,20 +602,24 @@ export function OrganizationManagementWorkspace() {
               );
             }}
           >
-            Edit Organization
+            {isSelectedPlatformOrganization
+              ? "Edit Platform Organization"
+              : "Edit Client Organization"}
           </button>
 
-          <button
-            type="button"
-            className="button button-primary"
-            onClick={() =>
-              setAddingEngagement(
-                true
-              )
-            }
-          >
-            + Add Engagement
-          </button>
+          {!isSelectedPlatformOrganization ? (
+            <button
+              type="button"
+              className="button button-primary"
+              onClick={() =>
+                setAddingEngagement(
+                  true
+                )
+              }
+            >
+              + Add Engagement
+            </button>
+          ) : null}
         </div>
       </section>
 
@@ -653,6 +742,9 @@ export function OrganizationManagementWorkspace() {
         organizationName={
           selectedOrganization.name
         }
+        organizationType={
+          selectedOrganization.type
+        }
       />
 
       <section className="admin-platform-section">
@@ -663,12 +755,51 @@ export function OrganizationManagementWorkspace() {
             </p>
 
             <h3>
-              Active work faucets
+              {isSelectedPlatformOrganization
+                ? "Relationship work"
+                : "Active work faucets"}
             </h3>
           </div>
         </div>
 
-        {addingEngagement ? (
+        {isSelectedPlatformOrganization ? (
+          <div className="admin-engagement-create-actions">
+            <button
+              type="button"
+              className={
+                engagementLane === "clients"
+                  ? "button button-primary"
+                  : "admin-cancel-button"
+              }
+              onClick={() =>
+                setEngagementLane(
+                  "clients"
+                )
+              }
+            >
+              Clients
+            </button>
+
+            <button
+              type="button"
+              className={
+                engagementLane === "partners"
+                  ? "button button-primary"
+                  : "admin-cancel-button"
+              }
+              onClick={() =>
+                setEngagementLane(
+                  "partners"
+                )
+              }
+            >
+              Partners
+            </button>
+          </div>
+        ) : null}
+
+        {!isSelectedPlatformOrganization
+        && addingEngagement ? (
           <form
             className="admin-engagement-create"
             onSubmit={
@@ -783,7 +914,65 @@ export function OrganizationManagementWorkspace() {
         ) : null}
 
         <div className="admin-engagement-list">
-          {engagements.length ? (
+          {isSelectedPlatformOrganization ? (
+            engagementLane === "clients" ? (
+              engagements.length ? (
+                engagements.map(
+                  (engagement) => (
+                    <article
+                      key={engagement.id}
+                      className="admin-engagement-card"
+                    >
+                      <div>
+                        <span>
+                          {
+                            clientOrganizations.find(
+                              (organization) =>
+                                organization.id
+                                === (
+                                  engagement
+                                  .client_organization_id
+                                )
+                            )?.name
+                            ?? "Client Organization"
+                          }
+                        </span>
+
+                        <strong>
+                          {engagement.name}
+                        </strong>
+
+                        <small>
+                          {formatValue(
+                            engagement.service_type
+                          )}
+                          {" · "}
+                          {formatValue(
+                            engagement.status
+                          )}
+                        </small>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="admin-inline-action"
+                      >
+                        Open Engagement →
+                      </button>
+                    </article>
+                  ),
+                )
+              ) : (
+                <p className="admin-platform-empty">
+                  No client engagements yet.
+                </p>
+              )
+            ) : (
+              <p className="admin-platform-empty">
+                No partner engagements yet.
+              </p>
+            )
+          ) : engagements.length ? (
             engagements.map(
               (engagement) => (
                 <article
