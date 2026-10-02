@@ -108,3 +108,16 @@ def test_numbering_resets_by_year():
         )
         == "RA-INV-2027-001"
     )
+
+
+def test_production_canary_name_uses_test_prefix():
+    from ra_platform.billing.numbering import (
+        invoice_prefix_for_organization_name,
+    )
+
+    assert (
+        invoice_prefix_for_organization_name(
+            "Client: Paradigm Ra Internal Test"
+        )
+        == "TRA-INV"
+    )

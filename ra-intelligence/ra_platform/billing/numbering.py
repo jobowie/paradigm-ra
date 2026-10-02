@@ -6,8 +6,11 @@ from datetime import date
 PRODUCTION_INVOICE_PREFIX = "RA-INV"
 TEST_INVOICE_PREFIX = "TRA-INV"
 
-INTERNAL_TEST_ORGANIZATION_NAME = (
-    "Paradigm Ra Internal Test"
+INTERNAL_TEST_ORGANIZATION_NAMES = frozenset(
+    {
+        "Paradigm Ra Internal Test".casefold(),
+        "Client: Paradigm Ra Internal Test".casefold(),
+    }
 )
 
 
@@ -16,8 +19,7 @@ def invoice_prefix_for_organization_name(
 ) -> str:
     if (
         organization_name.strip().casefold()
-        == INTERNAL_TEST_ORGANIZATION_NAME
-        .casefold()
+        in INTERNAL_TEST_ORGANIZATION_NAMES
     ):
         return TEST_INVOICE_PREFIX
 
