@@ -10,6 +10,7 @@ from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
+    Response,
 )
 from pydantic import (
     BaseModel,
@@ -3059,6 +3060,305 @@ def delete_admin_invoice_draft(
         released_time_entries=(
             released_count
         ),
+    )
+
+
+
+@router.get(
+    "/invoices/{invoice_id}/preview",
+)
+def preview_admin_invoice(
+    invoice_id: UUID,
+    principal: AuthenticatedPrincipal = Depends(
+        get_current_principal
+    ),
+    connection: sqlite3.Connection = Depends(
+        get_database_connection
+    ),
+):
+    invoices = SQLiteInvoiceRepository(
+        connection
+    )
+
+    invoice = invoices.get(
+        invoice_id
+    )
+
+    if invoice is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Invoice not found.",
+        )
+
+    require_permission(
+        principal=principal,
+        permission=Permission.SEND_INVOICE,
+        organization_id=(
+            invoice.client_organization_id
+        ),
+    )
+
+    if (
+        invoice.status
+        != InvoiceStatus.DRAFT
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Only draft invoices "
+                "can be previewed."
+            ),
+        )
+
+    billing_profiles = (
+        SQLiteOrganizationBillingProfileRepository(
+            connection
+        )
+    )
+
+    client_billing_profile = (
+        billing_profiles
+        .get_for_organization(
+            invoice.client_organization_id
+        )
+    )
+
+    client_contacts = (
+        SQLiteOrganizationContactRepository(
+            connection
+        ).list_for_organization(
+            invoice.client_organization_id
+        )
+    )
+
+    billing_contact = next(
+        (
+            contact
+            for contact in client_contacts
+            if (
+                "billing"
+                in (
+                    contact.contact_type
+                    or ""
+                ).casefold()
+            )
+        ),
+        None,
+    )
+
+    if billing_contact is None:
+        billing_contact = next(
+            (
+                contact
+                for contact in client_contacts
+                if contact.is_primary
+            ),
+            None,
+        )
+
+    source_engagement = None
+
+    if invoice.line_items:
+        source_engagement = (
+            SQLiteEngagementRepository(
+                connection
+            ).get(
+                invoice.line_items[0]
+                .engagement_id
+            )
+        )
+
+    owner_organization = None
+
+    if source_engagement is not None:
+        owner_organization = (
+            SQLiteOrganizationRepository(
+                connection
+            ).get(
+                source_engagement
+                .owner_organization_id
+            )
+        )
+
+    if owner_organization is None:
+        owner_organization = next(
+            (
+                organization
+                for organization
+                in SQLiteOrganizationRepository(
+                    connection
+                ).list_all()
+                if (
+                    organization.type
+                    == OrganizationType.PARADIGM_RA
+                )
+            ),
+            None,
+        )
+
+    if owner_organization is None:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Paradigm Ra organization "
+                "could not be resolved."
+            ),
+        )
+
+    remittance_profile = (
+        billing_profiles
+        .get_for_organization(
+            owner_organization.id
+        )
+    )
+
+    if remittance_profile is None:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Paradigm Ra Pay To / "
+                "Remittance profile is "
+                "not configured."
+            ),
+        )
+
+    try:
+        routing_number = (
+            decrypt_organization_financial_value(
+                profile=remittance_profile,
+                field_name="routing_number",
+            )
+        )
+
+        account_number = (
+            decrypt_organization_financial_value(
+                profile=remittance_profile,
+                field_name="account_number",
+            )
+        )
+
+    except FinancialDataEncryptionError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Paradigm Ra remittance "
+                "data could not be decrypted."
+            ),
+        ) from exc
+
+    issuer_email = os.environ.get(
+        "RA_BILLING_ISSUER_EMAIL",
+        "",
+    ).strip()
+
+    issuer_title = (
+        os.environ.get(
+            "RA_BILLING_ISSUER_TITLE",
+            "Chief Financial Officer",
+        ).strip()
+        or "Chief Financial Officer"
+    )
+
+    if not issuer_email:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Invoice issuer configuration "
+                "is incomplete."
+            ),
+        )
+
+    issuer = SQLiteUserRepository(
+        connection
+    ).get_by_email(
+        issuer_email
+    )
+
+    if issuer is None:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Configured billing issuer "
+                "was not found."
+            ),
+        )
+
+    bill_to_render = InvoiceBillTo(
+        name=invoice.bill_to_name,
+        contact_name=(
+            billing_contact.name
+            if billing_contact
+            else None
+        ),
+        email=invoice.bill_to_email,
+        address=(
+            invoice.bill_to_address
+            or _format_billing_profile_address(
+                client_billing_profile
+            )
+        ),
+    )
+
+    remittance_render = InvoiceRemittance(
+        payee_name=(
+            remittance_profile.billing_name
+            or owner_organization.name
+        ),
+        remittance_email=(
+            remittance_profile.billing_email
+        ),
+        address=(
+            _format_billing_profile_address(
+                remittance_profile
+            )
+        ),
+        bank_name=(
+            remittance_profile.bank_name
+        ),
+        account_type=(
+            remittance_profile.account_type
+        ),
+        routing_number=routing_number,
+        account_number=account_number,
+    )
+
+    try:
+        pdf_bytes = build_invoice_pdf(
+            invoice=invoice,
+            issuer_name=(
+                issuer.display_name
+            ),
+            issuer_title=issuer_title,
+            bill_to=bill_to_render,
+            remittance=(
+                remittance_render
+            ),
+        )
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Invoice PDF generation "
+                "failed."
+            ),
+        ) from exc
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": (
+                f'inline; filename="'
+                f'{invoice.invoice_number}.pdf"'
+            ),
+            "Cache-Control":
+                "private, no-store",
+            "Pragma":
+                "no-cache",
+            "X-Content-Type-Options":
+                "nosniff",
+        },
     )
 
 

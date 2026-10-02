@@ -467,8 +467,8 @@ def build_invoice_pdf(
             ),
         ],
         col_widths=[
-            0.52 * inch,
-            0.88 * inch,
+            0.68 * inch,
+            0.72 * inch,
         ],
         label_style=label_style,
         body_style=body_style,
@@ -716,9 +716,9 @@ def build_invoice_pdf(
             ],
         ],
         colWidths=[
-            4.45 * inch,
-            1.15 * inch,
-            1.2 * inch,
+            4.30 * inch,
+            1.30 * inch,
+            1.20 * inch,
         ],
     )
 

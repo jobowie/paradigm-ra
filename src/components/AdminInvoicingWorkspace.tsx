@@ -3942,6 +3942,23 @@ const billingMismatchEntries =
 
                   <button
                     type="button"
+                    className="admin-cancel-button"
+                    onClick={() => {
+                      window.open(
+                        `/api/admin/invoices/${activeInvoice.id}/preview`,
+                        "_blank",
+                        "noopener,noreferrer",
+                      );
+                    }}
+                    disabled={
+                      actionLoading
+                    }
+                  >
+                    Preview PDF
+                  </button>
+
+                  <button
+                    type="button"
                     className="button button-primary"
                     onClick={() =>
                       setInvoiceFlowStep(
